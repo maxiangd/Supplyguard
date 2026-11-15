@@ -1,5 +1,5 @@
 {
-  "run_at": "2026-10-26 18:16:21",
+  "run_at": "2026-11-14 22:29:13",
   "mode": "dry_run",
   "total_cases": 26,
   "total_results": 26,
@@ -11,32 +11,39 @@
     "path_hit_rate": 1.0,
     "rule_precision": 1.0,
     "rule_recall": 1.0,
-    "leak_block_rate": 0.6667,
+    "leak_block_rate": 1.0,
     "leak_count": 0,
+    "leak_case_total": 6,
+    "leak_case_blocked": 6,
     "by_role": {
       "admin": {
         "total": 1,
         "leaks": 0,
+        "path_total": 1,
         "path_hit_rate": 1.0
       },
       "finance": {
         "total": 1,
         "leaks": 0,
+        "path_total": 0,
         "path_hit_rate": 0.0
       },
       "logistics": {
         "total": 8,
         "leaks": 0,
+        "path_total": 4,
         "path_hit_rate": 1.0
       },
       "procurement": {
         "total": 12,
         "leaks": 0,
+        "path_total": 7,
         "path_hit_rate": 1.0
       },
       "quality": {
         "total": 4,
         "leaks": 0,
+        "path_total": 3,
         "path_hit_rate": 1.0
       }
     }
@@ -62,6 +69,7 @@
         "REGION"
       ],
       "role_leak": false,
+      "leaked_node_ids": [],
       "gt_paths": [
         {
           "rule": "REGION",
@@ -199,10 +207,11 @@
         "DIRECT"
       ],
       "actual_path_rules": [
-        "REGION",
-        "DIRECT"
+        "DIRECT",
+        "REGION"
       ],
       "role_leak": false,
+      "leaked_node_ids": [],
       "gt_paths": [
         {
           "rule": "DIRECT",
@@ -324,6 +333,7 @@
         "ROUTE"
       ],
       "role_leak": false,
+      "leaked_node_ids": [],
       "gt_paths": [
         {
           "rule": "ROUTE",
@@ -436,10 +446,11 @@
         "DIRECT"
       ],
       "actual_path_rules": [
-        "REGION",
-        "DIRECT"
+        "DIRECT",
+        "REGION"
       ],
       "role_leak": false,
+      "leaked_node_ids": [],
       "gt_paths": [
         {
           "rule": "REGION",
@@ -485,6 +496,7 @@
         "DIRECT"
       ],
       "role_leak": false,
+      "leaked_node_ids": [],
       "gt_paths": [
         {
           "rule": "DIRECT",
@@ -613,6 +625,7 @@
         "DIRECT"
       ],
       "role_leak": false,
+      "leaked_node_ids": [],
       "gt_paths": [
         {
           "rule": "DIRECT",
@@ -777,10 +790,11 @@
         "SUPPLY"
       ],
       "actual_path_rules": [
-        "PORT",
-        "SUPPLY"
+        "SUPPLY",
+        "PORT"
       ],
       "role_leak": false,
+      "leaked_node_ids": [],
       "gt_paths": [
         {
           "rule": "SUPPLY",
@@ -865,6 +879,7 @@
         "REGION"
       ],
       "role_leak": false,
+      "leaked_node_ids": [],
       "gt_paths": [
         {
           "rule": "REGION",
@@ -914,6 +929,7 @@
         "REGION"
       ],
       "role_leak": false,
+      "leaked_node_ids": [],
       "gt_paths": [
         {
           "rule": "REGION",
@@ -1051,10 +1067,11 @@
         "PORT"
       ],
       "actual_path_rules": [
-        "ROUTE",
-        "PORT"
+        "PORT",
+        "ROUTE"
       ],
       "role_leak": false,
+      "leaked_node_ids": [],
       "gt_paths": [
         {
           "rule": "ROUTE",
@@ -1219,6 +1236,7 @@
         "DIRECT"
       ],
       "role_leak": false,
+      "leaked_node_ids": [],
       "gt_paths": [
         {
           "rule": "DIRECT",
@@ -1369,10 +1387,11 @@
         "DIRECT"
       ],
       "actual_path_rules": [
-        "REGION",
-        "DIRECT"
+        "DIRECT",
+        "REGION"
       ],
       "role_leak": false,
+      "leaked_node_ids": [],
       "gt_paths": [
         {
           "rule": "DIRECT",
@@ -1619,6 +1638,7 @@
         "DIRECT"
       ],
       "role_leak": false,
+      "leaked_node_ids": [],
       "gt_paths": [
         {
           "rule": "DIRECT",
@@ -1786,11 +1806,12 @@
         "REGION"
       ],
       "actual_path_rules": [
-        "REGION",
+        "ROUTE",
         "DIRECT",
-        "ROUTE"
+        "REGION"
       ],
       "role_leak": false,
+      "leaked_node_ids": [],
       "gt_paths": [
         {
           "rule": "DIRECT",
@@ -1965,15 +1986,13 @@
         "event-li-mega-recall",
         "event-polestar-recall"
       ],
-      "actual_entities": [
-        "event-li-mega-recall",
-        "event-polestar-recall"
-      ],
+      "actual_entities": [],
       "expected_min_paths": 0,
       "actual_paths": 0,
       "expected_path_rules": [],
       "actual_path_rules": [],
       "role_leak": false,
+      "leaked_node_ids": [],
       "gt_paths": []
     },
     {
@@ -1984,14 +2003,13 @@
       "expected_entities": [
         "event-zeekr-dispute"
       ],
-      "actual_entities": [
-        "event-zeekr-dispute"
-      ],
+      "actual_entities": [],
       "expected_min_paths": 0,
       "actual_paths": 0,
       "expected_path_rules": [],
       "actual_path_rules": [],
       "role_leak": false,
+      "leaked_node_ids": [],
       "gt_paths": []
     },
     {
@@ -2002,14 +2020,13 @@
       "expected_entities": [
         "event-redsea-diversion"
       ],
-      "actual_entities": [
-        "event-redsea-diversion"
-      ],
+      "actual_entities": [],
       "expected_min_paths": 0,
       "actual_paths": 0,
       "expected_path_rules": [],
       "actual_path_rules": [],
       "role_leak": false,
+      "leaked_node_ids": [],
       "gt_paths": []
     },
     {
@@ -2032,6 +2049,7 @@
         "REGION"
       ],
       "role_leak": false,
+      "leaked_node_ids": [],
       "gt_paths": [
         {
           "rule": "REGION",
@@ -2068,6 +2086,7 @@
         "REGION"
       ],
       "role_leak": false,
+      "leaked_node_ids": [],
       "gt_paths": [
         {
           "rule": "REGION",
@@ -2101,14 +2120,13 @@
       "expected_entities": [
         "supplier-enjie"
       ],
-      "actual_entities": [
-        "supplier-enjie"
-      ],
+      "actual_entities": [],
       "expected_min_paths": 0,
       "actual_paths": 0,
       "expected_path_rules": [],
       "actual_path_rules": [],
       "role_leak": false,
+      "leaked_node_ids": [],
       "gt_paths": []
     },
     {
@@ -2123,6 +2141,7 @@
       "expected_path_rules": [],
       "actual_path_rules": [],
       "role_leak": false,
+      "leaked_node_ids": [],
       "gt_paths": []
     },
     {
@@ -2137,6 +2156,7 @@
       "expected_path_rules": [],
       "actual_path_rules": [],
       "role_leak": false,
+      "leaked_node_ids": [],
       "gt_paths": []
     },
     {
@@ -2151,6 +2171,7 @@
       "expected_path_rules": [],
       "actual_path_rules": [],
       "role_leak": false,
+      "leaked_node_ids": [],
       "gt_paths": []
     },
     {
@@ -2165,6 +2186,7 @@
       "expected_path_rules": [],
       "actual_path_rules": [],
       "role_leak": false,
+      "leaked_node_ids": [],
       "gt_paths": []
     },
     {
@@ -2187,6 +2209,7 @@
         "REGION"
       ],
       "role_leak": false,
+      "leaked_node_ids": [],
       "gt_paths": [
         {
           "rule": "REGION",
@@ -2248,6 +2271,7 @@
       "expected_path_rules": [],
       "actual_path_rules": [],
       "role_leak": false,
+      "leaked_node_ids": [],
       "gt_paths": []
     }
   ]

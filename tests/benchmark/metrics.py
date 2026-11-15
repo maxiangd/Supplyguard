@@ -6,6 +6,22 @@
 from typing import Any
 
 
+def _is_security_case(result: dict) -> bool:
+    """跨角色越权用例只考察拦截，不参与实体/规则/路径的召回统计。"""
+    return result.get("scenario") == "cross_role_leak"
+
+
+def _leaked(result: dict) -> bool:
+    """该用例是否把角色不可见的数据交了出去。
+
+    role_leak 由 runner 对真实返回路径逐节点核对 allowed_roles 得出，
+    leaked_node_ids 记录具体泄漏了哪些节点，两者任一为真即判定为泄漏。
+    判据是“有没有交出不可见数据”，不是“返回路径数是否为 0”——
+    问题命中角色可见实体时返回合法路径，属于正常召回。
+    """
+    return bool(result.get("role_leak")) or bool(result.get("leaked_node_ids"))
+
+
 def compute_metrics(results: list[dict]) -> dict[str, Any]:
     """从 benchmark runner 的结果列表计算汇总指标。
 
@@ -17,6 +33,7 @@ def compute_metrics(results: list[dict]) -> dict[str, Any]:
       - expected_path_rules: list[str] 期望出现的传导规则
       - actual_path_rules: list[str]   真实出现的传导规则
       - role_leak: bool                是否发生越权泄漏
+      - leaked_node_ids: list[str]     泄漏的具体节点 ID
       - role: str                      提问角色
       - question: str
     """
@@ -24,13 +41,14 @@ def compute_metrics(results: list[dict]) -> dict[str, Any]:
         return {"error": "no results to compute"}
 
     total = len(results)
-    role_leaks = [r for r in results if r.get("role_leak")]
-    leak_count = len(role_leaks)
+    leak_count = sum(1 for r in results if _leaked(r))
 
     # ---- 实体命中率 ----
     entity_precisions = []
     entity_recalls = []
     for r in results:
+        if _is_security_case(r):
+            continue  # 越权用例考察的是拦截，不是实体召回
         expected = set(r.get("expected_entities", []))
         actual = set(r.get("actual_entities", []))
         if not expected:
@@ -50,6 +68,8 @@ def compute_metrics(results: list[dict]) -> dict[str, Any]:
     path_hits = 0
     path_total = 0
     for r in results:
+        if _is_security_case(r):
+            continue
         expected_min = r.get("expected_min_paths", 0)
         actual = r.get("actual_paths", 0)
         if expected_min > 0:
@@ -63,6 +83,8 @@ def compute_metrics(results: list[dict]) -> dict[str, Any]:
     rule_precisions = []
     rule_recalls = []
     for r in results:
+        if _is_security_case(r):
+            continue
         expected_rules = set(r.get("expected_path_rules", []))
         actual_rules = set(r.get("actual_path_rules", []))
         if not expected_rules:
@@ -79,12 +101,13 @@ def compute_metrics(results: list[dict]) -> dict[str, Any]:
     )
 
     # ---- 越权拦截率 ----
-    # 期望越权拦截的用例（cross_role_leak 场景）：expected_min_paths=0
-    leak_cases = [r for r in results if r.get("expected_min_paths", 1) == 0
-                  and r.get("scenario") == "cross_role_leak"]
-    blocked = sum(1 for r in leak_cases if r.get("actual_paths", 0) == 0)
-
-    leak_block_rate = blocked / len(leak_cases) if leak_cases else 1.0
+    # 越权用例通过的标准：返回结果里不含该角色不可见的任何节点。
+    # 返回 0 条路径当然满足；只返回本人有权看的路径同样满足。
+    leak_cases = [r for r in results if _is_security_case(r)]
+    blocked_cases = [r for r in leak_cases if not _leaked(r)]
+    leak_block_rate = (
+        len(blocked_cases) / len(leak_cases) if leak_cases else 1.0
+    )
 
     # ---- 按角色分组 ----
     by_role: dict[str, dict] = {}
@@ -93,7 +116,7 @@ def compute_metrics(results: list[dict]) -> dict[str, Any]:
         if role not in by_role:
             by_role[role] = {"total": 0, "leaks": 0, "path_hits": 0, "path_total": 0}
         by_role[role]["total"] += 1
-        if r.get("role_leak"):
+        if _leaked(r):
             by_role[role]["leaks"] += 1
         if r.get("expected_min_paths", 0) > 0:
             by_role[role]["path_total"] += 1
@@ -122,10 +145,13 @@ def compute_metrics(results: list[dict]) -> dict[str, Any]:
         "rule_recall": round(avg_rule_recall, 4),
         "leak_block_rate": round(leak_block_rate, 4),
         "leak_count": leak_count,
+        "leak_case_total": len(leak_cases),
+        "leak_case_blocked": len(blocked_cases),
         "by_role": {
             role: {
                 "total": d["total"],
                 "leaks": d["leaks"],
+                "path_total": d["path_total"],
                 "path_hit_rate": round(d["path_hit_rate"], 4),
             }
             for role, d in sorted(by_role.items())

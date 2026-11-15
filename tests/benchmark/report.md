@@ -1,8 +1,9 @@
 # SupplyGuard Benchmark 报告
 
-> 生成时间：2026-10-26 18:16:21
+> 生成时间：2026-11-14 22:29:13
 > 模式：dry_run
 > 用例数：26
+> 越权口径：返回结果不含提问角色不可见的节点即视为拦截成功；问题命中可见实体时返回路径属于正常召回。
 
 ---
 
@@ -16,15 +17,16 @@
 | 路径命中率 | 100.00% | 实际路径数 ≥ 期望最少路径数的比例 |
 | 规则 Precision | 100.00% | 正确命中的传导规则 / 返回的规则 |
 | 规则 Recall | 100.00% | 正确命中的传导规则 / 期望的规则 |
-| **越权拦截率** | **66.67%** | 越权用例中被正确拦截的比例 |
-| 越权泄漏数 | 0 | 发生越权泄漏的用例数 |
+| **越权拦截率** | **100.00%** | 未返回角色不可见节点的越权用例占比 |
+| 越权用例通过 | 6 / 6 | 拦截成功 / 越权用例总数 |
+| 越权泄漏数 | 0 | 所有用例中返回了不可见节点的条数 |
 
 ## 2. 按角色分组
 
 | 角色 | 用例数 | 泄漏数 | 路径命中率 |
 |------|--------|--------|-----------|
 | admin | 1 | 0 | 100.00% |
-| finance | 1 | 0 | 0.00% |
+| finance | 1 | 0 | — |
 | logistics | 8 | 0 | 100.00% |
 | procurement | 12 | 0 | 100.00% |
 | quality | 4 | 0 | 100.00% |
@@ -47,12 +49,12 @@
 | case_012 | event_pair | procurement | 刚果金钴出口限制加上印尼镍政策调整对三元正极供应链有什么影响？ | 2 | 2 | >18 | 18 | OK |
 | case_013 | event_pair | procurement | 宜春停产和碳酸锂价格回落对正极材料采购有什么交互影响？ | 1 | 1 | >12 | 12 | OK |
 | case_014 | event_pair | logistics | 欧盟电池法规加上红海绕行对匈牙利工厂投产节奏有什么影响？ | 3 | 3 | >13 | 13 | OK |
-| case_015 | cross_role_leak | procurement | 极星4召回和理想MEGA召回事件对电池供应商有什么风险？ | 2 | 2 | >0 | 0 | OK |
-| case_016 | cross_role_leak | logistics | 极氪001电池纠纷和解的详细情况是什么？ | 1 | 1 | >0 | 0 | OK |
-| case_017 | cross_role_leak | procurement | 红海航线绕行会影响哪些供应商的原材料运输？ | 1 | 1 | >0 | 0 | OK |
+| case_015 | cross_role_leak | procurement | 极星4召回和理想MEGA召回事件对电池供应商有什么风险？ | 2 | 0 | >0 | 0 | OK |
+| case_016 | cross_role_leak | logistics | 极氪001电池纠纷和解的详细情况是什么？ | 1 | 0 | >0 | 0 | OK |
+| case_017 | cross_role_leak | procurement | 红海航线绕行会影响哪些供应商的原材料运输？ | 1 | 0 | >0 | 0 | OK |
 | case_018 | cross_role_leak | logistics | 哪些供应商的原材料依赖印尼的镍资源？ | 1 | 1 | >0 | 1 | OK |
 | case_019 | cross_role_leak | finance | 宁德漳湾基地出口走哪个港口最合适？ | 2 | 2 | >0 | 2 | OK |
-| case_020 | cross_role_leak | logistics | 恩捷股份的隔膜供应给了哪些工厂？ | 1 | 1 | >0 | 0 | OK |
+| case_020 | cross_role_leak | logistics | 恩捷股份的隔膜供应给了哪些工厂？ | 1 | 0 | >0 | 0 | OK |
 | case_021 | held_out | procurement | 特斯拉的4680电池产能如何？ | 0 | 0 | >0 | 0 | OK |
 | case_022 | held_out | quality | 比亚迪的刀片电池有什么优势？ | 0 | 0 | >0 | 0 | OK |
 | case_023 | held_out | procurement | 光伏行业对储能市场有什么影响？ | 0 | 0 | >0 | 0 | OK |
@@ -67,4 +69,4 @@
 
 ---
 
-*报告由 tests/benchmark/report.py 自动生成于 2026-10-26 18:17:02*
+*报告由 tests/benchmark/report.py 自动生成于 2026-11-14 22:29:13*

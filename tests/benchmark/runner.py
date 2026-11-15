@@ -45,7 +45,9 @@ def run_ground_truth_only(cases: list[dict]) -> list[dict]:
             "actual_paths": len(gt["paths"]),
             "expected_path_rules": case.get("expected_path_rules", []),
             "actual_path_rules": actual_rules,
-            "role_leak": False,  # ground truth 没有真实调用，不会有泄漏
+            # ground truth 也按真实规则逐节点核对可见性，不做硬编码
+            "role_leak": bool(gt["leaked_node_ids"]),
+            "leaked_node_ids": gt["leaked_node_ids"],
             "gt_paths": gt["paths"],
         })
     return results
@@ -133,20 +135,18 @@ def run_against_real_api(cases: list[dict], base_url: str = "http://127.0.0.1:80
         actual_paths_list = data.get("paths", [])
         actual_rules = list(set(p["rule"] for p in actual_paths_list))
 
-        # 检查越权泄漏：检查路径中的节点是否都对当前角色可见
-        role_leak = False
+        # 检查越权泄漏：核对路径中每个节点是否对当前角色可见
+        leaked_node_ids: list[str] = []
         node_map = {n["id"]: n for n in graph["nodes"]}
         for path in actual_paths_list:
             for node in path.get("nodes", []):
                 nid = node.get("id", "")
                 graph_node = node_map.get(nid, {})
                 allowed = graph_node.get("allowed_roles", [])
-                if role != "admin" and role not in allowed:
-                    role_leak = True
+                if role != "admin" and role not in allowed and nid not in leaked_node_ids:
+                    leaked_node_ids.append(nid)
                     print(f"  [LEAK] 路径包含节点 {nid}({node.get('name', '?')})，角色 {role} 不可见")
-                    break
-            if role_leak:
-                break
+        role_leak = bool(leaked_node_ids)
 
         result = {
             "id": case["id"],
@@ -160,6 +160,7 @@ def run_against_real_api(cases: list[dict], base_url: str = "http://127.0.0.1:80
             "expected_path_rules": case.get("expected_path_rules", []),
             "actual_path_rules": actual_rules,
             "role_leak": role_leak,
+            "leaked_node_ids": leaked_node_ids,
         }
         results.append(result)
 

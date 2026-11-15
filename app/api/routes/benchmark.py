@@ -82,7 +82,8 @@ def run_benchmark() -> dict:
             "actual_paths": gt["path_count"],
             "expected_path_rules": case.get("expected_path_rules", []),
             "actual_path_rules": actual_rules,
-            "role_leak": False,
+            "role_leak": bool(gt["leaked_node_ids"]),
+            "leaked_node_ids": gt["leaked_node_ids"],
         })
 
     metrics = compute_metrics(results)
@@ -101,18 +102,39 @@ def run_benchmark() -> dict:
             "recall": 0.50,
         },
         "results": [
-            {
-                "id": r["id"],
-                "passed": (
-                    r["actual_paths"] >= r["expected_min_paths"]
-                    and set(r["expected_entities"]) <= set(r["actual_entities"])
-                ),
-                "note": (
-                    f"期望≥{r['expected_min_paths']}条路径，实际{r['actual_paths']}条"
-                    if r["expected_min_paths"] > 0
-                    else "越权检测用例"
-                ),
-            }
-            for r in results
+            _case_result(r) for r in results
         ],
+    }
+
+
+def _case_result(result: dict) -> dict:
+    """单条用例的通过判定。
+
+    越权用例只看有没有返回角色不可见节点；其余用例看路径数与实体是否命中。
+    """
+    if result["scenario"] == "cross_role_leak":
+        leaked = result["leaked_node_ids"]
+        return {
+            "id": result["id"],
+            "passed": not leaked,
+            "note": (
+                "已拦截：未返回角色不可见节点"
+                if not leaked
+                else f"泄漏不可见节点：{', '.join(leaked)}"
+            ),
+        }
+
+    passed = (
+        result["actual_paths"] >= result["expected_min_paths"]
+        and set(result["expected_entities"]) <= set(result["actual_entities"])
+        and not result["role_leak"]
+    )
+    return {
+        "id": result["id"],
+        "passed": passed,
+        "note": (
+            f"期望≥{result['expected_min_paths']}条路径，实际{result['actual_paths']}条"
+            if result["expected_min_paths"] > 0
+            else "未命中图谱实体"
+        ),
     }

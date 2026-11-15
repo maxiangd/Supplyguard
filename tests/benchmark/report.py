@@ -22,6 +22,8 @@ def generate_markdown(results_path: str, output_path: str | None = None) -> str:
         f"> 生成时间：{data.get('run_at', 'unknown')}",
         f"> 模式：{data.get('mode', 'unknown')}",
         f"> 用例数：{data.get('total_cases', 0)}",
+        "> 越权口径：返回结果不含提问角色不可见的节点即视为拦截成功；"
+        "问题命中可见实体时返回路径属于正常召回。",
         "",
         "---",
         "",
@@ -35,8 +37,9 @@ def generate_markdown(results_path: str, output_path: str | None = None) -> str:
         f"| 路径命中率 | {metrics.get('path_hit_rate', 0):.2%} | 实际路径数 ≥ 期望最少路径数的比例 |",
         f"| 规则 Precision | {metrics.get('rule_precision', 0):.2%} | 正确命中的传导规则 / 返回的规则 |",
         f"| 规则 Recall | {metrics.get('rule_recall', 0):.2%} | 正确命中的传导规则 / 期望的规则 |",
-        f"| **越权拦截率** | **{metrics.get('leak_block_rate', 0):.2%}** | 越权用例中被正确拦截的比例 |",
-        f"| 越权泄漏数 | {metrics.get('leak_count', 0)} | 发生越权泄漏的用例数 |",
+        f"| **越权拦截率** | **{metrics.get('leak_block_rate', 0):.2%}** | 未返回角色不可见节点的越权用例占比 |",
+        f"| 越权用例通过 | {metrics.get('leak_case_blocked', 0)} / {metrics.get('leak_case_total', 0)} | 拦截成功 / 越权用例总数 |",
+        f"| 越权泄漏数 | {metrics.get('leak_count', 0)} | 所有用例中返回了不可见节点的条数 |",
         "",
         "## 2. 按角色分组",
         "",
@@ -45,8 +48,9 @@ def generate_markdown(results_path: str, output_path: str | None = None) -> str:
     ]
 
     for role, d in sorted((metrics.get("by_role") or {}).items()):
+        rate = f"{d['path_hit_rate']:.2%}" if d.get("path_total") else "—"
         lines.append(
-            f"| {role} | {d['total']} | {d['leaks']} | {d['path_hit_rate']:.2%} |"
+            f"| {role} | {d['total']} | {d['leaks']} | {rate} |"
         )
 
     lines.extend([
@@ -72,10 +76,11 @@ def generate_markdown(results_path: str, output_path: str | None = None) -> str:
         "",
     ])
 
-    leaks = [r for r in results if r.get("role_leak")]
+    leaks = [r for r in results if r.get("role_leak") or r.get("leaked_node_ids")]
     if leaks:
         for r in leaks:
-            lines.append(f"- **{r['id']}** ({r['role']}): {r['question']}")
+            nodes = ", ".join(r.get("leaked_node_ids", [])) or "未知"
+            lines.append(f"- **{r['id']}** ({r['role']}): {r['question']} —— 泄漏节点：{nodes}")
     else:
         lines.append("✅ 未发现越权泄漏")
         lines.append("")

@@ -41,15 +41,19 @@ def _visible(node: dict, role: str) -> bool:
 # ── 实体匹配 ──
 
 
-def match_entities(question: str) -> list[str]:
+def match_entities(question: str, role: str | None = None) -> list[str]:
     """用节点名与别名做关键词匹配，长匹配优先。
 
     与 graph.py 的 match_entities 逻辑一致：
     - 如果命中任何 event，则排除 region/port/route 类型
     - 最多返回 MAX_ENTITIES 个实体
+    - 传入 role 时先按可见性过滤，与真实链路保持一致：
+      角色看不到的节点不会被匹配出来，因此也不会进入路径
     """
     candidates: list[tuple[int, dict]] = []
     for node in NODES:
+        if role is not None and not _visible(node, role):
+            continue
         terms = [node["name"], *(node.get("aliases") or [])]
         hits = [term for term in terms if term and term in question]
         if hits:
@@ -333,9 +337,25 @@ def compute_paths(entity_ids: list[str], role: str = "admin", max_hops: int = 3)
     return visible_paths[:40]
 
 
+def leaked_node_ids(paths: list[dict], role: str) -> list[str]:
+    """返回路径中出现、但当前角色不可见的节点 ID。
+
+    「防越权」的判据是“有没有把不可见数据交出去”，而不是“有没有返回路径”：
+    问题命中角色可见的实体时，返回合法路径是正常召回，不算越权。
+    """
+    nodes = _node_map()
+    leaked: list[str] = []
+    for path in paths:
+        for node_id in path.get("node_ids", []):
+            node = nodes.get(node_id)
+            if node and not _visible(node, role) and node_id not in leaked:
+                leaked.append(node_id)
+    return leaked
+
+
 def expected_paths_for_case(question: str, role: str) -> dict:
-    """一站式接口：匹配实体 + 计算路径。"""
-    entity_ids = match_entities(question)
+    """一站式接口：按角色匹配实体 + 计算路径 + 检查泄漏。"""
+    entity_ids = match_entities(question, role)
     paths = compute_paths(entity_ids, role)
     rules = list(set(p["rule"] for p in paths))
     return {
@@ -343,6 +363,7 @@ def expected_paths_for_case(question: str, role: str) -> dict:
         "paths": paths,
         "path_count": len(paths),
         "rules_used": rules,
+        "leaked_node_ids": leaked_node_ids(paths, role),
     }
 
 
