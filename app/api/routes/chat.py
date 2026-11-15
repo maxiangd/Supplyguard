@@ -64,6 +64,7 @@ def answer(
             payload.top_k or settings.top_k,
             db,
             current_user,
+            payload.session_id or "default",
         )
     except OpenAIError as exc:
         raise HTTPException(
@@ -111,6 +112,7 @@ def answer_stream(
                 payload.top_k or settings.top_k,
                 db,
                 current_user,
+                payload.session_id or "default",
             )
             for event in events:
                 yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"

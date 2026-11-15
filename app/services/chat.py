@@ -15,6 +15,8 @@ from langgraph.types import Command
 from app.core.configuration import settings
 from app.db.tables import User
 from app.services.approval import create_approval
+from app.services.followup import FollowupContext, resolve_followup
+from app.services.long_term import load_memory_context, save_risk_memory
 from app.services.memory import add_turn, build_memory_context, get_session_history
 from app.services.workflow import (
     SupplyGuardState,
@@ -55,6 +57,63 @@ AI 回答：{answer}
 def _is_refusal(answer: str) -> bool:
     """只有整段回答以拒答语开头才算拒答，避免部分回答里顺带提到而被误判。"""
     return answer.strip().lstrip("*# >-").startswith(REFUSAL_TEXT)
+
+
+def _prepare_memory(
+    db, user: User, question: str, role: str, session_id: str
+) -> tuple[list[dict], FollowupContext, str]:
+    """加载本轮问答需要的全部记忆。
+
+    顺序很重要：
+    1. 先读 Redis 短期记忆
+    2. 用短期记忆判断当前问题是不是追问，得到补全后的检索词和继承实体
+    3. 再用补全后的问题去匹配 PostgreSQL 长期记忆
+    """
+    history = get_session_history(user.username, session_id)
+    followup = resolve_followup(question, role, history)
+    long_term_context = load_memory_context(
+        db, user, followup.resolved_question, followup.carried_entity_ids
+    )
+    return history, followup, long_term_context
+
+
+def _refs_from_hits(hits: list[dict], limit: int = 5) -> list[dict]:
+    """把命中的文档块压缩成引用列表，随对话轮次一起存进短期记忆。"""
+    return [
+        {
+            "filename": hit.get("filename"),
+            "chunk_index": hit.get("chunk_index"),
+        }
+        for hit in (hits or [])[:limit]
+    ]
+
+
+def _save_risk_if_needed(
+    db,
+    user: User,
+    question: str,
+    answer: str,
+    risk_level: str,
+    risk_reason: str,
+    entities: list[dict],
+    approval_id: str | None,
+    refs: list[dict],
+) -> None:
+    """MEDIUM/HIGH 结论自动沉淀为长期记忆中的历史风险。"""
+    if risk_level not in ("HIGH", "MEDIUM"):
+        return
+    save_risk_memory(
+        db,
+        user,
+        question=question,
+        answer=answer,
+        risk_level=risk_level,
+        risk_reason=risk_reason,
+        entities=entities,
+        approval_id=approval_id,
+        refs=refs,
+    )
+    db.commit()
 
 
 def get_chat_client(model: str) -> OpenAI:
@@ -198,13 +257,21 @@ def _get_graph():
 
 
 def answer_question(
-    question: str, role: str, model: str, top_k: int, db, user: User
+    question: str,
+    role: str,
+    model: str,
+    top_k: int,
+    db,
+    user: User,
+    session_id: str = "default",
 ) -> dict:
     """检索→图谱→复核→生成→评估→审批，全流程同步执行。"""
     graph = _get_graph()
 
-    # 加载会话历史
-    history = get_session_history(user.username)
+    # 加载短期记忆、解析追问、加载长期记忆
+    history, followup, long_term_context = _prepare_memory(
+        db, user, question, role, session_id
+    )
     memory_context = build_memory_context(history)
 
     initial: SupplyGuardState = {
@@ -213,8 +280,12 @@ def answer_question(
         "model": model,
         "top_k": top_k,
         "username": user.username,
+        "session_id": session_id,
         "session_history": history,
         "memory_context": memory_context,
+        "resolved_question": followup.resolved_question,
+        "carried_entity_ids": followup.carried_entity_ids,
+        "long_term_context": long_term_context,
     }
     config = {"configurable": {"thread_id": f"sync_{user.username}_{id(initial)}"}}
 
@@ -226,7 +297,14 @@ def answer_question(
     paths = state.get("review_passed_paths", state.get("graph_paths", []))
     if not hits and not paths:
         refusal = "知识库中暂无相关资料，无法回答该问题。"
-        add_turn(user.username, role, question, refusal)
+        add_turn(
+            user.username,
+            role,
+            question,
+            refusal,
+            session_id=session_id,
+            resolved_question=followup.resolved_question,
+        )
         return {
             "answer": refusal,
             "reasoning": None,
@@ -247,7 +325,14 @@ def answer_question(
     reasoning = getattr(message, "reasoning_content", None)
 
     if _is_refusal(answer):
-        add_turn(user.username, role, question, answer)
+        add_turn(
+            user.username,
+            role,
+            question,
+            answer,
+            session_id=session_id,
+            resolved_question=followup.resolved_question,
+        )
         return {
             "answer": answer,
             "reasoning": reasoning,
@@ -260,34 +345,53 @@ def answer_question(
     update = {"answer": answer, "reasoning": reasoning}
     final_state = graph.invoke(Command(update=update), config)
 
+    risk_level = final_state.get("risk_level", "LOW")
+    risk_reason = final_state.get("risk_reason", "")
+    entities = final_state.get("entities", [])
+    refs = _refs_from_hits(hits)
+
     result: dict = {
         "answer": answer,
         "reasoning": reasoning,
         "model": model,
         "hits": hits,
         "graph_paths": paths,
-        "risk": {
-            "level": final_state.get("risk_level", "LOW"),
-            "reason": final_state.get("risk_reason", ""),
-        },
+        "risk": {"level": risk_level, "reason": risk_reason},
     }
 
     # HIGH 风险建审批单
-    if final_state.get("risk_level") == "HIGH":
-        risk_level = final_state["risk_level"]
-        risk_reason = final_state.get("risk_reason", "")
+    approval_id = None
+    if risk_level == "HIGH":
         approval = create_approval(
             db, question, answer, hits, paths, risk_level, risk_reason, user
         )
         db.commit()
+        approval_id = approval.approval_id
         result["approval"] = {
-            "approval_id": approval.approval_id,
+            "approval_id": approval_id,
             "level": risk_level,
             "reason": risk_reason,
         }
 
-    # 保存本轮对话到 Redis
-    add_turn(user.username, role, question, answer)
+    # MEDIUM/HIGH 自动沉淀为历史风险
+    _save_risk_if_needed(
+        db, user, question, answer, risk_level, risk_reason, entities, approval_id, refs
+    )
+
+    # 保存本轮对话到 Redis（含实体与风险，供下一轮追问继承）
+    add_turn(
+        user.username,
+        role,
+        question,
+        answer,
+        session_id=session_id,
+        resolved_question=followup.resolved_question,
+        entities=entities,
+        risk_level=risk_level,
+        risk_reason=risk_reason,
+        approval_id=approval_id,
+        refs=refs,
+    )
 
     return result
 
@@ -298,15 +402,24 @@ def answer_question(
 
 
 def run_workflow_phase1(
-    question: str, role: str, model: str, top_k: int, username: str,
+    question: str,
+    role: str,
+    model: str,
+    top_k: int,
+    username: str,
+    session_id: str = "default",
     session_history: list[dict] | None = None,
+    resolved_question: str | None = None,
+    carried_entity_ids: list[str] | None = None,
+    long_term_context: str = "",
 ):
     """运行工作流第一阶段：检索 → 图谱 → 复核 → 拼提示词。
 
     在 assess_risk 节点前中断，返回 (thread_id, state, config)。
     路由处理器在此基础上做流式 LLM 生成。
 
-    session_history 从 Redis 加载，注入到提示词中实现多轮对话。
+    session_history / long_term_context 由调用方从 Redis 和 PostgreSQL 加载；
+    resolved_question 与 carried_entity_ids 用于多轮追问。
     """
     graph = _get_graph()
     history = session_history or []
@@ -317,8 +430,12 @@ def run_workflow_phase1(
         "model": model,
         "top_k": top_k,
         "username": username,
+        "session_id": session_id,
         "session_history": history,
         "memory_context": memory_context,
+        "resolved_question": resolved_question or question,
+        "carried_entity_ids": carried_entity_ids or [],
+        "long_term_context": long_term_context,
     }
     thread_id = f"stream_{username}_{id(initial)}"
     config = {"configurable": {"thread_id": thread_id}}
@@ -371,25 +488,42 @@ def create_approval_from_state(
 
 
 def stream_answer(
-    question: str, role: str, model: str, top_k: int, db, user: User
+    question: str,
+    role: str,
+    model: str,
+    top_k: int,
+    db,
+    user: User,
+    session_id: str = "default",
 ):
     """边生成边产出 SSE 事件。
 
     流程：
-    0. 从 Redis 加载会话历史
+    0. 加载短期记忆 + 解析追问 + 加载长期记忆
     1. 运行 Phase 1（检索→图谱→复核→拼提示词）→ yield hits, graph
     2. LLM 流式生成 → yield reasoning, delta
     3. 运行 Phase 2（评估风险→条件路由）→ yield risk, approval（如 HIGH）
     4. 如果是 HIGH，阻塞等待审批决定
-    5. 保存本轮对话到 Redis → yield done
+    5. 沉淀历史风险、保存本轮对话到 Redis → yield done
     """
     username = user.username
 
-    # 加载会话历史，注入到 Workflow 提示词
-    history = get_session_history(username)
+    # 记忆准备：短期历史 → 追问解析 → 长期记忆
+    history, followup, long_term_context = _prepare_memory(
+        db, user, question, role, session_id
+    )
 
     thread_id, state, config = run_workflow_phase1(
-        question, role, model, top_k, username, session_history=history
+        question,
+        role,
+        model,
+        top_k,
+        username,
+        session_id=session_id,
+        session_history=history,
+        resolved_question=followup.resolved_question,
+        carried_entity_ids=followup.carried_entity_ids,
+        long_term_context=long_term_context,
     )
 
     # 第一阶段结果
@@ -404,7 +538,14 @@ def stream_answer(
     if not hits and not paths:
         refusal_text = "知识库中暂无相关资料，无法回答该问题。"
         yield {"type": "delta", "text": refusal_text}
-        add_turn(username, role, question, refusal_text)
+        add_turn(
+            username,
+            role,
+            question,
+            refusal_text,
+            session_id=session_id,
+            resolved_question=followup.resolved_question,
+        )
         yield {"type": "done", "hits": [], "graph_paths": []}
         return
 
@@ -431,7 +572,14 @@ def stream_answer(
     refused = _is_refusal(answer)
 
     if refused:
-        add_turn(username, role, question, answer)
+        add_turn(
+            username,
+            role,
+            question,
+            answer,
+            session_id=session_id,
+            resolved_question=followup.resolved_question,
+        )
         yield {
             "type": "done",
             "hits": [],
@@ -445,6 +593,8 @@ def stream_answer(
 
     risk_level = final_state.get("risk_level", "LOW")
     risk_reason = final_state.get("risk_reason", "")
+    entities = final_state.get("entities", [])
+    refs = _refs_from_hits(hits)
     yield {"type": "risk", "level": risk_level, "reason": risk_reason}
 
     approval_id = None
@@ -473,8 +623,25 @@ def stream_answer(
         if decision:
             run_workflow_resume(config)
 
-    # 保存本轮对话到 Redis（无论风险等级）
-    add_turn(username, role, question, answer)
+    # MEDIUM/HIGH 自动沉淀为历史风险
+    _save_risk_if_needed(
+        db, user, question, answer, risk_level, risk_reason, entities, approval_id, refs
+    )
+
+    # 保存本轮对话到 Redis（无论风险等级，含实体与风险信息）
+    add_turn(
+        username,
+        role,
+        question,
+        answer,
+        session_id=session_id,
+        resolved_question=followup.resolved_question,
+        entities=entities,
+        risk_level=risk_level,
+        risk_reason=risk_reason,
+        approval_id=approval_id,
+        refs=refs,
+    )
 
     yield {
         "type": "done",

@@ -482,8 +482,18 @@ def impact_paths(entities: list[dict], role: str, max_hops: int = 3) -> list[dic
     return visible_paths[:MAX_PATHS]
 
 
-def impact(question: str | None, entity_id: str | None, role: str, max_hops: int = 3) -> dict:
-    """问答与图谱页共用的入口：问题或实体名 → 命中实体与影响路径。"""
+def impact(
+    question: str | None,
+    entity_id: str | None,
+    role: str,
+    max_hops: int = 3,
+    extra_entity_ids: list[str] | None = None,
+) -> dict:
+    """问答与图谱页共用的入口：问题或实体名 → 命中实体与影响路径。
+
+    extra_entity_ids 用于多轮追问：当前问题命中不到实体时，
+    继承上一轮对话的实体继续展开，避免「那它呢？」变成空结果。
+    """
     entities: list[dict] = []
     if question:
         entities = match_entities(question, role)
@@ -491,6 +501,19 @@ def impact(question: str | None, entity_id: str | None, role: str, max_hops: int
         node = _node(entity_id)
         if node and _visible(node, role):
             entities = [node]
+
+    # 当前问题没命中实体时，才使用追问继承来的实体；新问题优先
+    if not entities and extra_entity_ids:
+        seen: set[str] = set()
+        for inherited_id in extra_entity_ids:
+            if inherited_id in seen:
+                continue
+            seen.add(inherited_id)
+            node = _node(inherited_id)
+            if node and _visible(node, role):
+                entities.append(node)
+            if len(entities) >= MAX_ENTITIES:
+                break
 
     paths = impact_paths(entities, role, max_hops)
     return {

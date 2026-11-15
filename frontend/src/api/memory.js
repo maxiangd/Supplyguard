@@ -1,12 +1,18 @@
 /** 记忆 API：短期会话 + 长期记忆 */
 import api from './client'
 
-export function getSessionHistory() {
-  return api.get('/memory/session').then(r => r.data)
+export function getSessionHistory(sessionId) {
+  return api.get('/memory/session', { params: { session_id: sessionId } }).then(r => r.data)
 }
 
-export function clearSession() {
-  return api.delete('/memory/session').then(r => r.data)
+export function clearSession(sessionId) {
+  return api.delete('/memory/session', { params: { session_id: sessionId } }).then(r => r.data)
+}
+
+export function listRiskMemories({ entityId, level, limit } = {}) {
+  return api
+    .get('/memory/risks', { params: { entity_id: entityId, level, limit } })
+    .then(r => r.data)
 }
 
 export function listLongTermMemories(category) {

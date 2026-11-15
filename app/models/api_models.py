@@ -151,6 +151,8 @@ class AnswerRequest(BaseModel):
     question: str = Field(min_length=1, max_length=2000)
     model: str | None = None
     top_k: int | None = Field(default=None, ge=1, le=20)
+    session_id: str | None = Field(default=None, max_length=64)
+    """前端生成的会话 ID；不传则落到 default 会话"""
 
 
 class AnswerResponse(BaseModel):

@@ -17,6 +17,7 @@ from app.services.long_term import (
     delete_memory,
     get_memory,
     list_memories,
+    list_risk_memories,
     save_memory,
     update_memory,
 )
@@ -30,19 +31,21 @@ router = APIRouter(prefix="/memory", tags=["memory"])
 
 @router.get("/session", response_model=SessionHistoryResponse)
 def view_session(
+    session_id: str = "default",
     current_user: User = Depends(get_current_user),
 ) -> SessionHistoryResponse:
-    """返回当前用户的对话历史（Redis 短期记忆）。"""
-    history = get_session_history(current_user.username)
+    """返回当前用户某个会话的对话历史（Redis 短期记忆）。"""
+    history = get_session_history(current_user.username, session_id)
     return SessionHistoryResponse(turns=history, count=len(history))
 
 
 @router.delete("/session")
 def delete_session(
+    session_id: str = "default",
     current_user: User = Depends(get_current_user),
 ) -> dict:
-    """清除当前用户的对话历史。"""
-    ok = clear_session(current_user.username)
+    """清除当前用户某个会话的对话历史。"""
+    ok = clear_session(current_user.username, session_id)
     if not ok:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -62,6 +65,40 @@ def list_long_term_memories(
 ) -> LongTermMemoryListResponse:
     """列出长期记忆。admin 全见，其他角色只看自己。"""
     items = list_memories(db, current_user, category)
+    return LongTermMemoryListResponse(
+        items=[
+            LongTermMemoryResponse(
+                memory_id=m.memory_id,
+                username=m.username,
+                role=m.role,
+                category=m.category,
+                title=m.title,
+                content=m.content,
+                evidence=m.evidence,
+                created_at=m.created_at,
+                updated_at=m.updated_at,
+            )
+            for m in items
+        ],
+        total=len(items),
+    )
+
+
+@router.get("/risks", response_model=LongTermMemoryListResponse)
+def list_risks(
+    entity_id: str | None = None,
+    level: str | None = None,
+    limit: int = 50,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_database_session),
+) -> LongTermMemoryListResponse:
+    """查询历史风险记忆。
+
+    可按图谱实体 ID 或风险等级过滤；admin 全见，其他角色只看自己的。
+    """
+    items = list_risk_memories(
+        db, current_user, entity_id=entity_id, level=level, limit=limit
+    )
     return LongTermMemoryListResponse(
         items=[
             LongTermMemoryResponse(

@@ -4,23 +4,24 @@ export function fetchChatModels() {
   return client.get('/chat/models')
 }
 
-export function askQuestion({ question, model, topK }) {
+export function askQuestion({ question, model, topK, sessionId }) {
   return client.post('/chat/answer', {
     question,
     model,
     top_k: topK,
+    session_id: sessionId,
   })
 }
 
 // EventSource 不能带 Authorization 头，所以用 fetch 读取 SSE 流
-export async function streamAnswer({ question, model, onEvent }) {
+export async function streamAnswer({ question, model, sessionId, onEvent }) {
   const response = await fetch('/api/chat/answer/stream', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
-    body: JSON.stringify({ question, model }),
+    body: JSON.stringify({ question, model, session_id: sessionId }),
   })
 
   if (!response.ok) {

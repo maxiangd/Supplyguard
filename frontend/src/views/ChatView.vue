@@ -3,7 +3,9 @@ import { nextTick, onMounted, reactive, ref } from 'vue'
 import { CircleCheck, Clock, Delete, Loading } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { fetchChatModels, streamAnswer } from '../api/chat'
-import { clearSession, getSessionHistory } from '../api/memory'
+import { clearSession, createLongTermMemory, getSessionHistory } from '../api/memory'
+
+const SESSION_KEY = 'chat_session_id'
 
 const question = ref('')
 const running = ref(false)
@@ -14,6 +16,7 @@ const steps = ref([])
 const riskInfo = ref(null)
 const listRef = ref(null)
 const sessionHistory = ref([])
+const sessionId = ref('')
 
 const models = ref([])
 const selectedModel = ref('')
@@ -114,6 +117,7 @@ async function ask() {
     await streamAnswer({
       question: text,
       model,
+      sessionId: sessionId.value,
       onEvent: (event) => {
         if (event.type === 'hits') {
           citations.value = event.hits
@@ -182,13 +186,84 @@ async function scrollToBottom() {
 }
 
 onMounted(() => {
+  ensureSessionId()
   loadModels()
   loadSessionHistory()
 })
 
+function createSessionId() {
+  // localhost/HTTPS 下用 randomUUID；否则退回时间戳 + 随机数
+  if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID()
+  return `s-${Date.now()}-${Math.random().toString(16).slice(2)}`
+}
+
+function ensureSessionId() {
+  let id = sessionStorage.getItem(SESSION_KEY)
+  if (!id) {
+    id = createSessionId()
+    sessionStorage.setItem(SESSION_KEY, id)
+  }
+  sessionId.value = id
+}
+
+async function startNewSession() {
+  if (running.value) return
+  const previous = sessionId.value
+  const next = createSessionId()
+  sessionStorage.setItem(SESSION_KEY, next)
+  sessionId.value = next
+
+  messages.value = []
+  citations.value = []
+  graphPaths.value = []
+  riskInfo.value = null
+  sessionHistory.value = []
+  resetSteps()
+
+  // 旧会话对用户已不可见，顺手清掉；失败也不影响新会话
+  if (previous) {
+    try {
+      await clearSession(previous)
+    } catch {
+      // 旧会话交给 TTL 自动过期
+    }
+  }
+  ElMessage.success('已开启新会话')
+}
+
+async function rememberAnswer(index) {
+  const reply = messages.value[index]
+  const userMessage = messages.value[index - 1]
+  if (!reply?.content) return
+
+  const isLatest = index === messages.value.length - 1
+  const refs = isLatest
+    ? citations.value.slice(0, 5).map((item) => ({
+        filename: item.filename,
+        chunk_index: item.chunk_index,
+      }))
+    : []
+
+  try {
+    await createLongTermMemory({
+      category: 'note',
+      title: (userMessage?.content || '对话结论').slice(0, 255),
+      content: reply.content.slice(0, 5000),
+      evidence: JSON.stringify({
+        source: 'chat',
+        session_id: sessionId.value,
+        refs,
+      }),
+    })
+    ElMessage.success('已保存到长期记忆')
+  } catch (error) {
+    ElMessage.error(error.response?.data?.detail ?? '保存失败')
+  }
+}
+
 async function loadSessionHistory() {
   try {
-    const data = await getSessionHistory()
+    const data = await getSessionHistory(sessionId.value)
     sessionHistory.value = data.turns
   } catch {
     sessionHistory.value = []
@@ -197,7 +272,7 @@ async function loadSessionHistory() {
 
 async function doClearSession() {
   try {
-    await clearSession()
+    await clearSession(sessionId.value)
     sessionHistory.value = []
     ElMessage.success('会话历史已清除')
   } catch {
@@ -257,6 +332,19 @@ async function doClearSession() {
               >
                 {{ message.content || '正在检索资料…' }}
               </div>
+              <div
+                v-if="message.role === 'assistant' && message.content && !running"
+                class="msg-actions"
+              >
+                <el-button
+                  link
+                  type="primary"
+                  size="small"
+                  @click="rememberAnswer(index)"
+                >
+                  记住这条
+                </el-button>
+              </div>
             </div>
           </div>
         </div>
@@ -273,6 +361,9 @@ async function doClearSession() {
           <div class="composer-actions">
             <span class="hint">Enter 发送，Shift+Enter 换行 · 回答仅基于当前角色可见资料</span>
             <div class="composer-right">
+              <el-button :disabled="running" @click="startNewSession">
+                新会话
+              </el-button>
               <el-select
                 v-model="selectedModel"
                 size="default"
@@ -323,7 +414,9 @@ async function doClearSession() {
       <el-card v-if="sessionHistory.length" shadow="never" class="side">
         <template #header>
           会话历史
-          <span class="filtered">（{{ sessionHistory.length }} 轮）</span>
+          <span class="filtered">
+            （{{ sessionHistory.length }} 轮 · {{ sessionId.slice(0, 8) }}）
+          </span>
           <el-button
             link
             type="danger"
@@ -535,6 +628,10 @@ async function doClearSession() {
 .msg.assistant .bubble {
   color: #303133;
   background: #f4f6f8;
+}
+
+.msg-actions {
+  margin-top: -2px;
 }
 
 .reasoning {

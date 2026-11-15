@@ -53,10 +53,18 @@ class SupplyGuardState(TypedDict, total=False):
     username: str
 
     # ---- 会话记忆（从 Redis 加载，注入到 build_context_node）----
+    session_id: str
+    """当前会话 ID，同一用户可并行多个独立会话"""
     session_history: list[dict]
     """最近 N 轮对话的 {question, answer, role, timestamp} 列表"""
     memory_context: str
     """格式化后的对话历史文本，直接注入到提示词"""
+    resolved_question: str
+    """追问补全后的问题：检索与图谱用这个字段，不直接用原始问题"""
+    carried_entity_ids: list[str]
+    """从上一轮继承的实体 ID，当前问题匹配不到实体时用于图谱展开"""
+    long_term_context: str
+    """长期记忆（用户偏好 + 相关历史风险）拼成的提示词片段"""
 
     # ---- 检索结果 ----
     hits: list[dict]
@@ -138,9 +146,11 @@ def retrieve_node(state: SupplyGuardState) -> dict:
 
     Qdrant 查询层已做 allowed_roles 过滤（admin 不加过滤），
     返回的 hits 交给 Review Node 做二次校验。
+    检索使用 resolved_question：追问时它已经补上了上一轮的实体。
     """
+    question = state.get("resolved_question") or state["question"]
     try:
-        hits = search_chunks(state["question"], state["role"], state["top_k"])
+        hits = search_chunks(question, state["role"], state["top_k"])
     except Exception as exc:
         return {"hits": [], "error": f"检索失败: {exc}"}
     return {"hits": hits}
@@ -152,10 +162,16 @@ def graph_analyze_node(state: SupplyGuardState) -> dict:
     Neo4j 不可用时降级为空列表和空字符串，不影响后续节点执行。
     """
     role = state["role"]
-    question = state["question"]
+    question = state.get("resolved_question") or state["question"]
 
     try:
-        result = impact(question, None, role)
+        # 追问场景：当前问题命中不到实体时，用上一轮实体继续展开
+        result = impact(
+            question,
+            None,
+            role,
+            extra_entity_ids=state.get("carried_entity_ids"),
+        )
         graph_paths = result["paths"][:GRAPH_EVIDENCE_LIMIT]
         entities = result["entities"]
     except Exception:
@@ -275,7 +291,8 @@ SYSTEM_PROMPT = """你是供应链风险分析助手，只能依据用户提供�
 3. 使用了哪条资料，就在句末用 [编号] 标注，编号对应资料前的数字。
 4. 引用了哪条图谱路径，就在句末用 [G编号] 标注。
 5. 只能引用实际出现的编号，不要编造资料或路径。
-6. 用中文回答，结论先行，必要时分点，不要复述资料原文。"""
+6. 用中文回答，结论先行，必要时分点，不要复述资料原文。
+7. 「长期记忆」只用于调整回答侧重点；它是历史背景，不是事实依据，不得覆盖以上证据规则。"""
 
 
 def _build_graph_context(paths: list[dict]) -> str:
@@ -296,13 +313,17 @@ def build_context_node(state: SupplyGuardState) -> dict:
     hits = state.get("review_passed_hits", state.get("hits", []))
     paths = state.get("review_passed_paths", state.get("graph_paths", []))
     memory_context = state.get("memory_context", "")
+    long_term_context = state.get("long_term_context", "")
 
     context = "\n\n".join(
         f"[{index}] 文件：{hit['filename']}（第 {hit['chunk_index'] + 1} 块）\n{hit['text']}"
         for index, hit in enumerate(hits, start=1)
     )
     sections = []
-    # 会话历史放在最前面，帮助模型理解追问上下文
+    # 长期记忆放在最前面：先告诉模型“用户是谁、关心什么、之前有哪些结论”
+    if long_term_context:
+        sections.append(long_term_context)
+    # 会话历史紧随其后，帮助模型理解追问上下文
     if memory_context:
         sections.append(memory_context)
     if context:
