@@ -24,6 +24,7 @@ const listRef = ref(null)
 const sessionId = ref('')
 const conversations = ref([])
 const conversationsLoading = ref(false)
+const conversationsError = ref('')
 
 const models = ref([])
 const selectedModel = ref('')
@@ -229,14 +230,25 @@ function startNewSession() {
   ElMessage.success('已开启新对话')
 }
 
+function describeError(error, fallback) {
+  if (error.response) {
+    const detail = error.response.data?.detail
+    return `${fallback}（HTTP ${error.response.status}${detail ? `：${detail}` : ''}）`
+  }
+  const url = error.config?.url ? `，请求 ${error.config.url}` : ''
+  return `${fallback}：${error.message || '网络错误'}${url}`
+}
+
 async function loadConversations() {
   conversationsLoading.value = true
+  conversationsError.value = ''
   try {
     const data = await listConversations()
     conversations.value = data.sessions
   } catch (error) {
     conversations.value = []
-    ElMessage.error(error.response?.data?.detail ?? '历史对话加载失败')
+    conversationsError.value = describeError(error, '历史对话加载失败')
+    ElMessage.error(conversationsError.value)
   } finally {
     conversationsLoading.value = false
   }
@@ -440,6 +452,15 @@ async function rememberAnswer(index) {
           </span>
           <el-button
             link
+            size="small"
+            style="float: right; margin-left: 8px"
+            :disabled="running"
+            @click="loadConversations"
+          >
+            刷新
+          </el-button>
+          <el-button
+            link
             type="primary"
             size="small"
             style="float: right"
@@ -452,6 +473,14 @@ async function rememberAnswer(index) {
         <div class="history-account">
           当前账号：{{ auth.user?.username ?? '-' }}（{{ auth.role ?? '-' }}）
         </div>
+        <el-alert
+          v-if="conversationsError"
+          :title="conversationsError"
+          type="error"
+          :closable="false"
+          show-icon
+          class="history-error"
+        />
         <div v-loading="conversationsLoading" class="conversation-list">
           <div
             v-for="item in conversations"
@@ -893,6 +922,10 @@ async function rememberAnswer(index) {
   margin-bottom: 8px;
   color: #909399;
   font-size: 12px;
+}
+
+.history-error {
+  margin-bottom: 8px;
 }
 
 .conversation-item {
