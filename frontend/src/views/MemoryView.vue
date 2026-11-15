@@ -2,13 +2,9 @@
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
-  clearSession,
   createLongTermMemory,
-  deleteConversation,
   deleteLongTermMemory,
-  getConversation,
   getSessionHistory,
-  listConversations,
   listLongTermMemories,
   listRiskMemories,
   listSessions,
@@ -16,15 +12,10 @@ import {
 } from '../api/memory'
 import { useAuthStore } from '../stores/auth'
 
-const SESSION_KEY = 'chat_session_id'
 const auth = useAuthStore()
 
-const activeTab = ref('session')
-const sessionId = ref(sessionStorage.getItem(SESSION_KEY) || 'default')
-const sessionTurns = ref([])
-const sessionLoading = ref(false)
-const sessions = ref([])
-const sessionsLoading = ref(false)
+// 完整问答记录由风险问答页的「历史对话」承载，这里只管理三类记忆
+const activeTab = ref('short')
 
 const shortSessions = ref([])
 const shortLoading = ref(false)
@@ -91,31 +82,6 @@ function levelType(level) {
   return level === 'MEDIUM' ? 'warning' : 'info'
 }
 
-async function loadSessions() {
-  sessionsLoading.value = true
-  try {
-    const data = await listConversations()
-    sessions.value = data.sessions
-    // 默认选中最近一条，避免前端 sessionStorage 丢失后页面显示为空
-    if (
-      data.sessions.length &&
-      !data.sessions.some((item) => item.session_id === sessionId.value)
-    ) {
-      sessionId.value = data.sessions[0].session_id
-    }
-  } catch (error) {
-    ElMessage.error(error.response?.data?.detail ?? '会话列表加载失败')
-    sessions.value = []
-  } finally {
-    sessionsLoading.value = false
-  }
-}
-
-function openSession(row) {
-  sessionId.value = row.session_id
-  loadSession()
-}
-
 async function loadShortSessions() {
   shortLoading.value = true
   try {
@@ -143,40 +109,6 @@ async function openShortSession(row) {
 function ttlText(ttl) {
   if (ttl === null || ttl === undefined || ttl < 0) return '—'
   return `剩余 ${Math.max(1, Math.round(ttl / 60))} 分钟`
-}
-
-async function loadSession() {
-  sessionLoading.value = true
-  try {
-    const data = await getConversation(sessionId.value)
-    sessionTurns.value = data.turns
-  } catch (error) {
-    ElMessage.error(error.response?.data?.detail ?? '会话加载失败')
-    sessionTurns.value = []
-  } finally {
-    sessionLoading.value = false
-  }
-}
-
-async function clearCurrentSession() {
-  try {
-    await deleteConversation(sessionId.value)
-    // 永久档案删除后，Redis 短期记忆也一并清掉
-    try {
-      await clearSession(sessionId.value)
-    } catch {
-      // Redis 不可用时忽略
-    }
-    sessionTurns.value = []
-    await loadSessions()
-    if (sessions.value.length) {
-      sessionId.value = sessions.value[0].session_id
-      await loadSession()
-    }
-    ElMessage.success('会话记录已删除')
-  } catch (error) {
-    ElMessage.error(error.response?.data?.detail ?? '删除失败')
-  }
 }
 
 async function loadLongTerm() {
@@ -272,9 +204,7 @@ async function removeMemory(row) {
 }
 
 onMounted(async () => {
-  await loadSessions()
-  await loadSession()
-  loadShortSessions()
+  await loadShortSessions()
   loadLongTerm()
   loadRisks()
 })
@@ -287,7 +217,7 @@ onMounted(async () => {
         <div class="title">记忆与上下文</div>
         <div class="sub">
           当前账号：{{ auth.user?.username ?? '-' }}（{{ auth.role ?? '-' }}）·
-          风险问答永久保存在 PostgreSQL；Redis 只保留最近几轮用于多轮追问；长期记忆保存偏好与历史风险
+          完整问答记录在「风险问答」页的历史对话中查看；这里管理短期记忆、长期记忆与历史风险
         </div>
       </div>
     </div>
@@ -295,107 +225,6 @@ onMounted(async () => {
 
   <el-card shadow="never" class="row">
     <el-tabs v-model="activeTab">
-      <el-tab-pane label="问答会话" name="session">
-        <el-table
-          v-loading="sessionsLoading"
-          :data="sessions"
-          size="small"
-          class="session-table"
-          :row-class-name="
-            ({ row }) => (row.session_id === sessionId ? 'active-session' : '')
-          "
-        >
-          <el-table-column label="会话" width="110">
-            <template #default="{ row }">
-              {{ row.session_id === 'default' ? '默认会话' : row.session_id.slice(0, 8) }}
-            </template>
-          </el-table-column>
-          <el-table-column prop="turns" label="轮次" width="70" />
-          <el-table-column
-            prop="last_question"
-            label="最近问题"
-            min-width="240"
-            show-overflow-tooltip
-          />
-          <el-table-column label="风险" width="90">
-            <template #default="{ row }">
-              <el-tag
-                v-if="row.risk_level"
-                size="small"
-                :type="levelType(row.risk_level)"
-              >
-                {{ row.risk_level }}
-              </el-tag>
-              <span v-else>—</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="最近活动" width="170">
-            <template #default="{ row }">
-              {{ formatTime(row.last_timestamp * 1000) }}
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" width="80" fixed="right">
-            <template #default="{ row }">
-              <el-button link type="primary" size="small" @click="openSession(row)">
-                查看
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-        <el-empty
-          v-if="!sessionsLoading && !sessions.length"
-          :image-size="60"
-          description="还没有问答记录，去风险问答页提问后会出现在这里"
-        />
-
-        <div class="toolbar">
-          <el-input
-            v-model="sessionId"
-            placeholder="按会话 ID 查看"
-            style="width: 320px"
-            clearable
-          />
-          <el-button type="primary" :loading="sessionLoading" @click="loadSession">
-            查询
-          </el-button>
-          <el-button :disabled="!sessionTurns.length" @click="clearCurrentSession">
-            清空该会话
-          </el-button>
-          <span class="hint">共 {{ sessionTurns.length }} 轮</span>
-        </div>
-
-        <el-empty
-          v-if="!sessionTurns.length"
-          :image-size="60"
-          description="该会话暂无历史，去问答页提问后会出现在这里"
-        />
-        <div v-for="(turn, index) in sessionTurns.slice().reverse()" :key="index" class="turn">
-          <div class="turn-head">
-            <span class="turn-index">第 {{ sessionTurns.length - index }} 轮</span>
-            <el-tag v-if="turn.risk_level" size="small" :type="levelType(turn.risk_level)">
-              {{ turn.risk_level }}
-            </el-tag>
-            <el-tag
-              v-for="name in turn.entity_names ?? []"
-              :key="name"
-              size="small"
-              effect="plain"
-            >
-              {{ name }}
-            </el-tag>
-            <span v-if="turn.approval_id" class="turn-meta">
-              审批单 {{ turn.approval_id }}
-            </span>
-            <span class="turn-meta">{{ formatTime(turn.timestamp * 1000) }}</span>
-          </div>
-          <div class="turn-question">Q：{{ turn.question }}</div>
-          <div class="turn-answer">A：{{ turn.answer }}</div>
-          <div v-if="turn.resolved_question && turn.resolved_question !== turn.question" class="turn-meta">
-            追问补全：{{ turn.resolved_question }}
-          </div>
-        </div>
-      </el-tab-pane>
-
       <el-tab-pane label="短期记忆" name="short">
         <div class="toolbar">
           <span class="hint" style="margin-left: 0">
@@ -662,19 +491,6 @@ onMounted(async () => {
 
 .turn:last-child {
   border-bottom: none;
-}
-
-.turn-head {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-}
-
-.turn-index {
-  color: #303133;
-  font-size: 13px;
-  font-weight: 600;
 }
 
 .turn-meta {
