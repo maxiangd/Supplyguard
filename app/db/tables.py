@@ -149,3 +149,41 @@ class LongTermMemory(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=now_local, onupdate=now_local, nullable=False
     )
+
+
+class ConversationTurn(Base):
+    """风险问答记录：每一轮问答永久保存，供记忆管理页回溯。
+
+    与 Redis 短期会话的分工：
+    - Redis 保存最近 N 轮，负责给 LLM 提供上下文，1 小时后过期
+    - 本表保存完整问答档案，不参与提示词注入
+    """
+
+    __tablename__ = "conversation_turns"
+
+    # 自增序号：时间戳在同毫秒内的多轮问答无法可靠排序，用数据库自增保证顺序
+    seq: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    turn_id: Mapped[str] = mapped_column(
+        String(36), default=new_uuid, nullable=False, unique=True, index=True
+    )
+    username: Mapped[str] = mapped_column(
+        String(128), nullable=False, index=True
+    )
+    role: Mapped[str] = mapped_column(String(32), nullable=False)
+    # 同一会话的多轮问答共享一个 session_id
+    session_id: Mapped[str] = mapped_column(
+        String(64), nullable=False, index=True
+    )
+    question: Mapped[str] = mapped_column(Text, nullable=False)
+    # 追问补全后的问题（无追问时等于 question）
+    resolved_question: Mapped[str | None] = mapped_column(Text)
+    answer: Mapped[str] = mapped_column(Text, nullable=False)
+    risk_level: Mapped[str | None] = mapped_column(String(16))
+    risk_reason: Mapped[str | None] = mapped_column(Text)
+    approval_id: Mapped[str | None] = mapped_column(String(36))
+    # 命中的图谱实体与引用资料，均存 JSON 字符串
+    entities: Mapped[str | None] = mapped_column(Text)
+    refs: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=now_local, nullable=False, index=True
+    )

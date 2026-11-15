@@ -1,8 +1,16 @@
 /** 记忆 API：短期会话 + 长期记忆 */
 import api from './client'
 
-export function listSessions() {
-  return api.get('/memory/sessions').then(r => r.data)
+export function listConversations() {
+  return api.get('/memory/conversations').then(r => r.data)
+}
+
+export function getConversation(sessionId) {
+  return api.get(`/memory/conversations/${sessionId}`).then(r => r.data)
+}
+
+export function deleteConversation(sessionId) {
+  return api.delete(`/memory/conversations/${sessionId}`).then(r => r.data)
 }
 
 export function getSessionHistory(sessionId) {

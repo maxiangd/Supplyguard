@@ -15,6 +15,7 @@ from langgraph.types import Command
 from app.core.configuration import settings
 from app.db.tables import User
 from app.services.approval import create_approval
+from app.services.conversation import save_turn as save_conversation_turn
 from app.services.followup import FollowupContext, resolve_followup
 from app.services.long_term import load_memory_context, save_risk_memory
 from app.services.memory import add_turn, build_memory_context, get_session_history
@@ -86,6 +87,57 @@ def _refs_from_hits(hits: list[dict], limit: int = 5) -> list[dict]:
         }
         for hit in (hits or [])[:limit]
     ]
+
+
+def _record_turn(
+    db,
+    user: User,
+    session_id: str,
+    question: str,
+    answer: str,
+    *,
+    resolved_question: str | None = None,
+    entities: list[dict] | None = None,
+    risk_level: str | None = None,
+    risk_reason: str | None = None,
+    approval_id: str | None = None,
+    refs: list[dict] | None = None,
+) -> None:
+    """同时写 Redis 短期记忆和 PostgreSQL 永久问答档案。
+
+    Redis 失败已由 add_turn 内部静默降级；PostgreSQL 失败时回滚，
+    不能因为档案写入失败而影响用户已经拿到的回答。
+    """
+    add_turn(
+        user.username,
+        user.role,
+        question,
+        answer,
+        session_id=session_id,
+        resolved_question=resolved_question,
+        entities=entities,
+        risk_level=risk_level,
+        risk_reason=risk_reason,
+        approval_id=approval_id,
+        refs=refs,
+    )
+    try:
+        save_conversation_turn(
+            db,
+            user,
+            session_id=session_id,
+            question=question,
+            answer=answer,
+            resolved_question=resolved_question,
+            entities=entities,
+            risk_level=risk_level,
+            risk_reason=risk_reason,
+            approval_id=approval_id,
+            refs=refs,
+        )
+        db.commit()
+    except Exception:
+        db.rollback()
 
 
 def _save_risk_if_needed(
@@ -297,12 +349,12 @@ def answer_question(
     paths = state.get("review_passed_paths", state.get("graph_paths", []))
     if not hits and not paths:
         refusal = "知识库中暂无相关资料，无法回答该问题。"
-        add_turn(
-            user.username,
-            role,
+        _record_turn(
+            db,
+            user,
+            session_id,
             question,
             refusal,
-            session_id=session_id,
             resolved_question=followup.resolved_question,
         )
         return {
@@ -325,12 +377,12 @@ def answer_question(
     reasoning = getattr(message, "reasoning_content", None)
 
     if _is_refusal(answer):
-        add_turn(
-            user.username,
-            role,
+        _record_turn(
+            db,
+            user,
+            session_id,
             question,
             answer,
-            session_id=session_id,
             resolved_question=followup.resolved_question,
         )
         return {
@@ -378,13 +430,13 @@ def answer_question(
         db, user, question, answer, risk_level, risk_reason, entities, approval_id, refs
     )
 
-    # 保存本轮对话到 Redis（含实体与风险，供下一轮追问继承）
-    add_turn(
-        user.username,
-        role,
+    # 保存本轮对话：Redis 短期记忆 + PostgreSQL 永久档案
+    _record_turn(
+        db,
+        user,
+        session_id,
         question,
         answer,
-        session_id=session_id,
         resolved_question=followup.resolved_question,
         entities=entities,
         risk_level=risk_level,
@@ -538,12 +590,12 @@ def stream_answer(
     if not hits and not paths:
         refusal_text = "知识库中暂无相关资料，无法回答该问题。"
         yield {"type": "delta", "text": refusal_text}
-        add_turn(
-            username,
-            role,
+        _record_turn(
+            db,
+            user,
+            session_id,
             question,
             refusal_text,
-            session_id=session_id,
             resolved_question=followup.resolved_question,
         )
         yield {"type": "done", "hits": [], "graph_paths": []}
@@ -572,12 +624,12 @@ def stream_answer(
     refused = _is_refusal(answer)
 
     if refused:
-        add_turn(
-            username,
-            role,
+        _record_turn(
+            db,
+            user,
+            session_id,
             question,
             answer,
-            session_id=session_id,
             resolved_question=followup.resolved_question,
         )
         yield {
@@ -628,13 +680,13 @@ def stream_answer(
         db, user, question, answer, risk_level, risk_reason, entities, approval_id, refs
     )
 
-    # 保存本轮对话到 Redis（无论风险等级，含实体与风险信息）
-    add_turn(
-        username,
-        role,
+    # 保存本轮对话：Redis 短期记忆 + PostgreSQL 永久档案
+    _record_turn(
+        db,
+        user,
+        session_id,
         question,
         answer,
-        session_id=session_id,
         resolved_question=followup.resolved_question,
         entities=entities,
         risk_level=risk_level,

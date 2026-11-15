@@ -4,11 +4,12 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   clearSession,
   createLongTermMemory,
+  deleteConversation,
   deleteLongTermMemory,
-  getSessionHistory,
+  getConversation,
+  listConversations,
   listLongTermMemories,
   listRiskMemories,
-  listSessions,
   updateLongTermMemory,
 } from '../api/memory'
 
@@ -84,7 +85,7 @@ function levelType(level) {
 async function loadSessions() {
   sessionsLoading.value = true
   try {
-    const data = await listSessions()
+    const data = await listConversations()
     sessions.value = data.sessions
     // 默认选中最近一条，避免前端 sessionStorage 丢失后页面显示为空
     if (
@@ -109,7 +110,7 @@ function openSession(row) {
 async function loadSession() {
   sessionLoading.value = true
   try {
-    const data = await getSessionHistory(sessionId.value)
+    const data = await getConversation(sessionId.value)
     sessionTurns.value = data.turns
   } catch (error) {
     ElMessage.error(error.response?.data?.detail ?? '会话加载失败')
@@ -121,11 +122,22 @@ async function loadSession() {
 
 async function clearCurrentSession() {
   try {
-    await clearSession(sessionId.value)
+    await deleteConversation(sessionId.value)
+    // 永久档案删除后，Redis 短期记忆也一并清掉
+    try {
+      await clearSession(sessionId.value)
+    } catch {
+      // Redis 不可用时忽略
+    }
     sessionTurns.value = []
-    ElMessage.success('会话历史已清除')
+    await loadSessions()
+    if (sessions.value.length) {
+      sessionId.value = sessions.value[0].session_id
+      await loadSession()
+    }
+    ElMessage.success('会话记录已删除')
   } catch (error) {
-    ElMessage.error(error.response?.data?.detail ?? '清除失败')
+    ElMessage.error(error.response?.data?.detail ?? '删除失败')
   }
 }
 
@@ -235,7 +247,7 @@ onMounted(async () => {
       <div>
         <div class="title">记忆与上下文</div>
         <div class="sub">
-          短期会话保存在 Redis（自动过期），长期记忆与历史风险保存在 PostgreSQL
+          风险问答永久保存在 PostgreSQL；Redis 只保留最近几轮用于多轮追问；长期记忆保存偏好与历史风险
         </div>
       </div>
     </div>

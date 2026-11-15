@@ -15,6 +15,7 @@ from app.models.api_models import (
     SessionListResponse,
     SessionSummary,
 )
+from app.services import conversation
 from app.services.long_term import (
     delete_memory,
     get_memory,
@@ -69,6 +70,45 @@ def delete_session(
             detail="Redis 不可用，无法清除会话",
         )
     return {"status": "ok"}
+
+
+# ── 问答档案（PostgreSQL 永久保存） ──
+
+
+@router.get("/conversations", response_model=SessionListResponse)
+def list_conversations(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_database_session),
+) -> SessionListResponse:
+    """列出当前用户全部风险问答会话（永久档案）。"""
+    sessions = conversation.list_sessions(db, current_user)
+    return SessionListResponse(
+        sessions=[SessionSummary(**item) for item in sessions],
+        total=len(sessions),
+    )
+
+
+@router.get("/conversations/{session_id}", response_model=SessionHistoryResponse)
+def get_conversation(
+    session_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_database_session),
+) -> SessionHistoryResponse:
+    """返回某个会话的完整问答记录。"""
+    turns = conversation.list_turns(db, current_user, session_id)
+    return SessionHistoryResponse(turns=turns, count=len(turns))
+
+
+@router.delete("/conversations/{session_id}")
+def delete_conversation(
+    session_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_database_session),
+) -> dict:
+    """删除某个会话的永久问答档案。"""
+    deleted = conversation.delete_session(db, current_user, session_id)
+    db.commit()
+    return {"status": "ok", "deleted": deleted}
 
 
 # ── 长期记忆 ──
