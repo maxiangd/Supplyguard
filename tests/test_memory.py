@@ -91,6 +91,13 @@ class FakeRedis:
         self.values.pop(key, None)
         return 1
 
+    def scan_iter(self, match=None, count=None):
+        keys = list(self.lists.keys())
+        if match is None:
+            return iter(keys)
+        prefix = match.rstrip("*")
+        return iter([key for key in keys if key.startswith(prefix)])
+
     def pipeline(self):
         return FakePipeline(self)
 
@@ -197,6 +204,27 @@ def test_build_memory_context_contains_entities_and_risk(fake_redis):
     assert "宜春停产" in context
     assert "HIGH" in context
     assert "R-1" in context
+
+
+def test_list_sessions_summarizes_and_isolates(fake_redis):
+    memory.add_turn(
+        "catl_finance",
+        "finance",
+        "问题一",
+        "答案一",
+        session_id="a",
+        entities=[{"id": "e1", "name": "E1"}],
+    )
+    memory.add_turn("catl_finance", "finance", "问题二", "答案二", session_id="a")
+    memory.add_turn("catl_finance", "finance", "另一个会话", "答案", session_id="b")
+    memory.add_turn("catl_procurement", "procurement", "别人的会话", "答案", session_id="c")
+
+    sessions = memory.list_sessions("catl_finance")
+
+    assert {item["session_id"] for item in sessions} == {"a", "b"}
+    session_a = next(item for item in sessions if item["session_id"] == "a")
+    assert session_a["turns"] == 2
+    assert session_a["last_question"] == "问题二"
 
 
 # ---------------------------------------------------------------------------
@@ -427,6 +455,20 @@ def test_session_api_respects_session_id(client, auth_headers, fake_redis):
 
     other = client.get("/api/memory/session?session_id=chat-b", headers=headers)
     assert other.json()["count"] == 0
+
+
+def test_sessions_api_lists_all_user_sessions(client, auth_headers, fake_redis):
+    memory.add_turn("catl_finance", "finance", "会话 A", "答案", session_id="a")
+    memory.add_turn("catl_finance", "finance", "会话 B", "答案", session_id="b")
+
+    response = client.get("/api/memory/sessions", headers=auth_headers("finance"))
+    data = response.json()
+
+    assert data["total"] == 2
+    assert {item["session_id"] for item in data["sessions"]} == {"a", "b"}
+
+    other = client.get("/api/memory/sessions", headers=auth_headers("procurement"))
+    assert other.json()["total"] == 0
 
 
 def test_risk_memory_api(client, auth_headers):

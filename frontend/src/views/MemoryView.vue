@@ -8,6 +8,7 @@ import {
   getSessionHistory,
   listLongTermMemories,
   listRiskMemories,
+  listSessions,
   updateLongTermMemory,
 } from '../api/memory'
 
@@ -17,6 +18,8 @@ const activeTab = ref('session')
 const sessionId = ref(sessionStorage.getItem(SESSION_KEY) || 'default')
 const sessionTurns = ref([])
 const sessionLoading = ref(false)
+const sessions = ref([])
+const sessionsLoading = ref(false)
 
 const longTermItems = ref([])
 const longTermCategory = ref('')
@@ -76,6 +79,31 @@ function entityText(row) {
 function levelType(level) {
   if (level === 'HIGH' || level === 'CRITICAL') return 'danger'
   return level === 'MEDIUM' ? 'warning' : 'info'
+}
+
+async function loadSessions() {
+  sessionsLoading.value = true
+  try {
+    const data = await listSessions()
+    sessions.value = data.sessions
+    // 默认选中最近一条，避免前端 sessionStorage 丢失后页面显示为空
+    if (
+      data.sessions.length &&
+      !data.sessions.some((item) => item.session_id === sessionId.value)
+    ) {
+      sessionId.value = data.sessions[0].session_id
+    }
+  } catch (error) {
+    ElMessage.error(error.response?.data?.detail ?? '会话列表加载失败')
+    sessions.value = []
+  } finally {
+    sessionsLoading.value = false
+  }
+}
+
+function openSession(row) {
+  sessionId.value = row.session_id
+  loadSession()
 }
 
 async function loadSession() {
@@ -193,8 +221,9 @@ async function removeMemory(row) {
   }
 }
 
-onMounted(() => {
-  loadSession()
+onMounted(async () => {
+  await loadSessions()
+  await loadSession()
   loadLongTerm()
   loadRisks()
 })
@@ -214,11 +243,63 @@ onMounted(() => {
 
   <el-card shadow="never" class="row">
     <el-tabs v-model="activeTab">
-      <el-tab-pane label="当前会话" name="session">
+      <el-tab-pane label="问答会话" name="session">
+        <el-table
+          v-loading="sessionsLoading"
+          :data="sessions"
+          size="small"
+          class="session-table"
+          :row-class-name="
+            ({ row }) => (row.session_id === sessionId ? 'active-session' : '')
+          "
+        >
+          <el-table-column label="会话" width="110">
+            <template #default="{ row }">
+              {{ row.session_id === 'default' ? '默认会话' : row.session_id.slice(0, 8) }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="turns" label="轮次" width="70" />
+          <el-table-column
+            prop="last_question"
+            label="最近问题"
+            min-width="240"
+            show-overflow-tooltip
+          />
+          <el-table-column label="风险" width="90">
+            <template #default="{ row }">
+              <el-tag
+                v-if="row.risk_level"
+                size="small"
+                :type="levelType(row.risk_level)"
+              >
+                {{ row.risk_level }}
+              </el-tag>
+              <span v-else>—</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="最近活动" width="170">
+            <template #default="{ row }">
+              {{ formatTime(row.last_timestamp * 1000) }}
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="80" fixed="right">
+            <template #default="{ row }">
+              <el-button link type="primary" size="small" @click="openSession(row)">
+                查看
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <el-empty
+          v-if="!sessionsLoading && !sessions.length"
+          :image-size="60"
+          description="还没有问答记录，去风险问答页提问后会出现在这里"
+        />
+
         <div class="toolbar">
           <el-input
             v-model="sessionId"
-            placeholder="会话 ID（与问答页共用）"
+            placeholder="按会话 ID 查看"
             style="width: 320px"
             clearable
           />
@@ -417,6 +498,14 @@ onMounted(() => {
   gap: 8px;
   align-items: center;
   margin-bottom: 12px;
+}
+
+.session-table {
+  margin-bottom: 12px;
+}
+
+.session-table :deep(.active-session) {
+  background: #ecf5ff;
 }
 
 .hint {

@@ -1,6 +1,10 @@
 /** 记忆 API：短期会话 + 长期记忆 */
 import api from './client'
 
+export function listSessions() {
+  return api.get('/memory/sessions').then(r => r.data)
+}
+
 export function getSessionHistory(sessionId) {
   return api.get('/memory/session', { params: { session_id: sessionId } }).then(r => r.data)
 }

@@ -138,6 +138,60 @@ def get_latest_turn(username: str, session_id: str = DEFAULT_SESSION_ID) -> dict
     return history[-1] if history else None
 
 
+def _session_summary(session_id: str, turns: int, last: dict) -> dict:
+    """把一轮对话压成会话列表项。"""
+    return {
+        "session_id": session_id,
+        "turns": turns,
+        "last_question": last.get("question", ""),
+        "last_answer": (last.get("answer") or "")[:120],
+        "last_timestamp": last.get("timestamp"),
+        "entity_names": last.get("entity_names") or [],
+        "risk_level": last.get("risk_level"),
+    }
+
+
+def list_sessions(username: str) -> list[dict]:
+    """列出该用户所有未过期会话，按最近活动倒序。
+
+    记忆管理页用它展示「风险问答记录」，不再依赖前端传入的单个 session_id。
+    只扫描 `...:{username}:*`，不会读到其他用户的 key。
+    """
+    try:
+        redis_client = _redis()
+        summaries: list[dict] = []
+
+        for key in redis_client.scan_iter(match=f"{SESSION_KEY_PREFIX}:{username}:*"):
+            session_id = key.rsplit(":", 1)[-1]
+            items = redis_client.lrange(key, 0, -1)
+            if not items:
+                continue
+            try:
+                last = json.loads(items[-1])
+            except json.JSONDecodeError:
+                continue
+            summaries.append(_session_summary(session_id, len(items), last))
+
+        # 旧版不带 session_id 的 default 会话
+        legacy_raw = redis_client.get(_legacy_session_key(username))
+        if legacy_raw:
+            try:
+                legacy = json.loads(legacy_raw)
+            except json.JSONDecodeError:
+                legacy = []
+            if isinstance(legacy, list) and legacy:
+                summaries.append(
+                    _session_summary(DEFAULT_SESSION_ID, len(legacy), legacy[-1])
+                )
+
+        summaries.sort(
+            key=lambda item: item.get("last_timestamp") or 0, reverse=True
+        )
+        return summaries
+    except Exception:
+        return []
+
+
 def clear_session(username: str, session_id: str = DEFAULT_SESSION_ID) -> bool:
     """删除某个会话的历史。返回 True 表示删除成功。"""
     try:

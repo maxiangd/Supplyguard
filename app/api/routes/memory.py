@@ -12,6 +12,8 @@ from app.models.api_models import (
     LongTermMemoryResponse,
     LongTermMemoryUpdateRequest,
     SessionHistoryResponse,
+    SessionListResponse,
+    SessionSummary,
 )
 from app.services.long_term import (
     delete_memory,
@@ -21,12 +23,27 @@ from app.services.long_term import (
     save_memory,
     update_memory,
 )
-from app.services.memory import clear_session, get_session_history
+from app.services.memory import clear_session, get_session_history, list_sessions
 
 router = APIRouter(prefix="/memory", tags=["memory"])
 
 
 # ── 短期会话记忆 ──
+
+
+@router.get("/sessions", response_model=SessionListResponse)
+def list_user_sessions(
+    current_user: User = Depends(get_current_user),
+) -> SessionListResponse:
+    """列出当前用户的全部风险问答会话（Redis 短期记忆）。
+
+    记忆管理页用它展示问答记录，不依赖前端是否记得 session_id。
+    """
+    sessions = list_sessions(current_user.username)
+    return SessionListResponse(
+        sessions=[SessionSummary(**item) for item in sessions],
+        total=len(sessions),
+    )
 
 
 @router.get("/session", response_model=SessionHistoryResponse)

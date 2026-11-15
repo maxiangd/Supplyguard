@@ -244,6 +244,25 @@ class SessionHistoryResponse(BaseModel):
     """历史轮次数"""
 
 
+class SessionSummary(BaseModel):
+    """会话列表项：一个会话的最近状态。"""
+
+    session_id: str
+    turns: int
+    last_question: str
+    last_answer: str
+    last_timestamp: float | None = None
+    entity_names: list[str] = Field(default_factory=list)
+    risk_level: str | None = None
+
+
+class SessionListResponse(BaseModel):
+    """当前用户的全部问答会话。"""
+
+    sessions: list[SessionSummary]
+    total: int
+
+
 class LongTermMemoryCreateRequest(BaseModel):
     """创建长期记忆的请求体。"""
 
