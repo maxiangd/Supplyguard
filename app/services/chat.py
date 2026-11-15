@@ -15,7 +15,10 @@ from langgraph.types import Command
 from app.core.configuration import settings
 from app.db.tables import User
 from app.services.approval import create_approval
-from app.services.conversation import save_turn as save_conversation_turn
+from app.services.conversation import (
+    list_turns as list_conversation_turns,
+    save_turn as save_conversation_turn,
+)
 from app.services.followup import FollowupContext, resolve_followup
 from app.services.long_term import load_memory_context, save_risk_memory
 from app.services.memory import add_turn, build_memory_context, get_session_history
@@ -60,17 +63,42 @@ def _is_refusal(answer: str) -> bool:
     return answer.strip().lstrip("*# >-").startswith(REFUSAL_TEXT)
 
 
+def _load_session_history(db, user: User, session_id: str) -> list[dict]:
+    """加载会话历史：优先 Redis，不足时用 PostgreSQL 永久档案补齐。
+
+    Redis 只保留最近 N 轮且会过期；用户点选历史对话继续追问时，
+    从档案里把更早的轮次补回来，保证上下文完整。
+    """
+    redis_history = get_session_history(user.username, session_id)
+    max_turns = settings.memory_max_turns
+    if len(redis_history) >= max_turns:
+        return redis_history
+
+    try:
+        archived = list_conversation_turns(db, user, session_id, limit=max_turns * 3)
+    except Exception:
+        return redis_history
+
+    seen = {(turn.get("question"), turn.get("answer")) for turn in redis_history}
+    older = [
+        turn
+        for turn in archived
+        if (turn.get("question"), turn.get("answer")) not in seen
+    ]
+    return (older + redis_history)[-max_turns:]
+
+
 def _prepare_memory(
     db, user: User, question: str, role: str, session_id: str
 ) -> tuple[list[dict], FollowupContext, str]:
     """加载本轮问答需要的全部记忆。
 
     顺序很重要：
-    1. 先读 Redis 短期记忆
-    2. 用短期记忆判断当前问题是不是追问，得到补全后的检索词和继承实体
+    1. 先读会话历史（Redis 最近几轮 + PostgreSQL 档案补齐）
+    2. 用历史判断当前问题是不是追问，得到补全后的检索词和继承实体
     3. 再用补全后的问题去匹配 PostgreSQL 长期记忆
     """
-    history = get_session_history(user.username, session_id)
+    history = _load_session_history(db, user, session_id)
     followup = resolve_followup(question, role, history)
     long_term_context = load_memory_context(
         db, user, followup.resolved_question, followup.carried_entity_ids

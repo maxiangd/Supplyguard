@@ -1,9 +1,13 @@
 <script setup>
 import { nextTick, onMounted, reactive, ref } from 'vue'
-import { CircleCheck, Clock, Delete, Loading } from '@element-plus/icons-vue'
+import { CircleCheck, Clock, Loading } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { fetchChatModels, streamAnswer } from '../api/chat'
-import { clearSession, createLongTermMemory, getSessionHistory } from '../api/memory'
+import {
+  createLongTermMemory,
+  getConversation,
+  listConversations,
+} from '../api/memory'
 
 const SESSION_KEY = 'chat_session_id'
 
@@ -15,8 +19,9 @@ const graphPaths = ref([])
 const steps = ref([])
 const riskInfo = ref(null)
 const listRef = ref(null)
-const sessionHistory = ref([])
 const sessionId = ref('')
+const conversations = ref([])
+const conversationsLoading = ref(false)
 
 const models = ref([])
 const selectedModel = ref('')
@@ -162,7 +167,7 @@ async function ask() {
       },
     })
     if (streamError) throw new Error(streamError)
-    loadSessionHistory()
+    loadConversations()
   } catch (error) {
     const detail = streamError || error.message || '回答失败，请稍后重试'
     reply.content = reply.content || detail
@@ -188,7 +193,7 @@ async function scrollToBottom() {
 onMounted(() => {
   ensureSessionId()
   loadModels()
-  loadSessionHistory()
+  loadConversations()
 })
 
 function createSessionId() {
@@ -206,9 +211,8 @@ function ensureSessionId() {
   sessionId.value = id
 }
 
-async function startNewSession() {
+function startNewSession() {
   if (running.value) return
-  const previous = sessionId.value
   const next = createSessionId()
   sessionStorage.setItem(SESSION_KEY, next)
   sessionId.value = next
@@ -217,18 +221,78 @@ async function startNewSession() {
   citations.value = []
   graphPaths.value = []
   riskInfo.value = null
-  sessionHistory.value = []
+  expandedCitations.value = []
+  openReasoning.value = []
+  resetSteps()
+  ElMessage.success('已开启新对话')
+}
+
+async function loadConversations() {
+  conversationsLoading.value = true
+  try {
+    const data = await listConversations()
+    conversations.value = data.sessions
+  } catch {
+    conversations.value = []
+  } finally {
+    conversationsLoading.value = false
+  }
+}
+
+async function openConversation(row) {
+  if (running.value) return
+
+  sessionId.value = row.session_id
+  sessionStorage.setItem(SESSION_KEY, row.session_id)
+  messages.value = []
+  citations.value = []
+  graphPaths.value = []
+  riskInfo.value = null
+  expandedCitations.value = []
+  openReasoning.value = []
   resetSteps()
 
-  // 旧会话对用户已不可见，顺手清掉；失败也不影响新会话
-  if (previous) {
-    try {
-      await clearSession(previous)
-    } catch {
-      // 旧会话交给 TTL 自动过期
+  try {
+    const data = await getConversation(row.session_id)
+    for (const turn of data.turns) {
+      messages.value.push({ role: 'user', content: turn.question })
+      messages.value.push({
+        role: 'assistant',
+        content: turn.answer,
+        reasoning: '',
+      })
     }
+
+    const last = data.turns[data.turns.length - 1]
+    if (last?.risk_level) {
+      riskInfo.value = {
+        level: last.risk_level,
+        reason: last.risk_reason || '',
+        approval_id: last.approval_id || null,
+      }
+    }
+    scrollToBottom()
+  } catch (error) {
+    ElMessage.error(error.response?.data?.detail ?? '对话加载失败')
   }
-  ElMessage.success('已开启新会话')
+}
+
+function riskTag(level) {
+  if (level === 'HIGH' || level === 'CRITICAL') return 'danger'
+  return level === 'MEDIUM' ? 'warning' : 'info'
+}
+
+function formatTime(value) {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  return date.toLocaleString('zh-CN', {
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  })
 }
 
 async function rememberAnswer(index) {
@@ -258,25 +322,6 @@ async function rememberAnswer(index) {
     ElMessage.success('已保存到长期记忆')
   } catch (error) {
     ElMessage.error(error.response?.data?.detail ?? '保存失败')
-  }
-}
-
-async function loadSessionHistory() {
-  try {
-    const data = await getSessionHistory(sessionId.value)
-    sessionHistory.value = data.turns
-  } catch {
-    sessionHistory.value = []
-  }
-}
-
-async function doClearSession() {
-  try {
-    await clearSession(sessionId.value)
-    sessionHistory.value = []
-    ElMessage.success('会话历史已清除')
-  } catch {
-    ElMessage.error('清除失败，请稍后重试')
   }
 }
 </script>
@@ -361,9 +406,6 @@ async function doClearSession() {
           <div class="composer-actions">
             <span class="hint">Enter 发送，Shift+Enter 换行 · 回答仅基于当前角色可见资料</span>
             <div class="composer-right">
-              <el-button :disabled="running" @click="startNewSession">
-                新会话
-              </el-button>
               <el-select
                 v-model="selectedModel"
                 size="default"
@@ -388,6 +430,56 @@ async function doClearSession() {
 
     <el-col :span="8">
       <el-card shadow="never" class="side">
+        <template #header>
+          历史对话
+          <span v-if="conversations.length" class="filtered">
+            （{{ conversations.length }}）
+          </span>
+          <el-button
+            link
+            type="primary"
+            size="small"
+            style="float: right"
+            :disabled="running"
+            @click="startNewSession"
+          >
+            新对话
+          </el-button>
+        </template>
+        <div v-loading="conversationsLoading" class="conversation-list">
+          <div
+            v-for="item in conversations"
+            :key="item.session_id"
+            :class="[
+              'conversation-item',
+              { active: item.session_id === sessionId },
+            ]"
+            @click="openConversation(item)"
+          >
+            <div class="conversation-title">
+              {{ item.last_question || '（无标题）' }}
+            </div>
+            <div class="conversation-meta">
+              <el-tag
+                v-if="item.risk_level"
+                size="small"
+                :type="riskTag(item.risk_level)"
+              >
+                {{ item.risk_level }}
+              </el-tag>
+              <span>{{ item.turns }} 轮</span>
+              <span>{{ formatTime(item.last_timestamp * 1000) }}</span>
+            </div>
+          </div>
+          <el-empty
+            v-if="!conversationsLoading && !conversations.length"
+            :image-size="50"
+            description="还没有历史对话"
+          />
+        </div>
+      </el-card>
+
+      <el-card shadow="never" class="side">
         <template #header>执行进度</template>
         <div v-for="step in steps" :key="step.key" class="step">
           <el-icon v-if="step.status === 'done'" color="#67c23a">
@@ -409,33 +501,6 @@ async function doClearSession() {
           :image-size="50"
           description="提问后显示执行进度"
         />
-      </el-card>
-
-      <el-card v-if="sessionHistory.length" shadow="never" class="side">
-        <template #header>
-          会话历史
-          <span class="filtered">
-            （{{ sessionHistory.length }} 轮 · {{ sessionId.slice(0, 8) }}）
-          </span>
-          <el-button
-            link
-            type="danger"
-            size="small"
-            style="float: right"
-            @click="doClearSession"
-          >
-            <el-icon><Delete /></el-icon>
-            清除
-          </el-button>
-        </template>
-        <div
-          v-for="(turn, index) in sessionHistory.slice().reverse()"
-          :key="index"
-          class="session-turn"
-        >
-          <div class="turn-q">Q{{ sessionHistory.length - index }}: {{ turn.question }}</div>
-          <div class="turn-a">A: {{ turn.answer?.slice(0, 120) }}{{ turn.answer?.length > 120 ? '…' : '' }}</div>
-        </div>
       </el-card>
 
       <el-card v-if="riskInfo" shadow="never" class="side risk-side">
@@ -813,24 +878,40 @@ async function doClearSession() {
   line-height: 1.6;
 }
 
-.session-turn {
-  padding: 8px 0;
-  border-bottom: 1px solid #f0f0f0;
-  font-size: 12px;
+.conversation-list {
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.conversation-item {
+  padding: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.conversation-item:hover {
+  background: #f5f7fa;
+}
+
+.conversation-item.active {
+  background: #ecf5ff;
+}
+
+.conversation-title {
+  overflow: hidden;
+  color: #303133;
+  font-size: 13px;
   line-height: 1.5;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.session-turn:last-child {
-  border-bottom: none;
-}
-
-.turn-q {
-  color: #1677ff;
-  font-weight: 500;
-}
-
-.turn-a {
-  margin-top: 2px;
-  color: #606266;
+.conversation-meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 4px;
+  color: #a8abb2;
+  font-size: 12px;
 }
 </style>

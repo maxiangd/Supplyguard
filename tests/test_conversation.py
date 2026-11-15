@@ -167,6 +167,34 @@ def test_backfill_from_redis_is_idempotent(conv_db, monkeypatch):
     assert turns[0]["entity_names"] == ["E1"]
 
 
+def test_prepare_memory_merges_archived_turns(conv_db, monkeypatch):
+    """Redis 过期后，仍能从永久档案恢复多轮上下文。"""
+    from app.services import chat, followup, memory
+    from tests.test_memory import FakeRedis
+
+    monkeypatch.setattr(memory, "_redis", lambda: FakeRedis())
+    monkeypatch.setattr(followup, "match_entities", lambda question, role: [])
+
+    conversation.save_turn(
+        conv_db,
+        FINANCE,
+        session_id="s1",
+        question="上一轮问题",
+        answer="上一轮回答",
+        entities=[{"id": "e1", "name": "E1", "type": "supplier"}],
+        risk_level="HIGH",
+    )
+    conv_db.commit()
+
+    history, followup_ctx, long_term = chat._prepare_memory(
+        conv_db, FINANCE, "那它呢？", "finance", "s1"
+    )
+
+    assert history[-1]["question"] == "上一轮问题"
+    assert followup_ctx.carried_entity_ids == ["e1"]
+    assert long_term == ""
+
+
 def test_conversation_api_endpoints(client, auth_headers):
     headers = auth_headers("finance")
 
