@@ -1,52 +1,55 @@
 /** 记忆 API：短期会话 + 长期记忆 */
 import api from './client'
 
+// client 的响应拦截器已经把 response.data 解包返回了，
+// 这里不能再取一次 .data，否则拿到的是 undefined。
+
 export function listConversations() {
-  return api.get('/memory/conversations').then(r => r.data)
+  return api.get('/memory/conversations')
 }
 
 export function getConversation(sessionId) {
-  return api.get(`/memory/conversations/${sessionId}`).then(r => r.data)
+  return api.get(`/memory/conversations/${sessionId}`)
 }
 
 export function deleteConversation(sessionId) {
-  return api.delete(`/memory/conversations/${sessionId}`).then(r => r.data)
+  return api.delete(`/memory/conversations/${sessionId}`)
 }
 
 export function getSessionHistory(sessionId) {
-  return api.get('/memory/session', { params: { session_id: sessionId } }).then(r => r.data)
+  return api.get('/memory/session', { params: { session_id: sessionId } })
 }
 
 export function listSessions() {
-  return api.get('/memory/sessions').then(r => r.data)
+  return api.get('/memory/sessions')
 }
 
 export function clearSession(sessionId) {
-  return api.delete('/memory/session', { params: { session_id: sessionId } }).then(r => r.data)
+  return api.delete('/memory/session', { params: { session_id: sessionId } })
 }
 
 export function listRiskMemories({ entityId, level, limit } = {}) {
-  return api
-    .get('/memory/risks', { params: { entity_id: entityId, level, limit } })
-    .then(r => r.data)
+  return api.get('/memory/risks', {
+    params: { entity_id: entityId, level, limit },
+  })
 }
 
 export function listLongTermMemories(category) {
-  return api.get('/memory/long-term', { params: { category } }).then(r => r.data)
+  return api.get('/memory/long-term', { params: { category } })
 }
 
 export function createLongTermMemory(data) {
-  return api.post('/memory/long-term', data).then(r => r.data)
+  return api.post('/memory/long-term', data)
 }
 
 export function getLongTermMemory(memoryId) {
-  return api.get(`/memory/long-term/${memoryId}`).then(r => r.data)
+  return api.get(`/memory/long-term/${memoryId}`)
 }
 
 export function updateLongTermMemory(memoryId, data) {
-  return api.patch(`/memory/long-term/${memoryId}`, data).then(r => r.data)
+  return api.patch(`/memory/long-term/${memoryId}`, data)
 }
 
 export function deleteLongTermMemory(memoryId) {
-  return api.delete(`/memory/long-term/${memoryId}`).then(r => r.data)
+  return api.delete(`/memory/long-term/${memoryId}`)
 }
