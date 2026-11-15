@@ -41,6 +41,10 @@ const categoryOptions = [
   { value: 'note', label: '笔记' },
   { value: 'risk', label: '历史风险' },
 ]
+// 历史风险有独立视图（带实体/等级筛选），长期记忆 tab 不再重复展示
+const filterCategoryOptions = categoryOptions.filter(
+  (item) => item.value !== 'risk',
+)
 const categoryLabels = {
   preference: '偏好',
   risk: '历史风险',
@@ -114,7 +118,10 @@ function ttlText(ttl) {
 async function loadLongTerm() {
   longTermLoading.value = true
   try {
-    const data = await listLongTermMemories(longTermCategory.value || undefined)
+    const data = await listLongTermMemories(
+      longTermCategory.value || undefined,
+      'risk',
+    )
     longTermItems.value = data.items
   } catch (error) {
     ElMessage.error(error.response?.data?.detail ?? '长期记忆加载失败')
@@ -314,7 +321,7 @@ onMounted(async () => {
             @change="loadLongTerm"
           >
             <el-option
-              v-for="item in categoryOptions"
+              v-for="item in filterCategoryOptions"
               :key="item.value"
               :label="item.label"
               :value="item.value"

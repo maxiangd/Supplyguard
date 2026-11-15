@@ -34,8 +34,10 @@ export function listRiskMemories({ entityId, level, limit } = {}) {
   })
 }
 
-export function listLongTermMemories(category) {
-  return api.get('/memory/long-term', { params: { category } })
+export function listLongTermMemories(category, excludeCategory) {
+  return api.get('/memory/long-term', {
+    params: { category, exclude_category: excludeCategory },
+  })
 }
 
 export function createLongTermMemory(data) {

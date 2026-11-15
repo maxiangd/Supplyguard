@@ -547,6 +547,45 @@ def test_compact_memories_shrinks_existing_rows(memory_db):
     assert len(memory.content) <= 200
 
 
+def test_list_memories_can_exclude_risk(memory_db):
+    user = finance_user()
+    long_term.save_memory(
+        memory_db,
+        username=user.username,
+        role=user.role,
+        category=long_term.CATEGORY_PREFERENCE,
+        title="偏好",
+        content="优先结论",
+    )
+    long_term.save_memory(
+        memory_db,
+        username=user.username,
+        role=user.role,
+        category=long_term.CATEGORY_NOTE,
+        title="笔记",
+        content="备注",
+    )
+    long_term.save_risk_memory(
+        memory_db,
+        user,
+        "风险问题",
+        "风险回答",
+        "HIGH",
+        "单一供应",
+        [{"id": "supplier-enjie", "name": "恩捷股份"}],
+    )
+    memory_db.commit()
+
+    items = long_term.list_memories(
+        memory_db, user, exclude_category=long_term.CATEGORY_RISK
+    )
+
+    assert {item.category for item in items} == {
+        long_term.CATEGORY_PREFERENCE,
+        long_term.CATEGORY_NOTE,
+    }
+
+
 # ---------------------------------------------------------------------------
 # 接口测试
 # ---------------------------------------------------------------------------
