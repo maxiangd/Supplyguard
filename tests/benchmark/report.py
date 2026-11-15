@@ -37,6 +37,8 @@ def generate_markdown(results_path: str, output_path: str | None = None) -> str:
         f"| 路径命中率 | {metrics.get('path_hit_rate', 0):.2%} | 实际路径数 ≥ 期望最少路径数的比例 |",
         f"| 规则 Precision | {metrics.get('rule_precision', 0):.2%} | 正确命中的传导规则 / 返回的规则 |",
         f"| 规则 Recall | {metrics.get('rule_recall', 0):.2%} | 正确命中的传导规则 / 期望的规则 |",
+        f"| 多轮追问命中率 | {metrics.get('followup_success_rate', 0):.2%} | 继承上一轮实体且路径满足期望的比例 |",
+        f"| 多轮用例通过 | {metrics.get('followup_case_passed', 0)} / {metrics.get('followup_case_total', 0)} | 通过 / 多轮用例总数 |",
         f"| **越权拦截率** | **{metrics.get('leak_block_rate', 0):.2%}** | 未返回角色不可见节点的越权用例占比 |",
         f"| 越权用例通过 | {metrics.get('leak_case_blocked', 0)} / {metrics.get('leak_case_total', 0)} | 拦截成功 / 越权用例总数 |",
         f"| 越权泄漏数 | {metrics.get('leak_count', 0)} | 所有用例中返回了不可见节点的条数 |",

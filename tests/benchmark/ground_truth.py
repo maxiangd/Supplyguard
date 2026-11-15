@@ -353,9 +353,36 @@ def leaked_node_ids(paths: list[dict], role: str) -> list[str]:
     return leaked
 
 
-def expected_paths_for_case(question: str, role: str) -> dict:
-    """一站式接口：按角色匹配实体 + 计算路径 + 检查泄漏。"""
+def inherit_from_context(context: list[dict] | None, role: str) -> list[str]:
+    """从上一轮上下文继承实体，只保留当前角色可见的。
+
+    多轮追问用例通过 cases.json 的 context 字段描述上一轮问答；
+    当前问题匹配不到实体时，按真实链路的规则继承上一轮实体。
+    """
+    if not context:
+        return []
+
+    nodes = _node_map()
+    inherited: list[str] = []
+    for entity_id in context[-1].get("entity_ids") or []:
+        node = nodes.get(entity_id)
+        if node and _visible(node, role) and entity_id not in inherited:
+            inherited.append(entity_id)
+    return inherited
+
+
+def expected_paths_for_case(
+    question: str, role: str, context: list[dict] | None = None
+) -> dict:
+    """一站式接口：按角色匹配实体 + 追问继承 + 计算路径 + 检查泄漏。"""
     entity_ids = match_entities(question, role)
+    inherited_entity_ids: list[str] = []
+
+    # 当前问题没命中实体时，多轮用例继承上一轮实体
+    if not entity_ids and context:
+        inherited_entity_ids = inherit_from_context(context, role)
+        entity_ids = inherited_entity_ids
+
     paths = compute_paths(entity_ids, role)
     rules = list(set(p["rule"] for p in paths))
     return {
@@ -363,6 +390,7 @@ def expected_paths_for_case(question: str, role: str) -> dict:
         "paths": paths,
         "path_count": len(paths),
         "rules_used": rules,
+        "inherited_entity_ids": inherited_entity_ids,
         "leaked_node_ids": leaked_node_ids(paths, role),
     }
 

@@ -354,5 +354,105 @@
     "expected_path_rules": [],
     "expected_min_paths": 0,
     "notes": "多关键词"
+  },
+  {
+    "id": "case_027",
+    "scenario": "multi_turn",
+    "question": "那替代港口呢？",
+    "role": "logistics",
+    "context": [
+      {
+        "question": "红海航线绕行对欧洲交付有什么影响？",
+        "entity_ids": [
+          "event-redsea-diversion"
+        ],
+        "entity_names": [
+          "红海航线绕行"
+        ]
+      }
+    ],
+    "expected_entities": [
+      "event-redsea-diversion"
+    ],
+    "expected_path_rules": [
+      "ROUTE"
+    ],
+    "expected_min_paths": 7,
+    "notes": "追问继承上一轮红海事件"
+  },
+  {
+    "id": "case_028",
+    "scenario": "multi_turn",
+    "question": "那上游原料呢？",
+    "role": "procurement",
+    "context": [
+      {
+        "question": "宜春枧下窝锂矿停产对电池供应有什么影响？",
+        "entity_ids": [
+          "event-yichun-suspend"
+        ],
+        "entity_names": [
+          "宜春枧下窝锂矿停产"
+        ]
+      }
+    ],
+    "expected_entities": [
+      "event-yichun-suspend"
+    ],
+    "expected_path_rules": [
+      "REGION"
+    ],
+    "expected_min_paths": 9,
+    "notes": "追问继承上一轮停产事件"
+  },
+  {
+    "id": "case_029",
+    "scenario": "multi_turn",
+    "question": "它的质量管控要求呢？",
+    "role": "quality",
+    "context": [
+      {
+        "question": "极星4召回事件涉及哪些供应商？",
+        "entity_ids": [
+          "event-polestar-recall"
+        ],
+        "entity_names": [
+          "极星 4 召回"
+        ]
+      }
+    ],
+    "expected_entities": [
+      "event-polestar-recall"
+    ],
+    "expected_path_rules": [
+      "DIRECT"
+    ],
+    "expected_min_paths": 9,
+    "notes": "追问继承上一轮召回事件"
+  },
+  {
+    "id": "case_030",
+    "scenario": "multi_turn",
+    "question": "成本影响呢？",
+    "role": "finance",
+    "context": [
+      {
+        "question": "恩捷股份的隔膜供应有什么风险？",
+        "entity_ids": [
+          "supplier-enjie"
+        ],
+        "entity_names": [
+          "恩捷股份"
+        ]
+      }
+    ],
+    "expected_entities": [
+      "supplier-enjie"
+    ],
+    "expected_path_rules": [
+      "SUPPLY"
+    ],
+    "expected_min_paths": 3,
+    "notes": "追问继承上一轮供应商"
   }
 ]

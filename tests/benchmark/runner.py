@@ -30,7 +30,9 @@ def run_ground_truth_only(cases: list[dict]) -> list[dict]:
     """只跑 ground truth（不调真实链路），验证用例与预期一致性。"""
     results = []
     for case in cases:
-        gt = expected_paths_for_case(case["question"], case["role"])
+        gt = expected_paths_for_case(
+            case["question"], case["role"], case.get("context")
+        )
         actual_rules = list(set(p["rule"] for p in gt["paths"]))
         actual_entities = gt["entity_ids"]
 
@@ -39,12 +41,14 @@ def run_ground_truth_only(cases: list[dict]) -> list[dict]:
             "scenario": case.get("scenario", ""),
             "question": case["question"],
             "role": case["role"],
+            "context": case.get("context", []),
             "expected_entities": case.get("expected_entities", []),
             "actual_entities": actual_entities,
             "expected_min_paths": case.get("expected_min_paths", 0),
             "actual_paths": len(gt["paths"]),
             "expected_path_rules": case.get("expected_path_rules", []),
             "actual_path_rules": actual_rules,
+            "inherited_entity_ids": gt["inherited_entity_ids"],
             # ground truth 也按真实规则逐节点核对可见性，不做硬编码
             "role_leak": bool(gt["leaked_node_ids"]),
             "leaked_node_ids": gt["leaked_node_ids"],
@@ -88,16 +92,9 @@ def run_against_real_api(cases: list[dict], base_url: str = "http://127.0.0.1:80
     results = []
     graph = load_graph()
 
-    for i, case in enumerate(cases):
-        print(f"\n[{i + 1}/{len(cases)}] {case['id']}: {case['question'][:50]}... (role={case['role']})")
-        role = case["role"]
-        token = get_token(role)
-        if not token:
-            print("  跳过（无 token）")
-            continue
-
-        # 调图谱影响分析接口
-        body = json.dumps({"question": case["question"]}).encode()
+    def call_impact(token: str, payload: dict) -> dict:
+        """POST /api/graph/impact，把请求细节收在一处。"""
+        body = json.dumps(payload).encode()
         req = urllib.request.Request(
             f"{base_url}/api/graph/impact",
             data=body,
@@ -106,10 +103,35 @@ def run_against_real_api(cases: list[dict], base_url: str = "http://127.0.0.1:80
                 "Authorization": f"Bearer {token}",
             },
         )
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            return json.loads(resp.read().decode())
 
+    for i, case in enumerate(cases):
+        print(f"\n[{i + 1}/{len(cases)}] {case['id']}: {case['question'][:50]}... (role={case['role']})")
+        role = case["role"]
+        token = get_token(role)
+        if not token:
+            print("  跳过（无 token）")
+            continue
+
+        inherited_entity_ids: list[str] = []
         try:
-            with urllib.request.urlopen(req, timeout=30) as resp:
-                data = json.loads(resp.read().decode())
+            if case.get("context"):
+                # 多轮追问：先用上一轮问题拿到实体，再用实体 ID 模拟继承
+                previous = call_impact(
+                    token, {"question": case["context"][-1]["question"]}
+                )
+                inherited_entity_ids = [
+                    entity["id"] for entity in previous.get("entities", [])
+                ][:3]
+                if inherited_entity_ids:
+                    data = call_impact(
+                        token, {"entity_id": inherited_entity_ids[0], "max_hops": 3}
+                    )
+                else:
+                    data = {"entities": [], "paths": []}
+            else:
+                data = call_impact(token, {"question": case["question"]})
         except urllib.error.HTTPError as e:
             print(f"  HTTP {e.code}: {e.reason}")
             results.append({
@@ -117,12 +139,14 @@ def run_against_real_api(cases: list[dict], base_url: str = "http://127.0.0.1:80
                 "scenario": case.get("scenario", ""),
                 "question": case["question"],
                 "role": role,
+                "context": case.get("context", []),
                 "expected_entities": case.get("expected_entities", []),
                 "actual_entities": [],
                 "expected_min_paths": case.get("expected_min_paths", 0),
                 "actual_paths": 0,
                 "expected_path_rules": case.get("expected_path_rules", []),
                 "actual_path_rules": [],
+                "inherited_entity_ids": inherited_entity_ids,
                 "role_leak": False,
                 "api_error": f"HTTP {e.code}",
             })
@@ -153,12 +177,14 @@ def run_against_real_api(cases: list[dict], base_url: str = "http://127.0.0.1:80
             "scenario": case.get("scenario", ""),
             "question": case["question"],
             "role": role,
+            "context": case.get("context", []),
             "expected_entities": case.get("expected_entities", []),
             "actual_entities": actual_entities,
             "expected_min_paths": case.get("expected_min_paths", 0),
             "actual_paths": len(actual_paths_list),
             "expected_path_rules": case.get("expected_path_rules", []),
             "actual_path_rules": actual_rules,
+            "inherited_entity_ids": inherited_entity_ids,
             "role_leak": role_leak,
             "leaked_node_ids": leaked_node_ids,
         }

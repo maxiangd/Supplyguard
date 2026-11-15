@@ -109,6 +109,21 @@ def compute_metrics(results: list[dict]) -> dict[str, Any]:
         len(blocked_cases) / len(leak_cases) if leak_cases else 1.0
     )
 
+    # ---- 多轮追问 ----
+    # 通过标准：继承到了上一轮实体，且路径/实体满足用例期望
+    followup_cases = [r for r in results if r.get("scenario") == "multi_turn"]
+    followup_passed = sum(
+        1
+        for r in followup_cases
+        if r.get("inherited_entity_ids")
+        and r.get("actual_paths", 0) >= r.get("expected_min_paths", 0)
+        and set(r.get("expected_entities", [])) <= set(r.get("actual_entities", []))
+        and not _leaked(r)
+    )
+    followup_success_rate = (
+        followup_passed / len(followup_cases) if followup_cases else 1.0
+    )
+
     # ---- 按角色分组 ----
     by_role: dict[str, dict] = {}
     for r in results:
@@ -147,6 +162,9 @@ def compute_metrics(results: list[dict]) -> dict[str, Any]:
         "leak_count": leak_count,
         "leak_case_total": len(leak_cases),
         "leak_case_blocked": len(blocked_cases),
+        "followup_success_rate": round(followup_success_rate, 4),
+        "followup_case_total": len(followup_cases),
+        "followup_case_passed": followup_passed,
         "by_role": {
             role: {
                 "total": d["total"],

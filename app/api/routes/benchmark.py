@@ -66,7 +66,7 @@ def run_benchmark() -> dict:
     for case in cases:
         question = case["question"]
         role = case["role"]
-        gt = expected_paths_for_case(question, role)
+        gt = expected_paths_for_case(question, role, case.get("context"))
 
         actual_rules = list(set(p["rule"] for p in gt["paths"]))
         actual_entities = gt["entity_ids"]
@@ -76,12 +76,14 @@ def run_benchmark() -> dict:
             "scenario": case.get("scenario", ""),
             "question": question,
             "role": role,
+            "context": case.get("context", []),
             "expected_entities": case.get("expected_entities", []),
             "actual_entities": actual_entities,
             "expected_min_paths": case.get("expected_min_paths", 0),
             "actual_paths": gt["path_count"],
             "expected_path_rules": case.get("expected_path_rules", []),
             "actual_path_rules": actual_rules,
+            "inherited_entity_ids": gt["inherited_entity_ids"],
             "role_leak": bool(gt["leaked_node_ids"]),
             "leaked_node_ids": gt["leaked_node_ids"],
         })
@@ -97,6 +99,7 @@ def run_benchmark() -> dict:
             "f1": 0.50,
             "path_hit_rate": 0.0,
             "role_block_rate": 0.0,
+            "followup_success_rate": 0.0,
             "risk_accuracy": 0.33,
             "precision": 0.50,
             "recall": 0.50,
@@ -121,6 +124,24 @@ def _case_result(result: dict) -> dict:
                 "已拦截：未返回角色不可见节点"
                 if not leaked
                 else f"泄漏不可见节点：{', '.join(leaked)}"
+            ),
+        }
+
+    if result["scenario"] == "multi_turn":
+        inherited = result.get("inherited_entity_ids", [])
+        passed = (
+            bool(inherited)
+            and result["actual_paths"] >= result["expected_min_paths"]
+            and set(result["expected_entities"]) <= set(result["actual_entities"])
+            and not result["role_leak"]
+        )
+        return {
+            "id": result["id"],
+            "passed": passed,
+            "note": (
+                f"继承实体 {', '.join(inherited)}，{result['actual_paths']} 条路径"
+                if inherited
+                else "未继承上一轮实体"
             ),
         }
 

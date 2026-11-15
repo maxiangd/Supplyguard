@@ -5,6 +5,7 @@ PostgreSQL 用内存 SQLite，只建 long_term_memories 一张表。
 """
 
 import json
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -529,3 +530,52 @@ def test_build_context_includes_long_term_memory():
     content = result["messages"][1]["content"]
     assert "长期记忆" in content
     assert "用户偏好优先给结论" in content
+
+
+# ---------------------------------------------------------------------------
+# 多轮追问 Benchmark
+# ---------------------------------------------------------------------------
+
+CASES_PATH = Path(__file__).parent / "benchmark" / "cases.json"
+
+
+def load_benchmark_cases() -> list[dict]:
+    return json.loads(CASES_PATH.read_text(encoding="utf-8"))
+
+
+def test_multiturn_cases_inherit_previous_entities():
+    from tests.benchmark.ground_truth import expected_paths_for_case
+
+    cases = [c for c in load_benchmark_cases() if c.get("scenario") == "multi_turn"]
+    assert cases, "应当存在 multi_turn 用例"
+
+    for case in cases:
+        gt = expected_paths_for_case(
+            case["question"], case["role"], case.get("context")
+        )
+        assert gt["inherited_entity_ids"] == case["expected_entities"]
+        assert gt["path_count"] >= case["expected_min_paths"]
+        assert gt["leaked_node_ids"] == []
+
+
+def test_multiturn_without_context_returns_nothing():
+    """追问问题本身命中不到实体，验证用例确实依赖上下文继承。"""
+    from tests.benchmark.ground_truth import expected_paths_for_case
+
+    case = next(c for c in load_benchmark_cases() if c["id"] == "case_027")
+    gt = expected_paths_for_case(case["question"], case["role"], None)
+
+    assert gt["inherited_entity_ids"] == []
+    assert gt["path_count"] == 0
+
+
+def test_benchmark_reports_followup_metrics():
+    from app.api.routes.benchmark import run_benchmark
+
+    data = run_benchmark()
+    metrics = data["metrics"]
+
+    assert metrics["followup_case_total"] == 4
+    assert metrics["followup_case_passed"] == 4
+    assert metrics["followup_success_rate"] == 1.0
+    assert metrics["leak_count"] == 0
