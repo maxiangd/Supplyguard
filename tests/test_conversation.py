@@ -141,6 +141,32 @@ def test_record_turn_writes_redis_and_postgres(conv_db, monkeypatch):
     assert turns[0]["entity_names"] == ["恩捷股份"]
 
 
+def test_backfill_from_redis_is_idempotent(conv_db, monkeypatch):
+    """上线前已存在的 Redis 会话可以一次性补录，重复执行不会重复写入。"""
+    from app.services import memory
+    from tests.test_memory import FakeRedis
+
+    client = FakeRedis()
+    monkeypatch.setattr(memory, "_redis", lambda: client)
+    memory.add_turn(
+        "catl_finance",
+        "finance",
+        "旧问题",
+        "旧回答",
+        session_id="s-old",
+        entities=[{"id": "e1", "name": "E1"}],
+        risk_level="HIGH",
+    )
+
+    assert conversation.backfill_from_redis(conv_db) == 1
+    conv_db.commit()
+    assert conversation.backfill_from_redis(conv_db) == 0
+
+    turns = conversation.list_turns(conv_db, FINANCE, "s-old")
+    assert turns[0]["question"] == "旧问题"
+    assert turns[0]["entity_names"] == ["E1"]
+
+
 def test_conversation_api_endpoints(client, auth_headers):
     headers = auth_headers("finance")
 

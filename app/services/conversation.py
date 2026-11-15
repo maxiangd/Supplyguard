@@ -160,3 +160,89 @@ def delete_session(db: Session, user: User, session_id: str) -> int:
     )
     db.flush()
     return result.rowcount or 0
+
+
+def backfill_from_redis(
+    db: Session, username: str | None = None
+) -> int:
+    """把 Redis 中尚未过期的短期会话补录到永久档案。
+
+    用于上线本表之前已经产生的问答；重复执行不会重复写入：
+    以 username + session_id + question + answer 判重。
+    """
+    from app.services import memory as memory_service
+
+    try:
+        client = memory_service._redis()
+        keys = list(
+            client.scan_iter(match=f"{memory_service.SESSION_KEY_PREFIX}:*")
+        )
+    except Exception:
+        return 0
+
+    created = 0
+    for key in keys:
+        parts = key.split(":")
+        # 格式：supplyguard:session:{username}:{session_id}
+        if len(parts) < 4:
+            continue
+        owner, session_id = parts[2], parts[3]
+        if username and owner != username:
+            continue
+
+        for item in client.lrange(key, 0, -1):
+            try:
+                turn = json.loads(item)
+            except (json.JSONDecodeError, TypeError):
+                continue
+            question = turn.get("question", "")
+            answer = turn.get("answer", "")
+
+            exists = db.scalar(
+                select(ConversationTurn).where(
+                    ConversationTurn.username == owner,
+                    ConversationTurn.session_id == session_id,
+                    ConversationTurn.question == question,
+                    ConversationTurn.answer == answer,
+                )
+            )
+            if exists:
+                continue
+
+            entity_ids = turn.get("entity_ids") or []
+            entity_names = turn.get("entity_names") or []
+            entities = [
+                {"id": entity_id, "name": entity_names[index] if index < len(entity_names) else entity_id, "type": None}
+                for index, entity_id in enumerate(entity_ids)
+            ]
+
+            db.add(
+                ConversationTurn(
+                    username=owner,
+                    role=turn.get("role", ""),
+                    session_id=session_id,
+                    question=question,
+                    resolved_question=turn.get("resolved_question") or question,
+                    answer=answer,
+                    risk_level=turn.get("risk_level"),
+                    risk_reason=turn.get("risk_reason"),
+                    approval_id=turn.get("approval_id"),
+                    entities=_dump(entities),
+                    refs=_dump(turn.get("refs")),
+                )
+            )
+            created += 1
+
+    db.flush()
+    return created
+
+
+if __name__ == "__main__":
+    # 一次性迁移：python -m app.services.conversation
+    from app.db.database import SessionLocal
+
+    with SessionLocal() as session:
+        count = backfill_from_redis(session)
+        session.commit()
+        print(f"已从 Redis 补录 {count} 轮问答到 conversation_turns")
+
