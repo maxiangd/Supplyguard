@@ -75,6 +75,11 @@ class Settings(BaseSettings):
     memory_session_ttl_seconds: int = 3600
     memory_max_turns: int = 10
     memory_long_term_enabled: bool = True
+    # 长期记忆是否调用 LLM 生成摘要；密钥缺失或调用失败时自动回退到规则摘要
+    memory_summarize_with_llm: bool = True
+    memory_summary_max_chars: int = 120
+    # 留空则使用默认模型
+    memory_summary_model: str = ""
 
     # Benchmark
     benchmark_max_cases: int = 200

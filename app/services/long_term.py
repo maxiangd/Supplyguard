@@ -18,7 +18,7 @@ from sqlalchemy.orm import Session
 
 from app.core.configuration import settings
 from app.db.tables import LongTermMemory, User
-from app.services.summarize import summarize_text
+from app.services.summarize import summarize_answer
 
 CATEGORY_PREFERENCE = "preference"
 CATEGORY_RISK = "risk"
@@ -286,8 +286,7 @@ def save_risk_memory(
     subject = "、".join(entity_names[:2]) or question[:40]
     title = f"[{risk_level}] {subject}"[:255]
     content = (
-        summarize_text(answer, limit=200)
-        or summarize_text(risk_reason, limit=200)
+        summarize_answer(question, answer, risk_level, risk_reason)
         or question[:200]
     )
 
@@ -378,30 +377,39 @@ def list_risk_memories(
     return result
 
 
-def compact_memories(db: Session, limit: int = 200) -> int:
+def compact_memories(db: Session, limit: int | None = None) -> int:
     """把历史遗留的长篇长期记忆压缩成摘要，返回更新条数。
 
     只处理 risk / note 两类；preference 是用户自己写的，保持原样。
+    limit 默认取 APP_MEMORY_SUMMARY_MAX_CHARS。
     """
+    limit = limit or settings.memory_summary_max_chars
     statement = select(LongTermMemory).where(
         LongTermMemory.category.in_((CATEGORY_RISK, CATEGORY_NOTE))
     )
     updated = 0
     for memory in db.scalars(statement):
         changed = False
+        evidence = _parse_evidence(memory.evidence)
+        level = str(evidence.get("risk_level") or "").upper()
+        question = evidence.get("question") or memory.title
 
-        summary = summarize_text(memory.content, limit=limit)
-        if summary and summary != memory.content:
-            memory.content = summary
-            changed = True
+        # 已经足够短的不再重复调用模型
+        if len(memory.content) > limit:
+            summary = summarize_answer(
+                question,
+                memory.content,
+                level or None,
+                evidence.get("risk_reason"),
+                limit=limit,
+            )
+            if summary and summary != memory.content:
+                memory.content = summary
+                changed = True
 
         if memory.category == CATEGORY_RISK:
-            evidence = _parse_evidence(memory.evidence)
-            level = str(evidence.get("risk_level") or "").upper()
             names = evidence.get("entity_names") or []
-            subject = "、".join(names[:2]) or (
-                evidence.get("question") or memory.title
-            )[:40]
+            subject = "、".join(names[:2]) or question[:40]
             title = f"[{level}] {subject}"[:255] if level else memory.title[:255]
             if title != memory.title:
                 memory.title = title
@@ -423,9 +431,7 @@ def save_chat_note(
     refs: list[dict] | None = None,
 ) -> LongTermMemory:
     """把「记住这条」保存为简短结论，而不是整段回答。"""
-    summary = summarize_text(answer, limit=200) or summarize_text(
-        question, limit=200
-    )
+    summary = summarize_answer(question, answer) or question[:200]
     memory = LongTermMemory(
         username=user.username,
         role=user.role,

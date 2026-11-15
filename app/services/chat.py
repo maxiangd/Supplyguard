@@ -8,8 +8,6 @@
 
 import json
 
-from openai import OpenAI
-
 from langgraph.types import Command
 
 from app.core.configuration import settings
@@ -20,6 +18,7 @@ from app.services.conversation import (
     save_turn as save_conversation_turn,
 )
 from app.services.followup import FollowupContext, resolve_followup
+from app.services.llm import get_chat_client
 from app.services.long_term import load_memory_context, save_risk_memory
 from app.services.memory import add_turn, build_memory_context, get_session_history
 from app.services.workflow import (
@@ -194,45 +193,6 @@ def _save_risk_if_needed(
         refs=refs,
     )
     db.commit()
-
-
-def get_chat_client(model: str) -> OpenAI:
-    """按模型名选择服务商：qwen-* 走百炼，其余走 DeepSeek。"""
-    if model.startswith("qwen"):
-        return OpenAI(
-            api_key=settings.embedding_api_key,
-            base_url=settings.embedding_base_url,
-        )
-    return OpenAI(api_key=settings.llm_api_key, base_url=settings.llm_base_url)
-
-
-def available_models() -> list[str]:
-    """返回当前密钥下真正可用的模型。"""
-    models = []
-    for item in settings.llm_available_models.split(","):
-        model = item.strip()
-        if not model:
-            continue
-        is_qwen = model.startswith("qwen")
-        if is_qwen and not settings.embedding_api_key:
-            continue
-        if not is_qwen and not settings.llm_api_key:
-            continue
-        models.append(model)
-    return models
-
-
-def default_model() -> str:
-    """配置的默认模型不可用时，退回第一个可用模型。"""
-    models = available_models()
-    if settings.llm_model in models:
-        return settings.llm_model
-    return models[0] if models else settings.llm_model
-
-
-# ---------------------------------------------------------------------------
-# LangGraph 节点（依赖 LLM / DB，通过 register 注入到 workflow 图）
-# ---------------------------------------------------------------------------
 
 
 def _assess_risk_node(state: SupplyGuardState) -> dict:

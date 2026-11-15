@@ -19,12 +19,8 @@ from app.models.api_models import (
     ModelListResponse,
 )
 from app.services.approval import decide_approval
-from app.services.chat import (
-    answer_question,
-    available_models,
-    default_model,
-    stream_answer,
-)
+from app.services.chat import answer_question, stream_answer
+from app.services.llm import available_models, default_model
 from app.services.workflow import submit_decision
 
 router = APIRouter(prefix="/chat", tags=["chat"])

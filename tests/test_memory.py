@@ -459,6 +459,42 @@ def test_summarize_text_strips_markdown_and_citations():
     assert len(summary) <= 80
 
 
+def test_summarize_answer_uses_llm(monkeypatch):
+    monkeypatch.setattr(settings, "memory_summarize_with_llm", True)
+    monkeypatch.setattr(summarize, "available_models", lambda: ["deepseek-chat"])
+    monkeypatch.setattr(summarize, "default_model", lambda: "deepseek-chat")
+
+    class Completions:
+        def create(self, **kwargs):
+            return SimpleNamespace(
+                choices=[
+                    SimpleNamespace(
+                        message=SimpleNamespace(content="Q4 应以控库存为主。")
+                    )
+                ]
+            )
+
+    fake_client = SimpleNamespace(
+        chat=SimpleNamespace(completions=Completions())
+    )
+    monkeypatch.setattr(
+        summarize, "get_chat_client", lambda model, **kwargs: fake_client
+    )
+
+    result = summarize.summarize_answer("Q4？", "很长的回答" * 100, limit=120)
+
+    assert result == "Q4 应以控库存为主。"
+
+
+def test_summarize_answer_falls_back_without_llm(monkeypatch):
+    monkeypatch.setattr(settings, "memory_summarize_with_llm", False)
+
+    result = summarize.summarize_answer("Q4？", "结论：控库存。" * 100, limit=80)
+
+    assert "控库存" in result
+    assert len(result) <= 80
+
+
 def test_save_risk_memory_is_concise(memory_db):
     user = finance_user()
     answer = "**结论：Q4 应以控库存为主，不宜囤货。** " + "具体细节。" * 200

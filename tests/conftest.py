@@ -7,9 +7,16 @@ from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from app.core.configuration import settings
 from app.core.security import hash_password
 from app.db.database import Base, get_database_session
 from app.db.tables import User
+
+
+@pytest.fixture(autouse=True)
+def _disable_llm_summary(monkeypatch):
+    """测试不访问真实模型：长期记忆摘要统一走规则降级。"""
+    monkeypatch.setattr(settings, "memory_summarize_with_llm", False)
 
 DEMO_PASSWORD = "catl123"
 SEED_USERS = [
