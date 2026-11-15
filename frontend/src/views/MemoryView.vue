@@ -6,7 +6,6 @@ import {
   deleteLongTermMemory,
   getSessionHistory,
   listLongTermMemories,
-  listRiskMemories,
   listSessions,
   updateLongTermMemory,
 } from '../api/memory'
@@ -14,7 +13,8 @@ import { useAuthStore } from '../stores/auth'
 
 const auth = useAuthStore()
 
-// 完整问答记录由风险问答页的「历史对话」承载，这里只管理三类记忆
+// 完整问答记录由风险问答页的「历史对话」承载；
+// 这里管理短期记忆，以及长期记忆（含历史风险）
 const activeTab = ref('short')
 
 const shortSessions = ref([])
@@ -26,11 +26,6 @@ const longTermItems = ref([])
 const longTermCategory = ref('')
 const longTermLoading = ref(false)
 
-const riskItems = ref([])
-const riskEntity = ref('')
-const riskLevel = ref('')
-const riskLoading = ref(false)
-
 const dialogVisible = ref(false)
 const editingId = ref('')
 const form = reactive({ category: 'note', title: '', content: '' })
@@ -41,10 +36,6 @@ const categoryOptions = [
   { value: 'note', label: '笔记' },
   { value: 'risk', label: '历史风险' },
 ]
-// 历史风险有独立视图（带实体/等级筛选），长期记忆 tab 不再重复展示
-const filterCategoryOptions = categoryOptions.filter(
-  (item) => item.value !== 'risk',
-)
 const categoryLabels = {
   preference: '偏好',
   risk: '历史风险',
@@ -63,22 +54,6 @@ function formatTime(value) {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return ''
   return date.toLocaleString('zh-CN', { hour12: false })
-}
-
-function parseEvidence(row) {
-  if (!row?.evidence) return {}
-  try {
-    return JSON.parse(row.evidence)
-  } catch {
-    return {}
-  }
-}
-
-function entityText(row) {
-  const evidence = parseEvidence(row)
-  const names = evidence.entity_names ?? []
-  if (names.length) return names.join('、')
-  return (evidence.entity_ids ?? []).join('、')
 }
 
 function levelType(level) {
@@ -118,33 +93,13 @@ function ttlText(ttl) {
 async function loadLongTerm() {
   longTermLoading.value = true
   try {
-    const data = await listLongTermMemories(
-      longTermCategory.value || undefined,
-      'risk',
-    )
+    const data = await listLongTermMemories(longTermCategory.value || undefined)
     longTermItems.value = data.items
   } catch (error) {
     ElMessage.error(error.response?.data?.detail ?? '长期记忆加载失败')
     longTermItems.value = []
   } finally {
     longTermLoading.value = false
-  }
-}
-
-async function loadRisks() {
-  riskLoading.value = true
-  try {
-    const data = await listRiskMemories({
-      entityId: riskEntity.value.trim() || undefined,
-      level: riskLevel.value || undefined,
-      limit: 100,
-    })
-    riskItems.value = data.items
-  } catch (error) {
-    ElMessage.error(error.response?.data?.detail ?? '历史风险加载失败')
-    riskItems.value = []
-  } finally {
-    riskLoading.value = false
   }
 }
 
@@ -185,7 +140,6 @@ async function saveMemory() {
     ElMessage.success('已保存')
     dialogVisible.value = false
     loadLongTerm()
-    if (activeTab.value === 'risk') loadRisks()
   } catch (error) {
     ElMessage.error(error.response?.data?.detail ?? '保存失败')
   }
@@ -204,7 +158,6 @@ async function removeMemory(row) {
     await deleteLongTermMemory(row.memory_id)
     ElMessage.success('已删除')
     loadLongTerm()
-    loadRisks()
   } catch (error) {
     ElMessage.error(error.response?.data?.detail ?? '删除失败')
   }
@@ -213,7 +166,6 @@ async function removeMemory(row) {
 onMounted(async () => {
   await loadShortSessions()
   loadLongTerm()
-  loadRisks()
 })
 </script>
 
@@ -224,7 +176,7 @@ onMounted(async () => {
         <div class="title">记忆与上下文</div>
         <div class="sub">
           当前账号：{{ auth.user?.username ?? '-' }}（{{ auth.role ?? '-' }}）·
-          完整问答记录在「风险问答」页的历史对话中查看；这里管理短期记忆、长期记忆与历史风险
+          完整问答记录在「风险问答」页的历史对话中查看；这里管理短期记忆与长期记忆（含历史风险）
         </div>
       </div>
     </div>
@@ -321,7 +273,7 @@ onMounted(async () => {
             @change="loadLongTerm"
           >
             <el-option
-              v-for="item in filterCategoryOptions"
+              v-for="item in categoryOptions"
               :key="item.value"
               :label="item.label"
               :value="item.value"
@@ -358,50 +310,6 @@ onMounted(async () => {
         </el-table>
       </el-tab-pane>
 
-      <el-tab-pane label="历史风险" name="risk">
-        <div class="toolbar">
-          <el-input
-            v-model="riskEntity"
-            placeholder="按实体过滤，如 supplier-enjie"
-            style="width: 260px"
-            clearable
-          />
-          <el-select v-model="riskLevel" placeholder="全部等级" clearable style="width: 140px">
-            <el-option label="HIGH" value="HIGH" />
-            <el-option label="MEDIUM" value="MEDIUM" />
-            <el-option label="LOW" value="LOW" />
-          </el-select>
-          <el-button type="primary" :loading="riskLoading" @click="loadRisks">
-            查询
-          </el-button>
-          <span class="hint">共 {{ riskItems.length }} 条</span>
-        </div>
-
-        <el-table v-loading="riskLoading" :data="riskItems" size="small">
-          <el-table-column label="等级" width="100">
-            <template #default="{ row }">
-              <el-tag size="small" :type="levelType(parseEvidence(row).risk_level)">
-                {{ parseEvidence(row).risk_level ?? '—' }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column prop="title" label="风险结论" min-width="220" show-overflow-tooltip />
-          <el-table-column label="涉及实体" min-width="180">
-            <template #default="{ row }">{{ entityText(row) || '—' }}</template>
-          </el-table-column>
-          <el-table-column prop="content" label="回答摘要" min-width="280" show-overflow-tooltip />
-          <el-table-column label="记录时间" width="170">
-            <template #default="{ row }">{{ formatTime(row.created_at) }}</template>
-          </el-table-column>
-          <el-table-column label="操作" width="90" fixed="right">
-            <template #default="{ row }">
-              <el-button link type="danger" size="small" @click="removeMemory(row)">
-                删除
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-      </el-tab-pane>
     </el-tabs>
   </el-card>
 

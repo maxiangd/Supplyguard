@@ -119,17 +119,11 @@ def delete_conversation(
 @router.get("/long-term", response_model=LongTermMemoryListResponse)
 def list_long_term_memories(
     category: str | None = None,
-    exclude_category: str | None = None,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_database_session),
 ) -> LongTermMemoryListResponse:
-    """列出长期记忆。admin 全见，其他角色只看自己。
-
-    exclude_category 用于排除历史风险，风险统一走 /memory/risks 视图。
-    """
-    items = list_memories(
-        db, current_user, category, exclude_category=exclude_category
-    )
+    """列出长期记忆（含历史风险）。admin 全见，其他角色只看自己。"""
+    items = list_memories(db, current_user, category)
     return LongTermMemoryListResponse(
         items=[
             LongTermMemoryResponse(

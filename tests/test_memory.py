@@ -547,24 +547,8 @@ def test_compact_memories_shrinks_existing_rows(memory_db):
     assert len(memory.content) <= 200
 
 
-def test_list_memories_can_exclude_risk(memory_db):
+def test_list_memories_includes_risk(memory_db):
     user = finance_user()
-    long_term.save_memory(
-        memory_db,
-        username=user.username,
-        role=user.role,
-        category=long_term.CATEGORY_PREFERENCE,
-        title="偏好",
-        content="优先结论",
-    )
-    long_term.save_memory(
-        memory_db,
-        username=user.username,
-        role=user.role,
-        category=long_term.CATEGORY_NOTE,
-        title="笔记",
-        content="备注",
-    )
     long_term.save_risk_memory(
         memory_db,
         user,
@@ -576,14 +560,9 @@ def test_list_memories_can_exclude_risk(memory_db):
     )
     memory_db.commit()
 
-    items = long_term.list_memories(
-        memory_db, user, exclude_category=long_term.CATEGORY_RISK
-    )
+    items = long_term.list_memories(memory_db, user)
 
-    assert {item.category for item in items} == {
-        long_term.CATEGORY_PREFERENCE,
-        long_term.CATEGORY_NOTE,
-    }
+    assert any(item.category == long_term.CATEGORY_RISK for item in items)
 
 
 # ---------------------------------------------------------------------------

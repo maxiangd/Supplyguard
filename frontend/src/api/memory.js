@@ -28,16 +28,8 @@ export function clearSession(sessionId) {
   return api.delete('/memory/session', { params: { session_id: sessionId } })
 }
 
-export function listRiskMemories({ entityId, level, limit } = {}) {
-  return api.get('/memory/risks', {
-    params: { entity_id: entityId, level, limit },
-  })
-}
-
-export function listLongTermMemories(category, excludeCategory) {
-  return api.get('/memory/long-term', {
-    params: { category, exclude_category: excludeCategory },
-  })
+export function listLongTermMemories(category) {
+  return api.get('/memory/long-term', { params: { category } })
 }
 
 export function createLongTermMemory(data) {

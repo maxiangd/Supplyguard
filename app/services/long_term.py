@@ -82,12 +82,10 @@ def list_memories(
     user: User,
     category: str | None = None,
     limit: int = 50,
-    exclude_category: str | None = None,
 ) -> list[LongTermMemory]:
     """按角色查看长期记忆：admin 全见，其他角色只看自己的。
 
-    exclude_category 用于把「历史风险」从长期记忆列表中排除，
-    风险结论统一走 /memory/risks 的专用视图，避免两边重复展示。
+    历史风险也属于长期记忆，通过 category='risk' 一起返回。
     """
     statement = select(LongTermMemory).order_by(LongTermMemory.updated_at.desc())
 
@@ -96,8 +94,6 @@ def list_memories(
 
     if category:
         statement = statement.where(LongTermMemory.category == category)
-    elif exclude_category:
-        statement = statement.where(LongTermMemory.category != exclude_category)
 
     statement = statement.limit(limit)
     return list(db.scalars(statement))
