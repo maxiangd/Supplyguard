@@ -1,10 +1,12 @@
 <script setup>
 import { nextTick, onMounted, reactive, ref } from 'vue'
-import { CircleCheck, Clock, Loading } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
+import { CircleCheck, Clock, Delete, Loading } from '@element-plus/icons-vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { fetchChatModels, streamAnswer } from '../api/chat'
 import {
+  clearSession,
   createLongTermMemory,
+  deleteConversation,
   getConversation,
   listConversations,
 } from '../api/memory'
@@ -214,8 +216,7 @@ function ensureSessionId() {
   sessionId.value = id
 }
 
-function startNewSession() {
-  if (running.value) return
+function resetConversation() {
   const next = createSessionId()
   sessionStorage.setItem(SESSION_KEY, next)
   sessionId.value = next
@@ -227,7 +228,42 @@ function startNewSession() {
   expandedCitations.value = []
   openReasoning.value = []
   resetSteps()
+}
+
+function startNewSession() {
+  if (running.value) return
+  resetConversation()
   ElMessage.success('已开启新对话')
+}
+
+async function removeConversation(item) {
+  try {
+    await ElMessageBox.confirm(
+      `确定删除「${item.last_question || '该对话'}」？永久问答档案会一并删除。`,
+      '删除对话',
+      { type: 'warning' },
+    )
+  } catch {
+    return
+  }
+
+  try {
+    await deleteConversation(item.session_id)
+    try {
+      await clearSession(item.session_id)
+    } catch {
+      // Redis 不可用时只删档案
+    }
+    ElMessage.success('对话已删除')
+
+    // 删的是当前对话就切到新对话，避免继续往已删除的会话里写
+    if (item.session_id === sessionId.value) {
+      resetConversation()
+    }
+    await loadConversations()
+  } catch (error) {
+    ElMessage.error(error.response?.data?.detail ?? '删除失败')
+  }
 }
 
 function describeError(error, fallback) {
@@ -491,20 +527,32 @@ async function rememberAnswer(index) {
             ]"
             @click="openConversation(item)"
           >
-            <div class="conversation-title">
-              {{ item.last_question || '（无标题）' }}
+            <div class="conversation-main">
+              <div class="conversation-title">
+                {{ item.last_question || '（无标题）' }}
+              </div>
+              <div class="conversation-meta">
+                <el-tag
+                  v-if="item.risk_level"
+                  size="small"
+                  :type="riskTag(item.risk_level)"
+                >
+                  {{ item.risk_level }}
+                </el-tag>
+                <span>{{ item.turns }} 轮</span>
+                <span>{{ formatTime(item.last_timestamp * 1000) }}</span>
+              </div>
             </div>
-            <div class="conversation-meta">
-              <el-tag
-                v-if="item.risk_level"
-                size="small"
-                :type="riskTag(item.risk_level)"
-              >
-                {{ item.risk_level }}
-              </el-tag>
-              <span>{{ item.turns }} 轮</span>
-              <span>{{ formatTime(item.last_timestamp * 1000) }}</span>
-            </div>
+            <el-button
+              link
+              type="danger"
+              size="small"
+              class="conversation-delete"
+              title="删除对话"
+              @click.stop="removeConversation(item)"
+            >
+              <el-icon><Delete /></el-icon>
+            </el-button>
           </div>
           <el-empty
             v-if="!conversationsLoading && !conversations.length"
@@ -929,9 +977,26 @@ async function rememberAnswer(index) {
 }
 
 .conversation-item {
+  display: flex;
+  gap: 8px;
+  align-items: center;
   padding: 10px;
   border-radius: 6px;
   cursor: pointer;
+}
+
+.conversation-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.conversation-delete {
+  opacity: 0.45;
+  transition: opacity 0.15s;
+}
+
+.conversation-item:hover .conversation-delete {
+  opacity: 1;
 }
 
 .conversation-item:hover {
