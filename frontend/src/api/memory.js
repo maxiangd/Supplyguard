@@ -42,6 +42,10 @@ export function createLongTermMemory(data) {
   return api.post('/memory/long-term', data)
 }
 
+export function rememberConversation(data) {
+  return api.post('/memory/remember', data)
+}
+
 export function getLongTermMemory(memoryId) {
   return api.get(`/memory/long-term/${memoryId}`)
 }

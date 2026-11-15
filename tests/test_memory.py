@@ -14,7 +14,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app.core.configuration import settings
 from app.db.tables import LongTermMemory
-from app.services import followup, long_term, memory
+from app.services import followup, long_term, memory, summarize
 
 
 # ---------------------------------------------------------------------------
@@ -444,6 +444,74 @@ def test_list_risk_memories_visibility_and_filters(memory_db):
 
 
 # ---------------------------------------------------------------------------
+# 长期记忆摘要
+# ---------------------------------------------------------------------------
+
+
+def test_summarize_text_strips_markdown_and_citations():
+    text = "## 结论\n\n**Q4 应以控库存为主**，不宜囤货 [G1][G2]。具体来看，价格回落会传导成本 [1]。"
+
+    summary = summarize.summarize_text(text, limit=80)
+
+    assert "Q4 应以控库存为主" in summary
+    assert "[G1]" not in summary
+    assert "**" not in summary
+    assert len(summary) <= 80
+
+
+def test_save_risk_memory_is_concise(memory_db):
+    user = finance_user()
+    answer = "**结论：Q4 应以控库存为主，不宜囤货。** " + "具体细节。" * 200
+
+    memory = long_term.save_risk_memory(
+        memory_db,
+        user,
+        question="Q4 采购策略？",
+        answer=answer,
+        risk_level="HIGH",
+        risk_reason="成本与库存风险",
+        entities=[{"id": "event-x", "name": "碳酸锂价格回落"}],
+    )
+
+    assert memory.content != answer
+    assert len(memory.content) <= 200
+    assert memory.title.startswith("[HIGH]")
+    assert "碳酸锂价格回落" in memory.title
+
+
+def test_save_chat_note_is_concise(memory_db):
+    user = finance_user()
+    answer = "结论：可以先小批量采购。" + "详细解释。" * 200
+
+    memory = long_term.save_chat_note(
+        memory_db, user, "采购怎么做？", answer, session_id="s1"
+    )
+
+    assert memory.category == long_term.CATEGORY_NOTE
+    assert len(memory.content) <= 200
+    assert memory.title == "采购怎么做？"
+
+
+def test_compact_memories_shrinks_existing_rows(memory_db):
+    user = finance_user()
+    memory = long_term.save_memory(
+        memory_db,
+        username=user.username,
+        role=user.role,
+        category=long_term.CATEGORY_NOTE,
+        title="旧笔记",
+        content="结论：应控库存。" + "细节" * 200,
+    )
+    memory_db.commit()
+
+    updated = long_term.compact_memories(memory_db)
+    memory_db.commit()
+
+    assert updated == 1
+    assert len(memory.content) <= 200
+
+
+# ---------------------------------------------------------------------------
 # 接口测试
 # ---------------------------------------------------------------------------
 
@@ -472,6 +540,30 @@ def test_sessions_api_lists_all_user_sessions(client, auth_headers, fake_redis):
 
     other = client.get("/api/memory/sessions", headers=auth_headers("procurement"))
     assert other.json()["total"] == 0
+
+
+def test_remember_api_saves_summary(client, auth_headers):
+    headers = auth_headers("finance")
+
+    response = client.post(
+        "/api/memory/remember",
+        json={
+            "question": "Q4 采购策略？",
+            "answer": "**结论：应以控库存为主。** " + "细节" * 300,
+            "session_id": "s1",
+            "refs": [{"filename": "a.pdf", "chunk_index": 0}],
+        },
+        headers=headers,
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["category"] == "note"
+    assert data["title"] == "Q4 采购策略？"
+    assert len(data["content"]) <= 200
+
+    items = client.get("/api/memory/long-term", headers=headers).json()["items"]
+    assert any(item["memory_id"] == data["memory_id"] for item in items)
 
 
 def test_risk_memory_api(client, auth_headers):

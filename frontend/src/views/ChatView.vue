@@ -5,10 +5,10 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { fetchChatModels, streamAnswer } from '../api/chat'
 import {
   clearSession,
-  createLongTermMemory,
   deleteConversation,
   getConversation,
   listConversations,
+  rememberConversation,
 } from '../api/memory'
 import { useAuthStore } from '../stores/auth'
 
@@ -360,17 +360,14 @@ async function rememberAnswer(index) {
     : []
 
   try {
-    await createLongTermMemory({
-      category: 'note',
-      title: (userMessage?.content || '对话结论').slice(0, 255),
-      content: reply.content.slice(0, 5000),
-      evidence: JSON.stringify({
-        source: 'chat',
-        session_id: sessionId.value,
-        refs,
-      }),
+    // 交给后端压缩成 1–2 句结论，避免长期记忆和完整回答重复
+    await rememberConversation({
+      question: userMessage?.content || '对话结论',
+      answer: reply.content,
+      session_id: sessionId.value,
+      refs,
     })
-    ElMessage.success('已保存到长期记忆')
+    ElMessage.success('已保存为简短记忆')
   } catch (error) {
     ElMessage.error(error.response?.data?.detail ?? '保存失败')
   }

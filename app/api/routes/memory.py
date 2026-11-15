@@ -11,6 +11,7 @@ from app.models.api_models import (
     LongTermMemoryListResponse,
     LongTermMemoryResponse,
     LongTermMemoryUpdateRequest,
+    RememberConversationRequest,
     SessionHistoryResponse,
     SessionListResponse,
     SessionSummary,
@@ -21,6 +22,7 @@ from app.services.long_term import (
     get_memory,
     list_memories,
     list_risk_memories,
+    save_chat_note,
     save_memory,
     update_memory,
 )
@@ -172,6 +174,35 @@ def list_risks(
             for m in items
         ],
         total=len(items),
+    )
+
+
+@router.post("/remember", response_model=LongTermMemoryResponse)
+def remember_conversation(
+    payload: RememberConversationRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_database_session),
+) -> LongTermMemoryResponse:
+    """把一轮问答保存为简短长期记忆（后端压缩，不保存整段回答）。"""
+    memory = save_chat_note(
+        db,
+        current_user,
+        question=payload.question,
+        answer=payload.answer,
+        session_id=payload.session_id,
+        refs=payload.refs,
+    )
+    db.commit()
+    return LongTermMemoryResponse(
+        memory_id=memory.memory_id,
+        username=memory.username,
+        role=memory.role,
+        category=memory.category,
+        title=memory.title,
+        content=memory.content,
+        evidence=memory.evidence,
+        created_at=memory.created_at,
+        updated_at=memory.updated_at,
     )
 
 

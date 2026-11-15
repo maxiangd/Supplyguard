@@ -274,6 +274,15 @@ class LongTermMemoryCreateRequest(BaseModel):
     evidence: str | None = Field(default=None, max_length=5000)
 
 
+class RememberConversationRequest(BaseModel):
+    """把某轮问答保存为长期记忆（后端负责压缩成摘要）。"""
+
+    question: str = Field(min_length=1, max_length=2000)
+    answer: str = Field(min_length=1, max_length=20000)
+    session_id: str | None = Field(default=None, max_length=64)
+    refs: list[dict] = Field(default_factory=list)
+
+
 class LongTermMemoryUpdateRequest(BaseModel):
     """更新长期记忆（所有字段可选）。"""
 

@@ -18,6 +18,7 @@ from sqlalchemy.orm import Session
 
 from app.core.configuration import settings
 from app.db.tables import LongTermMemory, User
+from app.services.summarize import summarize_text
 
 CATEGORY_PREFERENCE = "preference"
 CATEGORY_RISK = "risk"
@@ -281,8 +282,14 @@ def save_risk_memory(
         "approval_id": approval_id,
         "refs": refs or [],
     }
-    title = f"[{risk_level}] {(risk_reason or question)[:80]}"
-    content = (answer or question)[:1000]
+    # 标题用涉及的实体或问题，正文只留一句结论，避免和完整会话重复
+    subject = "、".join(entity_names[:2]) or question[:40]
+    title = f"[{risk_level}] {subject}"[:255]
+    content = (
+        summarize_text(answer, limit=200)
+        or summarize_text(risk_reason, limit=200)
+        or question[:200]
+    )
 
     now = datetime.now()
     wanted = set(entity_ids)
@@ -369,3 +376,76 @@ def list_risk_memories(
         if len(result) >= limit:
             break
     return result
+
+
+def compact_memories(db: Session, limit: int = 200) -> int:
+    """把历史遗留的长篇长期记忆压缩成摘要，返回更新条数。
+
+    只处理 risk / note 两类；preference 是用户自己写的，保持原样。
+    """
+    statement = select(LongTermMemory).where(
+        LongTermMemory.category.in_((CATEGORY_RISK, CATEGORY_NOTE))
+    )
+    updated = 0
+    for memory in db.scalars(statement):
+        changed = False
+
+        summary = summarize_text(memory.content, limit=limit)
+        if summary and summary != memory.content:
+            memory.content = summary
+            changed = True
+
+        if memory.category == CATEGORY_RISK:
+            evidence = _parse_evidence(memory.evidence)
+            level = str(evidence.get("risk_level") or "").upper()
+            names = evidence.get("entity_names") or []
+            subject = "、".join(names[:2]) or (
+                evidence.get("question") or memory.title
+            )[:40]
+            title = f"[{level}] {subject}"[:255] if level else memory.title[:255]
+            if title != memory.title:
+                memory.title = title
+                changed = True
+
+        if changed:
+            updated += 1
+
+    db.flush()
+    return updated
+
+
+def save_chat_note(
+    db: Session,
+    user: User,
+    question: str,
+    answer: str,
+    session_id: str | None = None,
+    refs: list[dict] | None = None,
+) -> LongTermMemory:
+    """把「记住这条」保存为简短结论，而不是整段回答。"""
+    summary = summarize_text(answer, limit=200) or summarize_text(
+        question, limit=200
+    )
+    memory = LongTermMemory(
+        username=user.username,
+        role=user.role,
+        category=CATEGORY_NOTE,
+        title=(question.strip() or "对话结论")[:255],
+        content=summary or question[:200],
+        evidence=_dump_evidence(
+            {"source": "chat", "session_id": session_id, "refs": refs or []}
+        ),
+    )
+    db.add(memory)
+    db.flush()
+    return memory
+
+
+if __name__ == "__main__":
+    # 一次性压缩历史长期记忆：python -m app.services.long_term
+    from app.db.database import SessionLocal
+
+    with SessionLocal() as session:
+        count = compact_memories(session)
+        session.commit()
+        print(f"已压缩 {count} 条长期记忆")
