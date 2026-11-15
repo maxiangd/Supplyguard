@@ -138,7 +138,9 @@ def get_latest_turn(username: str, session_id: str = DEFAULT_SESSION_ID) -> dict
     return history[-1] if history else None
 
 
-def _session_summary(session_id: str, turns: int, last: dict) -> dict:
+def _session_summary(
+    session_id: str, turns: int, last: dict, ttl: int | None = None
+) -> dict:
     """把一轮对话压成会话列表项。"""
     return {
         "session_id": session_id,
@@ -148,6 +150,7 @@ def _session_summary(session_id: str, turns: int, last: dict) -> dict:
         "last_timestamp": last.get("timestamp"),
         "entity_names": last.get("entity_names") or [],
         "risk_level": last.get("risk_level"),
+        "ttl": ttl,
     }
 
 
@@ -170,7 +173,11 @@ def list_sessions(username: str) -> list[dict]:
                 last = json.loads(items[-1])
             except json.JSONDecodeError:
                 continue
-            summaries.append(_session_summary(session_id, len(items), last))
+            summaries.append(
+                _session_summary(
+                    session_id, len(items), last, redis_client.ttl(key)
+                )
+            )
 
         # 旧版不带 session_id 的 default 会话
         legacy_raw = redis_client.get(_legacy_session_key(username))
@@ -181,7 +188,12 @@ def list_sessions(username: str) -> list[dict]:
                 legacy = []
             if isinstance(legacy, list) and legacy:
                 summaries.append(
-                    _session_summary(DEFAULT_SESSION_ID, len(legacy), legacy[-1])
+                    _session_summary(
+                        DEFAULT_SESSION_ID,
+                        len(legacy),
+                        legacy[-1],
+                        redis_client.ttl(_legacy_session_key(username)),
+                    )
                 )
 
         summaries.sort(

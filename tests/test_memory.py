@@ -79,6 +79,9 @@ class FakeRedis:
         self.ttls[key] = seconds
         return True
 
+    def ttl(self, key):
+        return self.ttls.get(key, -1)
+
     def get(self, key):
         return self.values.get(key)
 

@@ -254,6 +254,8 @@ class SessionSummary(BaseModel):
     last_timestamp: float | None = None
     entity_names: list[str] = Field(default_factory=list)
     risk_level: str | None = None
+    ttl: int | None = None
+    """Redis 剩余有效期（秒）；长期档案为 None"""
 
 
 class SessionListResponse(BaseModel):

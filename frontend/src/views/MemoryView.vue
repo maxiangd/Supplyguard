@@ -7,13 +7,17 @@ import {
   deleteConversation,
   deleteLongTermMemory,
   getConversation,
+  getSessionHistory,
   listConversations,
   listLongTermMemories,
   listRiskMemories,
+  listSessions,
   updateLongTermMemory,
 } from '../api/memory'
+import { useAuthStore } from '../stores/auth'
 
 const SESSION_KEY = 'chat_session_id'
+const auth = useAuthStore()
 
 const activeTab = ref('session')
 const sessionId = ref(sessionStorage.getItem(SESSION_KEY) || 'default')
@@ -21,6 +25,11 @@ const sessionTurns = ref([])
 const sessionLoading = ref(false)
 const sessions = ref([])
 const sessionsLoading = ref(false)
+
+const shortSessions = ref([])
+const shortLoading = ref(false)
+const shortSessionId = ref('')
+const shortTurns = ref([])
 
 const longTermItems = ref([])
 const longTermCategory = ref('')
@@ -105,6 +114,35 @@ async function loadSessions() {
 function openSession(row) {
   sessionId.value = row.session_id
   loadSession()
+}
+
+async function loadShortSessions() {
+  shortLoading.value = true
+  try {
+    const data = await listSessions()
+    shortSessions.value = data.sessions
+  } catch (error) {
+    ElMessage.error(error.response?.data?.detail ?? '短期记忆加载失败')
+    shortSessions.value = []
+  } finally {
+    shortLoading.value = false
+  }
+}
+
+async function openShortSession(row) {
+  shortSessionId.value = row.session_id
+  try {
+    const data = await getSessionHistory(row.session_id)
+    shortTurns.value = data.turns
+  } catch (error) {
+    ElMessage.error(error.response?.data?.detail ?? '短期会话加载失败')
+    shortTurns.value = []
+  }
+}
+
+function ttlText(ttl) {
+  if (ttl === null || ttl === undefined || ttl < 0) return '—'
+  return `剩余 ${Math.max(1, Math.round(ttl / 60))} 分钟`
 }
 
 async function loadSession() {
@@ -236,6 +274,7 @@ async function removeMemory(row) {
 onMounted(async () => {
   await loadSessions()
   await loadSession()
+  loadShortSessions()
   loadLongTerm()
   loadRisks()
 })
@@ -247,6 +286,7 @@ onMounted(async () => {
       <div>
         <div class="title">记忆与上下文</div>
         <div class="sub">
+          当前账号：{{ auth.user?.username ?? '-' }}（{{ auth.role ?? '-' }}）·
           风险问答永久保存在 PostgreSQL；Redis 只保留最近几轮用于多轮追问；长期记忆保存偏好与历史风险
         </div>
       </div>
@@ -352,6 +392,85 @@ onMounted(async () => {
           <div class="turn-answer">A：{{ turn.answer }}</div>
           <div v-if="turn.resolved_question && turn.resolved_question !== turn.question" class="turn-meta">
             追问补全：{{ turn.resolved_question }}
+          </div>
+        </div>
+      </el-tab-pane>
+
+      <el-tab-pane label="短期记忆" name="short">
+        <div class="toolbar">
+          <span class="hint" style="margin-left: 0">
+            Redis 中尚未过期的会话（仅当前账号），过期后由永久档案保留
+          </span>
+          <el-button :loading="shortLoading" @click="loadShortSessions">刷新</el-button>
+        </div>
+
+        <el-table
+          v-loading="shortLoading"
+          :data="shortSessions"
+          size="small"
+          class="session-table"
+          :row-class-name="
+            ({ row }) =>
+              row.session_id === shortSessionId ? 'active-session' : ''
+          "
+          @row-click="openShortSession"
+        >
+          <el-table-column label="会话" width="110">
+            <template #default="{ row }">
+              {{ row.session_id.slice(0, 8) }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="turns" label="轮次" width="70" />
+          <el-table-column
+            prop="last_question"
+            label="最近问题"
+            min-width="240"
+            show-overflow-tooltip
+          />
+          <el-table-column label="风险" width="90">
+            <template #default="{ row }">
+              <el-tag
+                v-if="row.risk_level"
+                size="small"
+                :type="levelType(row.risk_level)"
+              >
+                {{ row.risk_level }}
+              </el-tag>
+              <span v-else>—</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="有效期" width="120">
+            <template #default="{ row }">{{ ttlText(row.ttl) }}</template>
+          </el-table-column>
+          <el-table-column label="操作" width="80" fixed="right">
+            <template #default="{ row }">
+              <el-button
+                link
+                type="primary"
+                size="small"
+                @click.stop="openShortSession(row)"
+              >
+                查看
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <el-empty
+          v-if="!shortLoading && !shortSessions.length"
+          :image-size="60"
+          description="Redis 中没有未过期的会话"
+        />
+
+        <div v-if="shortTurns.length" class="short-detail">
+          <div class="short-title">
+            会话 {{ shortSessionId.slice(0, 8) }}（{{ shortTurns.length }} 轮）
+          </div>
+          <div v-for="(turn, index) in shortTurns" :key="index" class="turn">
+            <div class="turn-question">Q：{{ turn.question }}</div>
+            <div class="turn-answer">A：{{ turn.answer }}</div>
+            <div v-if="turn.risk_level" class="turn-meta">
+              风险等级：{{ turn.risk_level }}
+            </div>
           </div>
         </div>
       </el-tab-pane>
@@ -518,6 +637,16 @@ onMounted(async () => {
 
 .session-table :deep(.active-session) {
   background: #ecf5ff;
+}
+
+.short-detail {
+  margin-top: 16px;
+}
+
+.short-title {
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .hint {

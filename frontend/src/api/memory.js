@@ -17,6 +17,10 @@ export function getSessionHistory(sessionId) {
   return api.get('/memory/session', { params: { session_id: sessionId } }).then(r => r.data)
 }
 
+export function listSessions() {
+  return api.get('/memory/sessions').then(r => r.data)
+}
+
 export function clearSession(sessionId) {
   return api.delete('/memory/session', { params: { session_id: sessionId } }).then(r => r.data)
 }

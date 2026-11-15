@@ -8,8 +8,10 @@ import {
   getConversation,
   listConversations,
 } from '../api/memory'
+import { useAuthStore } from '../stores/auth'
 
 const SESSION_KEY = 'chat_session_id'
+const auth = useAuthStore()
 
 const question = ref('')
 const running = ref(false)
@@ -232,8 +234,9 @@ async function loadConversations() {
   try {
     const data = await listConversations()
     conversations.value = data.sessions
-  } catch {
+  } catch (error) {
     conversations.value = []
+    ElMessage.error(error.response?.data?.detail ?? '历史对话加载失败')
   } finally {
     conversationsLoading.value = false
   }
@@ -446,6 +449,9 @@ async function rememberAnswer(index) {
             新对话
           </el-button>
         </template>
+        <div class="history-account">
+          当前账号：{{ auth.user?.username ?? '-' }}（{{ auth.role ?? '-' }}）
+        </div>
         <div v-loading="conversationsLoading" class="conversation-list">
           <div
             v-for="item in conversations"
@@ -881,6 +887,12 @@ async function rememberAnswer(index) {
 .conversation-list {
   max-height: 280px;
   overflow-y: auto;
+}
+
+.history-account {
+  margin-bottom: 8px;
+  color: #909399;
+  font-size: 12px;
 }
 
 .conversation-item {
