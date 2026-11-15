@@ -80,6 +80,9 @@ class Settings(BaseSettings):
     memory_summary_max_chars: int = 120
     # 留空则使用默认模型
     memory_summary_model: str = ""
+    # 超过最近 N 轮的旧对话滚动压缩成会话摘要
+    memory_rolling_summary_enabled: bool = True
+    memory_session_summary_max_chars: int = 300
 
     # Benchmark
     benchmark_max_cases: int = 200

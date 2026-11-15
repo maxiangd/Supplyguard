@@ -9,10 +9,12 @@
 
 import json
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
-from app.db.tables import ConversationTurn, User
+from app.core.configuration import settings
+from app.db.tables import ConversationSummary, ConversationTurn, User
+from app.services.summarize import summarize_conversation
 
 
 def _dump(items) -> str:
@@ -160,6 +162,125 @@ def delete_session(db: Session, user: User, session_id: str) -> int:
     )
     db.flush()
     return result.rowcount or 0
+
+
+# ---------------------------------------------------------------------------
+# 滚动摘要：超过最近 N 轮的旧对话压缩成一段摘要
+# ---------------------------------------------------------------------------
+
+
+def get_summary(
+    db: Session, user: User, session_id: str
+) -> ConversationSummary | None:
+    """取某个会话已有的滚动摘要。"""
+    return db.scalar(
+        select(ConversationSummary).where(
+            ConversationSummary.username == user.username,
+            ConversationSummary.session_id == session_id,
+        )
+    )
+
+
+def _upsert_summary(
+    db: Session,
+    user: User,
+    session_id: str,
+    summary: str,
+    covered_seq: int,
+) -> ConversationSummary:
+    """写入或更新滚动摘要。"""
+    row = get_summary(db, user, session_id)
+    if row is None:
+        row = ConversationSummary(
+            username=user.username,
+            session_id=session_id,
+            summary=summary,
+            covered_seq=covered_seq,
+        )
+        db.add(row)
+    else:
+        row.summary = summary
+        row.covered_seq = covered_seq
+    db.flush()
+    return row
+
+
+def load_rolling_summary(
+    db: Session, user: User, session_id: str, keep_turns: int | None = None
+) -> str:
+    """返回「最近 N 轮之前」的会话摘要，并按需增量更新。
+
+    调用时机是每次问答准备上下文时：
+    - 总轮次不超过 N：直接返回已有摘要（可能为空）
+    - 有新的溢出轮次：只总结 covered_seq 之后的部分，合并进旧摘要
+    - LLM 不可用时由 summarize_conversation 内部降级为规则摘要
+    """
+    if not settings.memory_rolling_summary_enabled:
+        return ""
+
+    keep = keep_turns or settings.memory_max_turns
+    conditions = (
+        ConversationTurn.username == user.username,
+        ConversationTurn.session_id == session_id,
+    )
+
+    try:
+        total = (
+            db.scalar(
+                select(func.count()).select_from(ConversationTurn).where(*conditions)
+            )
+            or 0
+        )
+        existing = get_summary(db, user, session_id)
+        if total <= keep:
+            return existing.summary if existing else ""
+
+        # 最近 keep 轮里最小的 seq，比它更早的都属于溢出部分
+        recent_seqs = list(
+            db.scalars(
+                select(ConversationTurn.seq)
+                .where(*conditions)
+                .order_by(ConversationTurn.seq.desc())
+                .limit(keep)
+            )
+        )
+        if not recent_seqs:
+            return existing.summary if existing else ""
+
+        cutoff = min(recent_seqs)
+        covered = existing.covered_seq if existing else 0
+
+        overflow = list(
+            db.scalars(
+                select(ConversationTurn)
+                .where(
+                    *conditions,
+                    ConversationTurn.seq < cutoff,
+                    ConversationTurn.seq > covered,
+                )
+                .order_by(ConversationTurn.seq.asc())
+            )
+        )
+        if not overflow:
+            return existing.summary if existing else ""
+
+        summary = summarize_conversation(
+            existing.summary if existing else "",
+            [_turn_to_dict(turn) for turn in overflow],
+            limit=settings.memory_session_summary_max_chars,
+        )
+        if not summary:
+            return existing.summary if existing else ""
+
+        _upsert_summary(db, user, session_id, summary, overflow[-1].seq)
+        return summary
+    except Exception:
+        # 摘要失败不能影响主链路，能拿到旧摘要就返回旧摘要
+        try:
+            existing = get_summary(db, user, session_id)
+            return existing.summary if existing else ""
+        except Exception:
+            return ""
 
 
 def backfill_from_redis(

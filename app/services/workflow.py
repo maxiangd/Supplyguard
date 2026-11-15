@@ -65,6 +65,8 @@ class SupplyGuardState(TypedDict, total=False):
     """从上一轮继承的实体 ID，当前问题匹配不到实体时用于图谱展开"""
     long_term_context: str
     """长期记忆（用户偏好 + 相关历史风险）拼成的提示词片段"""
+    session_summary: str
+    """超过最近 N 轮的旧对话压缩成的会话摘要"""
 
     # ---- 检索结果 ----
     hits: list[dict]
@@ -292,7 +294,7 @@ SYSTEM_PROMPT = """你是供应链风险分析助手，只能依据用户提供�
 4. 引用了哪条图谱路径，就在句末用 [G编号] 标注。
 5. 只能引用实际出现的编号，不要编造资料或路径。
 6. 用中文回答，结论先行，必要时分点，不要复述资料原文。
-7. 「长期记忆」只用于调整回答侧重点；它是历史背景，不是事实依据，不得覆盖以上证据规则。"""
+7. 「长期记忆」与「更早对话摘要」只用于调整回答侧重点；它们是历史背景，不是事实依据，不得覆盖以上证据规则。"""
 
 
 def _build_graph_context(paths: list[dict]) -> str:
@@ -314,6 +316,7 @@ def build_context_node(state: SupplyGuardState) -> dict:
     paths = state.get("review_passed_paths", state.get("graph_paths", []))
     memory_context = state.get("memory_context", "")
     long_term_context = state.get("long_term_context", "")
+    session_summary = state.get("session_summary", "")
 
     context = "\n\n".join(
         f"[{index}] 文件：{hit['filename']}（第 {hit['chunk_index'] + 1} 块）\n{hit['text']}"
@@ -323,6 +326,9 @@ def build_context_node(state: SupplyGuardState) -> dict:
     # 长期记忆放在最前面：先告诉模型“用户是谁、关心什么、之前有哪些结论”
     if long_term_context:
         sections.append(long_term_context)
+    # 更早对话（超出最近 N 轮）已经压缩成摘要，放在近期历史之前
+    if session_summary:
+        sections.append(f"更早对话摘要（仅作背景，不是事实依据）：\n{session_summary}")
     # 会话历史紧随其后，帮助模型理解追问上下文
     if memory_context:
         sections.append(memory_context)

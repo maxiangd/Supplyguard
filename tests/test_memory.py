@@ -704,6 +704,25 @@ def test_graph_analyze_passes_carried_entities(monkeypatch):
     assert captured["question"] == "宜春停产 那它呢？"
 
 
+def test_build_context_includes_session_summary():
+    from app.services import workflow
+
+    result = workflow.build_context_node(
+        {
+            "question": "继续说一下",
+            "session_summary": "更早讨论过宜春锂矿停产与复产时间待定。",
+            "review_passed_hits": [],
+            "review_passed_paths": [],
+            "alt_context": "",
+            "infra_context": "",
+        }
+    )
+
+    content = result["messages"][1]["content"]
+    assert "更早对话摘要" in content
+    assert "宜春锂矿停产" in content
+
+
 def test_build_context_includes_long_term_memory():
     from app.services import workflow
 

@@ -15,6 +15,7 @@ from app.db.tables import User
 from app.services.approval import create_approval
 from app.services.conversation import (
     list_turns as list_conversation_turns,
+    load_rolling_summary,
     save_turn as save_conversation_turn,
 )
 from app.services.followup import FollowupContext, resolve_followup
@@ -89,20 +90,26 @@ def _load_session_history(db, user: User, session_id: str) -> list[dict]:
 
 def _prepare_memory(
     db, user: User, question: str, role: str, session_id: str
-) -> tuple[list[dict], FollowupContext, str]:
+) -> tuple[list[dict], FollowupContext, str, str]:
     """加载本轮问答需要的全部记忆。
 
     顺序很重要：
     1. 先读会话历史（Redis 最近几轮 + PostgreSQL 档案补齐）
     2. 用历史判断当前问题是不是追问，得到补全后的检索词和继承实体
     3. 再用补全后的问题去匹配 PostgreSQL 长期记忆
+    4. 超过最近 N 轮的旧对话压缩成会话摘要（按需增量生成）
+
+    返回：(近期历史, 追问上下文, 长期记忆文本, 更早对话摘要)
     """
     history = _load_session_history(db, user, session_id)
     followup = resolve_followup(question, role, history)
     long_term_context = load_memory_context(
         db, user, followup.resolved_question, followup.carried_entity_ids
     )
-    return history, followup, long_term_context
+    session_summary = load_rolling_summary(
+        db, user, session_id, keep_turns=settings.memory_max_turns
+    )
+    return history, followup, long_term_context, session_summary
 
 
 def _refs_from_hits(hits: list[dict], limit: int = 5) -> list[dict]:
@@ -308,8 +315,8 @@ def answer_question(
     """检索→图谱→复核→生成→评估→审批，全流程同步执行。"""
     graph = _get_graph()
 
-    # 加载短期记忆、解析追问、加载长期记忆
-    history, followup, long_term_context = _prepare_memory(
+    # 加载短期记忆、解析追问、加载长期记忆与更早对话摘要
+    history, followup, long_term_context, session_summary = _prepare_memory(
         db, user, question, role, session_id
     )
     memory_context = build_memory_context(history)
@@ -326,6 +333,7 @@ def answer_question(
         "resolved_question": followup.resolved_question,
         "carried_entity_ids": followup.carried_entity_ids,
         "long_term_context": long_term_context,
+        "session_summary": session_summary,
     }
     config = {"configurable": {"thread_id": f"sync_{user.username}_{id(initial)}"}}
 
@@ -452,6 +460,7 @@ def run_workflow_phase1(
     resolved_question: str | None = None,
     carried_entity_ids: list[str] | None = None,
     long_term_context: str = "",
+    session_summary: str = "",
 ):
     """运行工作流第一阶段：检索 → 图谱 → 复核 → 拼提示词。
 
@@ -476,6 +485,7 @@ def run_workflow_phase1(
         "resolved_question": resolved_question or question,
         "carried_entity_ids": carried_entity_ids or [],
         "long_term_context": long_term_context,
+        "session_summary": session_summary,
     }
     thread_id = f"stream_{username}_{id(initial)}"
     config = {"configurable": {"thread_id": thread_id}}
@@ -548,8 +558,8 @@ def stream_answer(
     """
     username = user.username
 
-    # 记忆准备：短期历史 → 追问解析 → 长期记忆
-    history, followup, long_term_context = _prepare_memory(
+    # 记忆准备：短期历史 → 追问解析 → 长期记忆 → 更早对话摘要
+    history, followup, long_term_context, session_summary = _prepare_memory(
         db, user, question, role, session_id
     )
 
@@ -564,6 +574,7 @@ def stream_answer(
         resolved_question=followup.resolved_question,
         carried_entity_ids=followup.carried_entity_ids,
         long_term_context=long_term_context,
+        session_summary=session_summary,
     )
 
     # 第一阶段结果

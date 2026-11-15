@@ -6,7 +6,7 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from app.db.tables import ConversationTurn
+from app.db.tables import ConversationSummary, ConversationTurn
 from app.services import conversation
 
 FINANCE = SimpleNamespace(username="catl_finance", role="finance")
@@ -18,6 +18,7 @@ def conv_db():
     """只建 conversation_turns 表的内存数据库。"""
     engine = create_engine("sqlite:///:memory:")
     ConversationTurn.__table__.create(bind=engine)
+    ConversationSummary.__table__.create(bind=engine)
     session_factory = sessionmaker(bind=engine)
     db = session_factory()
     yield db
@@ -186,13 +187,82 @@ def test_prepare_memory_merges_archived_turns(conv_db, monkeypatch):
     )
     conv_db.commit()
 
-    history, followup_ctx, long_term = chat._prepare_memory(
+    history, followup_ctx, long_term, session_summary = chat._prepare_memory(
         conv_db, FINANCE, "那它呢？", "finance", "s1"
     )
 
     assert history[-1]["question"] == "上一轮问题"
     assert followup_ctx.carried_entity_ids == ["e1"]
     assert long_term == ""
+    assert session_summary == ""
+
+
+def test_rolling_summary_covers_overflow_incrementally(conv_db):
+    for index in range(12):
+        conversation.save_turn(
+            conv_db,
+            FINANCE,
+            session_id="s1",
+            question=f"问题{index}",
+            answer=f"结论{index}。详细说明。",
+        )
+    conv_db.commit()
+
+    summary = conversation.load_rolling_summary(
+        conv_db, FINANCE, "s1", keep_turns=10
+    )
+    conv_db.commit()
+
+    assert summary
+    row = conversation.get_summary(conv_db, FINANCE, "s1")
+    assert row is not None
+    assert row.covered_seq == 2
+
+    # 再增加 3 轮，只对新增溢出的第 3–5 轮做增量摘要
+    for index in range(12, 15):
+        conversation.save_turn(
+            conv_db,
+            FINANCE,
+            session_id="s1",
+            question=f"问题{index}",
+            answer=f"结论{index}。",
+        )
+    conv_db.commit()
+
+    summary = conversation.load_rolling_summary(
+        conv_db, FINANCE, "s1", keep_turns=10
+    )
+    conv_db.commit()
+
+    row = conversation.get_summary(conv_db, FINANCE, "s1")
+    assert row.covered_seq == 5
+    assert summary
+
+
+def test_prepare_memory_includes_rolling_summary(conv_db, monkeypatch):
+    from app.services import chat, followup, memory
+    from tests.test_memory import FakeRedis
+
+    monkeypatch.setattr(memory, "_redis", lambda: FakeRedis())
+    monkeypatch.setattr(followup, "match_entities", lambda question, role: [])
+
+    for index in range(12):
+        conversation.save_turn(
+            conv_db,
+            FINANCE,
+            session_id="s1",
+            question=f"问题{index}",
+            answer=f"结论{index}。详细说明。",
+        )
+    conv_db.commit()
+
+    history, followup_ctx, long_term, session_summary = chat._prepare_memory(
+        conv_db, FINANCE, "继续说一下", "finance", "s1"
+    )
+
+    assert len(history) == 10
+    assert session_summary
+    assert "结论0" in session_summary
 
 
 def test_conversation_api_endpoints(client, auth_headers):

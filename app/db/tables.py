@@ -3,7 +3,14 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, Integer, String, Text
+from sqlalchemy import (
+    Boolean,
+    DateTime,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -186,4 +193,38 @@ class ConversationTurn(Base):
     refs: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=now_local, nullable=False, index=True
+    )
+
+
+class ConversationSummary(Base):
+    """会话滚动摘要：超出最近 N 轮的旧对话压缩成一段摘要。
+
+    每个会话最多一条，covered_seq 记录已经摘要到哪一轮，
+    后续只对新增溢出的轮次做增量摘要。
+    """
+
+    __tablename__ = "conversation_summaries"
+    __table_args__ = (
+        UniqueConstraint(
+            "username", "session_id", name="uq_conversation_summary_session"
+        ),
+    )
+
+    summary_id: Mapped[str] = mapped_column(
+        String(36), primary_key=True, default=new_uuid
+    )
+    username: Mapped[str] = mapped_column(
+        String(128), nullable=False, index=True
+    )
+    session_id: Mapped[str] = mapped_column(
+        String(64), nullable=False, index=True
+    )
+    summary: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    # 已摘要到的 ConversationTurn.seq，用于增量更新
+    covered_seq: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=now_local, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=now_local, onupdate=now_local, nullable=False
     )

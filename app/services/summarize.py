@@ -130,3 +130,78 @@ def summarize_answer(
             return summary
     return summarize_text(answer, limit=limit)
 
+
+CONVERSATION_PROMPT = """你是供应链风险分析助手。请把下面的历史对话合并成一段会话摘要。
+
+已有摘要：
+{existing}
+
+新增对话：
+{turns}
+
+要求：
+- 保留关键结论、涉及对象、风险等级和待办事项
+- 合并旧摘要与新内容，去掉重复
+- 不超过 {max_chars} 个字
+- 不要 Markdown、分点或引用编号
+- 只输出摘要正文"""
+
+
+def _format_turns(turns: list[dict], answer_limit: int = 300) -> str:
+    """把多轮问答压成摘要提示词里的对话文本。"""
+    lines = []
+    for turn in turns:
+        question = _clean(turn.get("question", ""))[:120]
+        answer = _clean(turn.get("answer", ""))[:answer_limit]
+        lines.append(f"用户：{question}\n助手：{answer}")
+    return "\n\n".join(lines)
+
+
+def summarize_conversation(
+    existing: str, turns: list[dict], limit: int | None = None
+) -> str:
+    """把溢出最近 N 轮的旧对话增量合并成一段会话摘要。"""
+    limit = limit or settings.memory_session_summary_max_chars
+    existing = _clean(existing)
+    if not turns:
+        return existing
+
+    if settings.memory_summarize_with_llm:
+        models = available_models()
+        if models:
+            model = settings.memory_summary_model or default_model()
+            if model not in models:
+                model = default_model()
+            prompt = CONVERSATION_PROMPT.format(
+                existing=existing or "无",
+                turns=_format_turns(turns),
+                max_chars=limit,
+            )
+            try:
+                client = get_chat_client(model, timeout=10, max_retries=0)
+                response = client.chat.completions.create(
+                    model=model,
+                    messages=[{"role": "user", "content": prompt}],
+                    temperature=0.2,
+                    max_tokens=400,
+                )
+                summary = _normalize_llm_output(
+                    response.choices[0].message.content or "", limit
+                )
+                if summary:
+                    return summary
+            except Exception:
+                pass
+
+    # 规则降级：旧摘要 + 每轮结论，超长截断
+    parts = [existing] if existing else []
+    for turn in turns:
+        parts.append(
+            summarize_text(turn.get("answer", ""), limit=80)
+            or _clean(turn.get("question", ""))[:80]
+        )
+    merged = " ".join(part for part in parts if part)
+    if len(merged) > limit:
+        merged = merged[:limit].rstrip("，、；,; ") + "…"
+    return merged
+
