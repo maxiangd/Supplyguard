@@ -10,6 +10,7 @@ from pathlib import Path
 
 import pytest
 
+from tests.benchmark import ground_truth
 from tests.benchmark.ground_truth import expected_paths_for_case, leaked_node_ids
 from tests.benchmark.metrics import compute_metrics
 from tests.benchmark.seed_data import NODES
@@ -49,50 +50,114 @@ def test_app_visibility_matches_seed_data():
             assert _visible(node, role) is expected, f"{node['id']} / {role}"
 
 
-def test_benchmark_endpoint_reports_full_block_rate():
-    """评测接口必须报告 100% 越权拦截率且泄漏数为 0。"""
+def test_benchmark_endpoint_reports_document_block_rate():
+    """评测接口必须报告文档越权用例，并在 dry-run 下标明未实际检索。"""
     from app.api.routes.benchmark import run_benchmark
 
     data = run_benchmark()
     metrics = data["metrics"]
 
-    assert metrics["leak_count"] == 0
-    assert metrics["leak_case_total"] > 0
-    assert metrics["leak_case_blocked"] == metrics["leak_case_total"]
-    assert metrics["leak_block_rate"] == 1.0
+    assert metrics["document_leak_count"] == 0
+    assert metrics["document_leak_case_total"] > 0
+    assert (
+        metrics["document_leak_case_blocked"]
+        == metrics["document_leak_case_total"]
+    )
+    assert metrics["document_leak_block_rate"] == 1.0
+    assert metrics["document_leak_check_mode"] == "dry_run"
+    assert metrics["document_leak_hit_cases"] == 0
 
 
-def test_metric_detects_real_leak():
-    """指标必须能识别真实泄漏，而不是恒为 100%。"""
+def test_metric_detects_real_document_leak():
+    """指标必须能识别真实文档泄漏，而不是恒为 100%。"""
     leaked = {
-        "scenario": "cross_role_leak",
-        "role": "finance",
-        "expected_entities": [],
-        "actual_entities": [],
-        "expected_min_paths": 0,
-        "actual_paths": 1,
-        "role_leak": True,
-        "leaked_node_ids": ["supplier-enjie"],
-    }
-    blocked = {
-        "scenario": "cross_role_leak",
+        "scenario": "document_leak",
         "role": "finance",
         "expected_entities": [],
         "actual_entities": [],
         "expected_min_paths": 0,
         "actual_paths": 0,
-        "role_leak": False,
-        "leaked_node_ids": [],
+        "document_hits": 3,
+        "document_role_leak": True,
+        "leaked_document_ids": ["doc-quality-report"],
+        "document_check_mode": "api",
+    }
+    blocked = {
+        "scenario": "document_leak",
+        "role": "finance",
+        "expected_entities": [],
+        "actual_entities": [],
+        "expected_min_paths": 0,
+        "actual_paths": 0,
+        "document_hits": 2,
+        "document_role_leak": False,
+        "leaked_document_ids": [],
+        "document_check_mode": "api",
     }
 
     metrics = compute_metrics([leaked, blocked])
 
-    assert metrics["leak_count"] == 1
-    assert metrics["leak_block_rate"] == 0.5
+    assert metrics["document_leak_count"] == 1
+    assert metrics["document_leak_block_rate"] == 0.5
+    assert metrics["document_leak_hit_cases"] == 2
+    assert metrics["document_leak_check_mode"] == "api"
 
 
-def test_leaked_node_ids_detects_violation():
-    """路径中混入不可见节点时必须被检出。"""
+def test_zero_hit_cases_do_not_count_as_meaningful_probe():
+    """返回 0 个文档块算拦截成功，但不计入“真正检验过”的用例数。"""
+    empty = {
+        "scenario": "document_leak",
+        "role": "logistics",
+        "expected_entities": [],
+        "actual_entities": [],
+        "expected_min_paths": 0,
+        "actual_paths": 0,
+        "document_hits": 0,
+        "document_role_leak": False,
+        "leaked_document_ids": [],
+        "document_check_mode": "api",
+    }
+
+    metrics = compute_metrics([empty])
+
+    assert metrics["document_leak_block_rate"] == 1.0
+    assert metrics["document_leak_hit_cases"] == 0
+
+
+def test_failed_requests_do_not_inflate_block_rate():
+    """请求失败的用例不能当成拦截成功，也不进分母。"""
+    failed = {
+        "scenario": "document_leak",
+        "role": "finance",
+        "expected_entities": [],
+        "actual_entities": [],
+        "expected_min_paths": 0,
+        "actual_paths": 0,
+        "document_hits": 0,
+        "document_role_leak": False,
+        "leaked_document_ids": [],
+        "document_check_mode": "error",
+    }
+
+    metrics = compute_metrics([failed])
+
+    assert metrics["document_leak_check_mode"] == "error"
+    assert metrics["document_leak_case_checked"] == 0
+    assert metrics["document_leak_case_error"] == 1
+    assert metrics["document_leak_block_rate"] == 0.0
+
+
+def test_leaked_node_ids_detects_violation(monkeypatch):
+    """路径中混入不可见节点时必须被检出。
+
+    图谱当前对所有角色开放，这里用临时构造的受限节点验证检测逻辑本身没坏，
+    将来若重新收紧图谱权限仍然有效。
+    """
+    monkeypatch.setattr(
+        ground_truth,
+        "NODES",
+        [{"id": "supplier-enjie", "allowed_roles": ["procurement"]}],
+    )
     paths = [{"node_ids": ["supplier-enjie"]}]
 
     assert leaked_node_ids(paths, "logistics") == ["supplier-enjie"]

@@ -788,4 +788,4 @@ def test_benchmark_reports_followup_metrics():
     assert metrics["followup_case_total"] == 4
     assert metrics["followup_case_passed"] == 4
     assert metrics["followup_success_rate"] == 1.0
-    assert metrics["leak_count"] == 0
+    assert metrics["document_leak_count"] == 0

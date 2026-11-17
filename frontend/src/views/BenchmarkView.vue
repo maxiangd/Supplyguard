@@ -10,32 +10,45 @@ const run = ref(null)
 const activeTab = ref('cases')
 
 const metricDefs = [
-  { key: 'f1', label: 'F1' },
-  { key: 'path_hit_rate', label: '图谱路径命中率' },
-  { key: 'role_block_rate', label: '越权拦截率' },
+  { key: 'f1', label: '实体 F1' },
+  { key: 'path_recall', label: '路径召回率' },
+  { key: 'path_precision', label: '路径精确率' },
+  { key: 'edge_f1', label: '边级 F1' },
+  { key: 'node_f1', label: '节点 F1' },
+  { key: 'path_mrr', label: '路径 MRR', raw: true },
+  { key: 'path_case_hit_rate', label: 'Hit@K（按用例）' },
+  { key: 'path_rank_hit_rate', label: 'Recall@K（按路径）' },
+  { key: 'path_hit_rate', label: '路径条数达标率' },
+  { key: 'role_block_rate', label: '文档越权拦截率' },
   { key: 'followup_success_rate', label: '多轮追问命中率' },
   { key: 'risk_accuracy', label: '风险等级准确率' },
-  { key: 'precision', label: 'Precision' },
-  { key: 'recall', label: 'Recall' },
+  { key: 'precision', label: '实体 Precision' },
+  { key: 'recall', label: '实体 Recall' },
 ]
 
+const cardKeys = ['f1', 'path_recall', 'path_precision', 'role_block_rate']
+
 function pct(value) {
-  return `${Math.round(value * 100)}%`
+  return `${Math.round((value ?? 0) * 100)}%`
 }
 
-function delta(current, baseline) {
-  const diff = Math.round((current - baseline) * 100)
-  return `${diff >= 0 ? '+' : ''}${diff} pt`
+function delta(current, baseline, raw = false) {
+  const diff = (current ?? 0) - (baseline ?? 0)
+  if (raw) return `${diff >= 0 ? '+' : ''}${diff.toFixed(3)}`
+  const points = Math.round(diff * 100)
+  return `${points >= 0 ? '+' : ''}${points} pt`
 }
 
 const cards = computed(() => {
   if (!run.value) return []
-  return metricDefs.slice(0, 4).map((def) => ({
-    key: def.key,
-    label: def.label,
-    value: pct(run.value.metrics[def.key]),
-    baseline: pct(run.value.baseline[def.key]),
-  }))
+  return metricDefs
+    .filter((def) => cardKeys.includes(def.key))
+    .map((def) => ({
+      key: def.key,
+      label: def.label,
+      value: pct(run.value.metrics[def.key]),
+      baseline: pct(run.value.baseline[def.key]),
+    }))
 })
 
 const compareRows = computed(() => {
@@ -45,8 +58,13 @@ const compareRows = computed(() => {
     label: def.label,
     current: run.value.metrics[def.key],
     baseline: run.value.baseline[def.key],
+    raw: def.raw,
   }))
 })
+
+function display(value, raw) {
+  return raw ? (value ?? 0).toFixed(3) : pct(value)
+}
 
 const resultRows = computed(() => {
   if (!run.value) return []
@@ -54,6 +72,9 @@ const resultRows = computed(() => {
   return run.value.results.map((result) => ({
     ...result,
     question: caseMap.get(result.id)?.question ?? '',
+    pathNote: result.path_match?.golden_total
+      ? `${result.path_match.golden_matched}/${result.path_match.golden_total}`
+      : '—',
   }))
 })
 
@@ -62,7 +83,7 @@ async function load() {
   cases.value = data.cases.map((c) => ({
     id: c.id,
     question: c.question,
-    expected: `角色=${c.role} | 期望实体≥${c.expected_entities?.length || 0} | 期望路径≥${c.expected_min_paths || 0}`,
+    expected: `角色=${c.role} | 期望实体≥${c.expected_entities?.length || 0} | 标准路径${c.expected_paths?.length || 0} 条`,
     tags: [c.scenario, c.role, ...(c.expected_path_rules || [])],
   }))
   run.value = null  // 需要手动运行
@@ -77,14 +98,22 @@ async function execute() {
       ran_at: data.ran_at,
       metrics: {
         f1: data.metrics.entity_f1,
+        path_recall: data.metrics.path_recall,
+        path_precision: data.metrics.path_precision,
+        edge_f1: data.metrics.edge_f1,
+        node_f1: data.metrics.node_f1,
+        path_mrr: data.metrics.path_mrr,
+        path_case_hit_rate: data.metrics.path_case_hit_rate,
+        path_rank_hit_rate: data.metrics.path_rank_hit_rate,
         path_hit_rate: data.metrics.path_hit_rate,
-        role_block_rate: data.metrics.leak_block_rate,
+        role_block_rate: data.metrics.document_leak_block_rate,
         followup_success_rate: data.metrics.followup_success_rate,
         risk_accuracy: data.metrics.rule_precision,
         precision: data.metrics.entity_precision,
         recall: data.metrics.entity_recall,
       },
       baseline: data.baseline,
+      documentCheckMode: data.metrics.document_leak_check_mode,
       results: data.results,
     }
     activeTab.value = 'results'
@@ -105,6 +134,7 @@ onMounted(load)
           <div class="title">评测集</div>
           <div class="sub">
             上次运行：{{ run?.ran_at ?? '尚未运行' }} · {{ cases.length }} 条用例
+            <template v-if="run"> · 文档拦截模式：{{ run.documentCheckMode }}</template>
           </div>
         </div>
         <el-button type="primary" :loading="running" @click="execute">
@@ -128,14 +158,14 @@ onMounted(load)
       <el-table :data="compareRows" size="small">
         <el-table-column prop="label" label="指标" min-width="160" />
         <el-table-column label="本系统" width="120">
-          <template #default="{ row }">{{ pct(row.current) }}</template>
+          <template #default="{ row }">{{ display(row.current, row.raw) }}</template>
         </el-table-column>
         <el-table-column label="单 Agent 基线" width="140">
-          <template #default="{ row }">{{ pct(row.baseline) }}</template>
+          <template #default="{ row }">{{ display(row.baseline, row.raw) }}</template>
         </el-table-column>
         <el-table-column label="差值" width="100">
           <template #default="{ row }">
-            {{ delta(row.current, row.baseline) }}
+            {{ delta(row.current, row.baseline, row.raw) }}
           </template>
         </el-table-column>
       </el-table>
@@ -178,7 +208,8 @@ onMounted(load)
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="note" label="说明" min-width="280" />
+            <el-table-column prop="pathNote" label="标准路径命中" width="120" />
+            <el-table-column prop="note" label="说明" min-width="240" />
           </el-table>
         </el-tab-pane>
       </el-tabs>

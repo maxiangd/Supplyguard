@@ -7,6 +7,7 @@ NODES = [
     "type": "region",
     "risk_level": "high",
     "region": "江西宜春",
+    "desc": "锂云母与碳酸锂主产地，枧下窝锂矿所在地",
     "aliases": [
       "江西",
       "宜春",
@@ -18,7 +19,8 @@ NODES = [
       "logistics",
       "finance",
       "quality"
-    ]
+    ],
+    "source": "02-锂钴镍资源与海外矿产.md"
   },
   {
     "id": "region-fujian-ningde",
@@ -26,6 +28,7 @@ NODES = [
     "type": "region",
     "risk_level": "medium",
     "region": "福建宁德",
+    "desc": "总部与核心电芯基地所在地",
     "aliases": [
       "福建",
       "宁德"
@@ -36,7 +39,8 @@ NODES = [
       "logistics",
       "finance",
       "quality"
-    ]
+    ],
+    "source": "03-全球生产基地与产能.md"
   },
   {
     "id": "region-jiangsu-liyang",
@@ -44,6 +48,7 @@ NODES = [
     "type": "region",
     "risk_level": "medium",
     "region": "江苏溧阳",
+    "desc": "长三角电芯与材料配套基地",
     "aliases": [
       "江苏",
       "溧阳"
@@ -54,7 +59,8 @@ NODES = [
       "logistics",
       "finance",
       "quality"
-    ]
+    ],
+    "source": "03-全球生产基地与产能.md"
   },
   {
     "id": "region-sichuan-yibin",
@@ -62,6 +68,7 @@ NODES = [
     "type": "region",
     "risk_level": "low",
     "region": "四川宜宾",
+    "desc": "西南水电与材料配套基地",
     "aliases": [
       "四川",
       "宜宾"
@@ -72,7 +79,8 @@ NODES = [
       "logistics",
       "finance",
       "quality"
-    ]
+    ],
+    "source": "03-全球生产基地与产能.md"
   },
   {
     "id": "region-guangdong-zhaoqing",
@@ -80,6 +88,7 @@ NODES = [
     "type": "region",
     "risk_level": "low",
     "region": "广东肇庆",
+    "desc": "华南电芯与储能配套基地",
     "aliases": [
       "广东",
       "肇庆"
@@ -90,7 +99,8 @@ NODES = [
       "logistics",
       "finance",
       "quality"
-    ]
+    ],
+    "source": "03-全球生产基地与产能.md"
   },
   {
     "id": "region-germany",
@@ -98,6 +108,7 @@ NODES = [
     "type": "region",
     "risk_level": "medium",
     "region": "德国图林根",
+    "desc": "首个欧洲工厂所在地，已投产并盈利",
     "aliases": [
       "德国",
       "图林根",
@@ -109,7 +120,8 @@ NODES = [
       "logistics",
       "finance",
       "quality"
-    ]
+    ],
+    "source": "03-全球生产基地与产能.md"
   },
   {
     "id": "region-hungary",
@@ -117,6 +129,7 @@ NODES = [
     "type": "region",
     "risk_level": "high",
     "region": "匈牙利德布勒森",
+    "desc": "规划 100 GWh 的海外最大电池基地",
     "aliases": [
       "匈牙利",
       "德布勒森"
@@ -127,7 +140,8 @@ NODES = [
       "logistics",
       "finance",
       "quality"
-    ]
+    ],
+    "source": "03-全球生产基地与产能.md"
   },
   {
     "id": "region-indonesia",
@@ -135,6 +149,7 @@ NODES = [
     "type": "region",
     "risk_level": "medium",
     "region": "印尼卡拉旺",
+    "desc": "镍资源与电池一体化项目所在地",
     "aliases": [
       "印尼",
       "印度尼西亚",
@@ -146,7 +161,8 @@ NODES = [
       "logistics",
       "finance",
       "quality"
-    ]
+    ],
+    "source": "02-锂钴镍资源与海外矿产.md"
   },
   {
     "id": "region-spain",
@@ -154,6 +170,7 @@ NODES = [
     "type": "region",
     "risk_level": "low",
     "region": "西班牙",
+    "desc": "与 Stellantis 合资的磷酸铁锂工厂所在地",
     "aliases": [
       "西班牙",
       "Stellantis"
@@ -164,7 +181,8 @@ NODES = [
       "logistics",
       "finance",
       "quality"
-    ]
+    ],
+    "source": "03-全球生产基地与产能.md"
   },
   {
     "id": "region-congo",
@@ -172,6 +190,7 @@ NODES = [
     "type": "region",
     "risk_level": "high",
     "region": "刚果（金）",
+    "desc": "全球钴主产地，出口限制推高钴价",
     "aliases": [
       "刚果金",
       "刚果（金）",
@@ -183,7 +202,8 @@ NODES = [
       "logistics",
       "finance",
       "quality"
-    ]
+    ],
+    "source": "02-锂钴镍资源与海外矿产.md"
   },
   {
     "id": "region-zimbabwe",
@@ -191,6 +211,7 @@ NODES = [
     "type": "region",
     "risk_level": "medium",
     "region": "津巴布韦",
+    "desc": "锂精矿来源地，出口政策收紧",
     "aliases": [
       "津巴布韦"
     ],
@@ -200,7 +221,8 @@ NODES = [
       "logistics",
       "finance",
       "quality"
-    ]
+    ],
+    "source": "02-锂钴镍资源与海外矿产.md"
   },
   {
     "id": "supplier-hunan-yuneng",
@@ -208,6 +230,7 @@ NODES = [
     "type": "supplier",
     "risk_level": "medium",
     "region": "湖南",
+    "desc": "磷酸铁锂正极，供货占比约 35%，单一品类依赖度最高",
     "aliases": [
       "湖南裕能",
       "裕能"
@@ -215,9 +238,11 @@ NODES = [
     "allowed_roles": [
       "admin",
       "procurement",
+      "logistics",
       "finance",
       "quality"
-    ]
+    ],
+    "source": "07-供应商风险台账.txt"
   },
   {
     "id": "supplier-fulin",
@@ -225,6 +250,7 @@ NODES = [
     "type": "supplier",
     "risk_level": "medium",
     "region": "四川",
+    "desc": "高压密磷酸铁锂，占比约 30%，公司已入股并锁定产能",
     "aliases": [
       "富临精工",
       "富临"
@@ -232,9 +258,11 @@ NODES = [
     "allowed_roles": [
       "admin",
       "procurement",
+      "logistics",
       "finance",
       "quality"
-    ]
+    ],
+    "source": "07-供应商风险台账.txt"
   },
   {
     "id": "supplier-rongbai",
@@ -242,6 +270,7 @@ NODES = [
     "type": "supplier",
     "risk_level": "medium",
     "region": "浙江",
+    "desc": "三元正极约 60%，1200 亿元长单引发交易所问询",
     "aliases": [
       "容百科技",
       "容百"
@@ -249,9 +278,11 @@ NODES = [
     "allowed_roles": [
       "admin",
       "procurement",
+      "logistics",
       "finance",
       "quality"
-    ]
+    ],
+    "source": "07-供应商风险台账.txt"
   },
   {
     "id": "supplier-huayou",
@@ -259,6 +290,7 @@ NODES = [
     "type": "supplier",
     "risk_level": "high",
     "region": "浙江",
+    "desc": "三元前驱体与正极约 20%，钴原料受刚果（金）出口限制影响",
     "aliases": [
       "华友钴业",
       "华友",
@@ -268,9 +300,11 @@ NODES = [
     "allowed_roles": [
       "admin",
       "procurement",
+      "logistics",
       "finance",
       "quality"
-    ]
+    ],
+    "source": "07-供应商风险台账.txt"
   },
   {
     "id": "supplier-shangtai",
@@ -278,6 +312,7 @@ NODES = [
     "type": "supplier",
     "risk_level": "low",
     "region": "河北",
+    "desc": "人造石墨负极约 35%，产能爬坡顺利",
     "aliases": [
       "尚太科技",
       "尚太"
@@ -285,9 +320,11 @@ NODES = [
     "allowed_roles": [
       "admin",
       "procurement",
+      "logistics",
       "finance",
       "quality"
-    ]
+    ],
+    "source": "07-供应商风险台账.txt"
   },
   {
     "id": "supplier-kaijin",
@@ -295,6 +332,7 @@ NODES = [
     "type": "supplier",
     "risk_level": "medium",
     "region": "广东",
+    "desc": "人造石墨负极约 40%，单一客户依赖度高",
     "aliases": [
       "凯金新能源",
       "凯金"
@@ -302,9 +340,11 @@ NODES = [
     "allowed_roles": [
       "admin",
       "procurement",
+      "logistics",
       "finance",
       "quality"
-    ]
+    ],
+    "source": "07-供应商风险台账.txt"
   },
   {
     "id": "supplier-enjie",
@@ -312,6 +352,7 @@ NODES = [
     "type": "supplier",
     "risk_level": "high",
     "region": "上海",
+    "desc": "湿法隔膜约 40%，隔膜环节集中度最高",
     "aliases": [
       "恩捷股份",
       "恩捷"
@@ -319,9 +360,11 @@ NODES = [
     "allowed_roles": [
       "admin",
       "procurement",
+      "logistics",
       "finance",
       "quality"
-    ]
+    ],
+    "source": "07-供应商风险台账.txt"
   },
   {
     "id": "supplier-xingyuan",
@@ -329,6 +372,7 @@ NODES = [
     "type": "supplier",
     "risk_level": "medium",
     "region": "广东",
+    "desc": "干法/湿法隔膜约 40%，欧洲本地配套仍在建设",
     "aliases": [
       "星源材质",
       "星源"
@@ -336,9 +380,11 @@ NODES = [
     "allowed_roles": [
       "admin",
       "procurement",
+      "logistics",
       "finance",
       "quality"
-    ]
+    ],
+    "source": "07-供应商风险台账.txt"
   },
   {
     "id": "supplier-jiangsu-guotai",
@@ -346,6 +392,7 @@ NODES = [
     "type": "supplier",
     "risk_level": "low",
     "region": "江苏",
+    "desc": "电解液约 35%，供应稳定",
     "aliases": [
       "江苏国泰",
       "国泰"
@@ -353,9 +400,11 @@ NODES = [
     "allowed_roles": [
       "admin",
       "procurement",
+      "logistics",
       "finance",
       "quality"
-    ]
+    ],
+    "source": "07-供应商风险台账.txt"
   },
   {
     "id": "supplier-tinci",
@@ -363,6 +412,7 @@ NODES = [
     "type": "supplier",
     "risk_level": "low",
     "region": "广东",
+    "desc": "电解液约 25%，一体化成本优势",
     "aliases": [
       "天赐材料",
       "天赐"
@@ -370,9 +420,11 @@ NODES = [
     "allowed_roles": [
       "admin",
       "procurement",
+      "logistics",
       "finance",
       "quality"
-    ]
+    ],
+    "source": "07-供应商风险台账.txt"
   },
   {
     "id": "supplier-capchem",
@@ -380,15 +432,18 @@ NODES = [
     "type": "supplier",
     "risk_level": "low",
     "region": "广东",
+    "desc": "电解液约 20%，配合欧洲工厂本地化",
     "aliases": [
       "新宙邦"
     ],
     "allowed_roles": [
       "admin",
       "procurement",
+      "logistics",
       "finance",
       "quality"
-    ]
+    ],
+    "source": "07-供应商风险台账.txt"
   },
   {
     "id": "supplier-kedali",
@@ -396,15 +451,18 @@ NODES = [
     "type": "supplier",
     "risk_level": "low",
     "region": "广东",
+    "desc": "电池结构件主要供应商，就近配套多个基地",
     "aliases": [
       "科达利"
     ],
     "allowed_roles": [
       "admin",
       "procurement",
+      "logistics",
       "finance",
       "quality"
-    ]
+    ],
+    "source": "07-供应商风险台账.txt"
   },
   {
     "id": "factory-ningde-zhangwan",
@@ -412,6 +470,7 @@ NODES = [
     "type": "factory",
     "risk_level": "high",
     "region": "福建宁德",
+    "desc": "总部核心电芯基地，出口经三都澳港区",
     "aliases": [
       "漳湾",
       "宁德基地",
@@ -423,7 +482,8 @@ NODES = [
       "logistics",
       "finance",
       "quality"
-    ]
+    ],
+    "source": "03-全球生产基地与产能.md"
   },
   {
     "id": "factory-ningde-cheliwan",
@@ -431,6 +491,7 @@ NODES = [
     "type": "factory",
     "risk_level": "medium",
     "region": "福建宁德",
+    "desc": "宁德厂区之一，与漳湾协同排产",
     "aliases": [
       "车里湾"
     ],
@@ -440,7 +501,8 @@ NODES = [
       "logistics",
       "finance",
       "quality"
-    ]
+    ],
+    "source": "03-全球生产基地与产能.md"
   },
   {
     "id": "factory-liyang",
@@ -448,6 +510,7 @@ NODES = [
     "type": "factory",
     "risk_level": "medium",
     "region": "江苏溧阳",
+    "desc": "长三角电芯基地，经上海港出口",
     "aliases": [
       "溧阳基地",
       "溧阳工厂"
@@ -458,7 +521,8 @@ NODES = [
       "logistics",
       "finance",
       "quality"
-    ]
+    ],
+    "source": "03-全球生产基地与产能.md"
   },
   {
     "id": "factory-yibin",
@@ -466,6 +530,7 @@ NODES = [
     "type": "factory",
     "risk_level": "low",
     "region": "四川宜宾",
+    "desc": "西南备选产能，水电成本优势",
     "aliases": [
       "宜宾基地",
       "宜宾工厂"
@@ -476,7 +541,8 @@ NODES = [
       "logistics",
       "finance",
       "quality"
-    ]
+    ],
+    "source": "03-全球生产基地与产能.md"
   },
   {
     "id": "factory-zhaoqing",
@@ -484,6 +550,7 @@ NODES = [
     "type": "factory",
     "risk_level": "low",
     "region": "广东肇庆",
+    "desc": "华南电芯与储能系统产能",
     "aliases": [
       "肇庆基地",
       "肇庆工厂"
@@ -494,7 +561,8 @@ NODES = [
       "logistics",
       "finance",
       "quality"
-    ]
+    ],
+    "source": "03-全球生产基地与产能.md"
   },
   {
     "id": "factory-yichun-smelter",
@@ -502,6 +570,7 @@ NODES = [
     "type": "factory",
     "risk_level": "high",
     "region": "江西宜春",
+    "desc": "锂云母冶炼与碳酸锂加工，配套枧下窝锂矿",
     "aliases": [
       "宜春冶炼",
       "宜春配套冶炼厂"
@@ -512,7 +581,8 @@ NODES = [
       "logistics",
       "finance",
       "quality"
-    ]
+    ],
+    "source": "02-锂钴镍资源与海外矿产.md"
   },
   {
     "id": "factory-arnstadt",
@@ -520,6 +590,7 @@ NODES = [
     "type": "factory",
     "risk_level": "medium",
     "region": "德国图林根",
+    "desc": "首个欧洲工厂，已投产并盈利",
     "aliases": [
       "图林根工厂",
       "德国工厂",
@@ -531,7 +602,8 @@ NODES = [
       "logistics",
       "finance",
       "quality"
-    ]
+    ],
+    "source": "03-全球生产基地与产能.md"
   },
   {
     "id": "factory-debrecen",
@@ -539,6 +611,7 @@ NODES = [
     "type": "factory",
     "risk_level": "high",
     "region": "匈牙利德布勒森",
+    "desc": "规划 100 GWh，2026-09 启动试生产，仍在爬坡",
     "aliases": [
       "德布勒森工厂",
       "匈牙利工厂"
@@ -549,7 +622,8 @@ NODES = [
       "logistics",
       "finance",
       "quality"
-    ]
+    ],
+    "source": "03-全球生产基地与产能.md"
   },
   {
     "id": "factory-karawang",
@@ -557,6 +631,7 @@ NODES = [
     "type": "factory",
     "risk_level": "medium",
     "region": "印尼卡拉旺",
+    "desc": "2026-07 投产，与镍资源一体化项目配套",
     "aliases": [
       "卡拉旺工厂",
       "印尼工厂"
@@ -567,7 +642,8 @@ NODES = [
       "logistics",
       "finance",
       "quality"
-    ]
+    ],
+    "source": "02-锂钴镍资源与海外矿产.md"
   },
   {
     "id": "factory-spain",
@@ -575,6 +651,7 @@ NODES = [
     "type": "factory",
     "risk_level": "low",
     "region": "西班牙",
+    "desc": "与 Stellantis 合资的 50 GWh 磷酸铁锂工厂",
     "aliases": [
       "西班牙工厂",
       "西班牙合资工厂"
@@ -585,7 +662,8 @@ NODES = [
       "logistics",
       "finance",
       "quality"
-    ]
+    ],
+    "source": "03-全球生产基地与产能.md"
   },
   {
     "id": "port-sanduao",
@@ -593,14 +671,19 @@ NODES = [
     "type": "port",
     "risk_level": "medium",
     "region": "福建宁德",
+    "desc": "宁德锂电出口主通道，危险品舱位紧张",
     "aliases": [
       "三都澳",
       "漳湾作业区"
     ],
     "allowed_roles": [
       "admin",
-      "logistics"
-    ]
+      "procurement",
+      "logistics",
+      "finance",
+      "quality"
+    ],
+    "source": "04-物流与出口通道.md"
   },
   {
     "id": "port-xiamen",
@@ -608,13 +691,18 @@ NODES = [
     "type": "port",
     "risk_level": "medium",
     "region": "福建厦门",
+    "desc": "承担福建约九成锂电池出口，具备危险品资质",
     "aliases": [
       "厦门港"
     ],
     "allowed_roles": [
       "admin",
-      "logistics"
-    ]
+      "procurement",
+      "logistics",
+      "finance",
+      "quality"
+    ],
+    "source": "04-物流与出口通道.md"
   },
   {
     "id": "port-shanghai",
@@ -622,13 +710,18 @@ NODES = [
     "type": "port",
     "risk_level": "low",
     "region": "上海",
+    "desc": "长三角基地出口与转运枢纽",
     "aliases": [
       "上海港"
     ],
     "allowed_roles": [
       "admin",
-      "logistics"
-    ]
+      "procurement",
+      "logistics",
+      "finance",
+      "quality"
+    ],
+    "source": "04-物流与出口通道.md"
   },
   {
     "id": "port-hamburg",
@@ -636,13 +729,18 @@ NODES = [
     "type": "port",
     "risk_level": "medium",
     "region": "德国",
+    "desc": "欧洲方向远洋到港枢纽",
     "aliases": [
       "汉堡港"
     ],
     "allowed_roles": [
       "admin",
-      "logistics"
-    ]
+      "procurement",
+      "logistics",
+      "finance",
+      "quality"
+    ],
+    "source": "04-物流与出口通道.md"
   },
   {
     "id": "route-ningde-xiamen",
@@ -650,6 +748,7 @@ NODES = [
     "type": "route",
     "risk_level": "low",
     "region": "福建",
+    "desc": "集装箱定班支线，衔接远洋航线",
     "aliases": [
       "宁德-厦门支线",
       "宁德—厦门",
@@ -657,8 +756,12 @@ NODES = [
     ],
     "allowed_roles": [
       "admin",
-      "logistics"
-    ]
+      "procurement",
+      "logistics",
+      "finance",
+      "quality"
+    ],
+    "source": "04-物流与出口通道.md"
   },
   {
     "id": "route-arctic",
@@ -666,6 +769,7 @@ NODES = [
     "type": "route",
     "risk_level": "medium",
     "region": "欧洲",
+    "desc": "福建首条冰上丝绸之路航线，欧洲海运替代路径",
     "aliases": [
       "北极快航",
       "冰上丝绸之路",
@@ -673,8 +777,12 @@ NODES = [
     ],
     "allowed_roles": [
       "admin",
-      "logistics"
-    ]
+      "procurement",
+      "logistics",
+      "finance",
+      "quality"
+    ],
+    "source": "04-物流与出口通道.md"
   },
   {
     "id": "route-redsea",
@@ -682,6 +790,7 @@ NODES = [
     "type": "route",
     "risk_level": "high",
     "region": "欧洲",
+    "desc": "欧洲主航线，受红海绕行影响",
     "aliases": [
       "红海",
       "苏伊士",
@@ -689,8 +798,12 @@ NODES = [
     ],
     "allowed_roles": [
       "admin",
-      "logistics"
-    ]
+      "procurement",
+      "logistics",
+      "finance",
+      "quality"
+    ],
+    "source": "04-物流与出口通道.md"
   },
   {
     "id": "event-yichun-eia",
@@ -698,6 +811,7 @@ NODES = [
     "type": "event",
     "risk_level": "medium",
     "region": "江西宜春",
+    "desc": "2026-10-22 发布，公示期至 10-28，采矿证手续未完成",
     "aliases": [
       "环评公示",
       "拟批准公示"
@@ -706,7 +820,8 @@ NODES = [
       "admin",
       "procurement",
       "finance"
-    ]
+    ],
+    "source": "11-风险事件快报.md"
   },
   {
     "id": "event-yichun-suspend",
@@ -714,6 +829,7 @@ NODES = [
     "type": "event",
     "risk_level": "high",
     "region": "江西宜春",
+    "desc": "2025-08 起因采矿证续期与矿种认定暂停开采",
     "aliases": [
       "枧下窝停产",
       "锂矿停产"
@@ -722,7 +838,8 @@ NODES = [
       "admin",
       "procurement",
       "finance"
-    ]
+    ],
+    "source": "02-锂钴镍资源与海外矿产.md"
   },
   {
     "id": "event-carbonate-price",
@@ -730,6 +847,7 @@ NODES = [
     "type": "event",
     "risk_level": "medium",
     "region": "中国",
+    "desc": "价格回落至 9 万–11 万元/吨，库存减值风险上升",
     "aliases": [
       "碳酸锂价格",
       "锂价"
@@ -738,7 +856,8 @@ NODES = [
       "admin",
       "procurement",
       "finance"
-    ]
+    ],
+    "source": "11-风险事件快报.md"
   },
   {
     "id": "event-cobalt-drc",
@@ -746,6 +865,7 @@ NODES = [
     "type": "event",
     "risk_level": "high",
     "region": "刚果（金）",
+    "desc": "2025 年起实施出口限制，推高钴价并影响三元成本",
     "aliases": [
       "钴出口限制",
       "刚果金钴"
@@ -754,7 +874,8 @@ NODES = [
       "admin",
       "procurement",
       "finance"
-    ]
+    ],
+    "source": "02-锂钴镍资源与海外矿产.md"
   },
   {
     "id": "event-zimbabwe-lithium",
@@ -762,6 +883,7 @@ NODES = [
     "type": "event",
     "risk_level": "medium",
     "region": "津巴布韦",
+    "desc": "锂精矿出口政策收紧，影响部分锂原料供给",
     "aliases": [
       "津巴布韦锂",
       "锂出口收紧"
@@ -770,7 +892,8 @@ NODES = [
       "admin",
       "procurement",
       "finance"
-    ]
+    ],
+    "source": "02-锂钴镍资源与海外矿产.md"
   },
   {
     "id": "event-indonesia-nickel",
@@ -778,6 +901,7 @@ NODES = [
     "type": "event",
     "risk_level": "medium",
     "region": "印尼",
+    "desc": "印尼多次讨论调整镍出口与投资政策",
     "aliases": [
       "印尼镍",
       "镍政策"
@@ -786,7 +910,8 @@ NODES = [
       "admin",
       "procurement",
       "finance"
-    ]
+    ],
+    "source": "02-锂钴镍资源与海外矿产.md"
   },
   {
     "id": "event-polestar-recall",
@@ -794,6 +919,7 @@ NODES = [
     "type": "event",
     "risk_level": "high",
     "region": "福建宁德",
+    "desc": "1473 辆 86 kWh 版因内阻异常召回，涉事电芯由宁德时代供应",
     "aliases": [
       "极星",
       "极星4",
@@ -802,7 +928,8 @@ NODES = [
     "allowed_roles": [
       "admin",
       "quality"
-    ]
+    ],
+    "source": "05-质量与召回事件.md"
   },
   {
     "id": "event-li-mega-recall",
@@ -810,6 +937,7 @@ NODES = [
     "type": "event",
     "risk_level": "medium",
     "region": "福建宁德",
+    "desc": "11411 辆因冷却液问题召回，未认定电芯本体缺陷",
     "aliases": [
       "理想 MEGA",
       "理想MEGA",
@@ -818,7 +946,8 @@ NODES = [
     "allowed_roles": [
       "admin",
       "quality"
-    ]
+    ],
+    "source": "05-质量与召回事件.md"
   },
   {
     "id": "event-zeekr-dispute",
@@ -826,6 +955,7 @@ NODES = [
     "type": "event",
     "risk_level": "low",
     "region": "福建宁德",
+    "desc": "为约 3.82 万辆车辆免费更换宁德时代电池",
     "aliases": [
       "极氪",
       "极氪001",
@@ -834,7 +964,8 @@ NODES = [
     "allowed_roles": [
       "admin",
       "quality"
-    ]
+    ],
+    "source": "05-质量与召回事件.md"
   },
   {
     "id": "event-debrecen-ramp",
@@ -842,6 +973,7 @@ NODES = [
     "type": "event",
     "risk_level": "medium",
     "region": "匈牙利德布勒森",
+    "desc": "2026-09 启动试生产，短期交付弹性有限",
     "aliases": [
       "产能爬坡",
       "德布勒森试生产"
@@ -851,7 +983,8 @@ NODES = [
       "procurement",
       "finance",
       "logistics"
-    ]
+    ],
+    "source": "11-风险事件快报.md"
   },
   {
     "id": "event-redsea-diversion",
@@ -859,6 +992,7 @@ NODES = [
     "type": "event",
     "risk_level": "high",
     "region": "欧洲",
+    "desc": "欧洲方向绕行，拉长交付周期并推高运费",
     "aliases": [
       "红海绕行",
       "绕行好望角"
@@ -866,7 +1000,8 @@ NODES = [
     "allowed_roles": [
       "admin",
       "logistics"
-    ]
+    ],
+    "source": "04-物流与出口通道.md"
   },
   {
     "id": "event-dangerous-berth",
@@ -874,6 +1009,7 @@ NODES = [
     "type": "event",
     "risk_level": "medium",
     "region": "福建宁德",
+    "desc": "Q4 危险品舱位紧张，建议提前 3 周订舱",
     "aliases": [
       "舱位紧张",
       "危险品舱位"
@@ -881,7 +1017,8 @@ NODES = [
     "allowed_roles": [
       "admin",
       "logistics"
-    ]
+    ],
+    "source": "10-供应链月度例会纪要.txt"
   },
   {
     "id": "event-eu-battery-rule",
@@ -889,6 +1026,7 @@ NODES = [
     "type": "event",
     "risk_level": "medium",
     "region": "欧洲",
+    "desc": "碳足迹、回收比例与本地化要求提高",
     "aliases": [
       "欧盟电池法规",
       "电池法规",
@@ -898,7 +1036,8 @@ NODES = [
       "admin",
       "logistics",
       "quality"
-    ]
+    ],
+    "source": "09-欧盟电池法规合规要点.pdf"
   }
 ]
 
