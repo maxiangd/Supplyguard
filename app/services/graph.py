@@ -1,6 +1,8 @@
 """图谱服务：按角色取子图、识别问题中的实体、计算多跳影响路径。"""
 
+from app.core.configuration import settings
 from app.db.graph_database import run_query
+from app.services.entity_retrieval import ENTITY_ID_FIELD, search_entities
 
 RULE_LABELS = {
     "DIRECT": "直接传导",
@@ -16,8 +18,19 @@ RISK_TO_SEVERITY = {"high": "HIGH", "medium": "MEDIUM", "low": "LOW"}
 # 同一问题命中多个实体时，事件优先级最高：事件本身就带传导规则
 TYPE_PRIORITY = {"event": 0, "supplier": 1, "factory": 2, "port": 3, "route": 4, "region": 5}
 
+# 问题意图词到传导规则的映射，用于证据精排
+INTENT_RULE_HINTS = {
+    "PORT": ("港口", "出海口", "出货", "运输", "物流", "舱位"),
+    "ROUTE": ("航线", "绕行", "海运", "运费", "交付"),
+    "REGION": ("地区", "产地", "矿", "资源", "合规", "法规"),
+    "SUPPLY": ("供应", "采购", "原料", "供应商", "成本", "价格"),
+    "DIRECT": ("召回", "停产", "事件", "影响", "质量"),
+}
+
 MAX_ENTITIES = 3
 MAX_PATHS = 40
+# 路径精排的 RRF 平滑项，沿用信息检索常用值
+PATH_RRF_K = 60
 
 
 def _visible(node: dict, role: str) -> bool:
@@ -73,8 +86,8 @@ def overview(role: str) -> dict:
     return {"nodes": [_public(node) for node in nodes], "links": links}
 
 
-def match_entities(question: str, role: str) -> list[dict]:
-    """用节点名与别名做规则匹配，长别名优先，避免「宁德」抢走「宁德漳湾基地」。"""
+def _keyword_candidates(question: str, role: str) -> list[dict]:
+    """关键词/别名召回 Top N，按命中长度和类型排序。"""
     candidates = []
     for node in _load_nodes(role):
         terms = [node["name"], *(node.get("aliases") or [])]
@@ -85,22 +98,152 @@ def match_entities(question: str, role: str) -> list[dict]:
     candidates.sort(
         key=lambda item: (-item[0], TYPE_PRIORITY.get(item[1]["type"], 9))
     )
+    return [node for _, node in candidates[: settings.entity_keyword_limit]]
 
-    # 事件本身就会展开到地区/港口/航线，没必要再把这几个实体单独走一遍
-    if any(node["type"] == "event" for _, node in candidates):
-        candidates = [
+
+def _nodes_by_ids(entity_ids: list[str], role: str) -> dict[str, dict]:
+    """批量取节点并过滤不可见项，避免逐个查 Neo4j。"""
+    if not entity_ids:
+        return {}
+    records = run_query(
+        "MATCH (n:Entity) WHERE n.id IN $ids RETURN n AS node",
+        {"ids": entity_ids},
+    )
+    return {
+        record["node"]["id"]: record["node"]
+        for record in records
+        if _visible(record["node"], role)
+    }
+
+
+def _vector_candidates(question: str, role: str) -> list[dict]:
+    """向量召回 Top N，按相似度顺序返回。
+
+    索引故障或缺密钥时返回空，融合阶段自然退化为只用关键词。
+    """
+    try:
+        if len(question.strip()) < settings.entity_vector_min_query_chars:
+            return []
+        hits = search_entities(question, role, limit=settings.entity_vector_limit)
+    except Exception:
+        return []
+
+    ordered_ids: list[str] = []
+    seen: set[str] = set()
+    for hit in hits:
+        entity_id = hit.get(ENTITY_ID_FIELD)
+        if entity_id and entity_id not in seen:
+            seen.add(entity_id)
+            ordered_ids.append(entity_id)
+
+    nodes = _nodes_by_ids(ordered_ids, role)
+    return [nodes[entity_id] for entity_id in ordered_ids if entity_id in nodes]
+
+
+def _rrf_fuse(
+    keyword_nodes: list[dict], vector_nodes: list[dict], k: int
+) -> list[tuple[dict, float]]:
+    """RRF 融合：按名次累加，避免比较不可比的原始分数。"""
+    scores: dict[str, float] = {}
+    nodes: dict[str, dict] = {}
+
+    for rank, node in enumerate(keyword_nodes, start=1):
+        nodes[node["id"]] = node
+        scores[node["id"]] = scores.get(node["id"], 0.0) + 1 / (k + rank)
+
+    for rank, node in enumerate(vector_nodes, start=1):
+        nodes[node["id"]] = node
+        scores[node["id"]] = scores.get(node["id"], 0.0) + 1 / (k + rank)
+
+    return [(nodes[entity_id], score) for entity_id, score in scores.items()]
+
+
+def _select_entities(
+    fused: list[tuple[dict, float]],
+    keyword_ids: set[str],
+    vector_nodes: list[dict],
+) -> list[dict]:
+    """规则消歧：事件优先，并丢弃被事件覆盖的泛化节点。
+
+    三条规则：
+    - 关键词命中事件：事件是权威结果，只保留关键词实体，完全忽略向量候选；
+    - 关键词没命中事件、但向量第一名是事件：保留事件和全部关键词实体，
+      向量只补因果起点，不覆盖已命中的地区/港口/供应商/工厂；
+    - 没有可信事件：按 RRF 分数取前 3。
+    """
+    keyword_events = [
+        node
+        for node, _ in fused
+        if node["type"] == "event" and node["id"] in keyword_ids
+    ]
+
+    if keyword_events:
+        selected = [
             item
-            for item in candidates
-            if item[1]["type"] not in ("region", "port", "route")
+            for item in fused
+            if item[0]["id"] in keyword_ids
+            and item[0]["type"] not in ("region", "port", "route")
         ]
+        selected.sort(
+            key=lambda item: (
+                0 if item[0]["type"] == "event" else 1,
+                -item[1],
+                TYPE_PRIORITY.get(item[0]["type"], 9),
+                item[0]["id"],
+            )
+        )
+        return [node for node, _ in selected[:MAX_ENTITIES]]
 
-    entities = []
-    for _, node in candidates:
-        if node["id"] not in {entity["id"] for entity in entities}:
-            entities.append(node)
-        if len(entities) >= MAX_ENTITIES:
-            break
-    return entities
+    vector_top = vector_nodes[0] if vector_nodes else None
+    if vector_top and vector_top["type"] == "event":
+        # 向量补出事件时，关键词已有的实体都要保留：事件只增加因果起点，
+        # 不能反过来把已经确定命中的地区/港口挤掉，否则会整片丢失路径。
+        selected = [
+            (node, score)
+            for node, score in fused
+            if node["id"] == vector_top["id"] or node["id"] in keyword_ids
+        ]
+        selected.sort(
+            key=lambda item: (
+                0 if item[0]["type"] == "event" else 1,
+                -item[1],
+                TYPE_PRIORITY.get(item[0]["type"], 9),
+                item[0]["id"],
+            )
+        )
+        entities: list[dict] = []
+        seen: set[str] = set()
+        for node, _ in selected:
+            if node["id"] not in seen:
+                seen.add(node["id"])
+                entities.append(node)
+        return entities[:MAX_ENTITIES]
+
+    fused.sort(
+        key=lambda item: (
+            -item[1],
+            TYPE_PRIORITY.get(item[0]["type"], 9),
+            item[0]["id"],
+        )
+    )
+    return [node for node, _ in fused[:MAX_ENTITIES]]
+
+
+def match_entities(question: str, role: str) -> list[dict]:
+    """两路召回 + RRF 融合 + 规则消歧，返回最多 3 个种子实体。
+
+    关键词和向量各取 Top N 候选，按名次融合；事件命中时优先事件并
+    压制地区/港口/航线。向量不可用时自动退化为纯关键词召回。
+    """
+    keyword_nodes = _keyword_candidates(question, role)
+    vector_nodes = _vector_candidates(question, role)
+    fused = _rrf_fuse(keyword_nodes, vector_nodes, settings.entity_rrf_k)
+
+    return _select_entities(
+        fused,
+        {node["id"] for node in keyword_nodes},
+        vector_nodes,
+    )
 
 
 def _node(node_id: str) -> dict | None:
@@ -426,8 +569,115 @@ def _event_paths(event: dict, role: str, max_hops: int) -> list[dict]:
     return paths
 
 
-def impact_paths(entities: list[dict], role: str, max_hops: int = 3) -> list[dict]:
-    """对识别出的实体逐个展开，合并后按规则、跳数与严重度排序。"""
+def _evidence_score(path: dict, question: str) -> float:
+    """路径与问题的匹配分，规则可解释，后续可换成 cross-encoder 或 LLM。"""
+    score = SEVERITY_RANK.get(path["severity"], 0) - 0.5 * path["hops"]
+
+    for hint in INTENT_RULE_HINTS.get(path["rule"], ()):
+        if hint in question:
+            score += 2
+            break
+
+    for node in path["nodes"]:
+        name = node.get("name") or ""
+        if len(name) >= 2 and name in question:
+            score += 1.5
+            break
+
+    if any(node.get("type") == "event" for node in path["nodes"]):
+        score += 0.5
+    return score
+
+
+def _intent_score(path: dict, question: str) -> int:
+    """问题里命中了多少条该传导规则的意图词。"""
+    return sum(
+        1
+        for hint in INTENT_RULE_HINTS.get(path["rule"], ())
+        if hint in question
+    )
+
+
+def dedupe_paths(paths: list[dict]) -> list[dict]:
+    """按「规则 + 节点序列」去重，保留先出现的那条。"""
+    unique: dict[tuple, dict] = {}
+    for path in paths:
+        key = (path["rule"], tuple(node["id"] for node in path["nodes"]))
+        unique.setdefault(key, path)
+    return list(unique.values())
+
+
+def rerank_paths(paths: list[dict], question: str) -> list[dict]:
+    """证据精排：用 RRF 融合四路名次。
+
+    四路信号分别是证据分（意图 + 字面覆盖）、严重度、跳数和规则意图命中。
+    RRF 只看名次，不比较量纲不同的分数，避免严重度压过问题相关性。
+    """
+    if not paths:
+        return []
+
+    signals = [
+        sorted(
+            paths,
+            key=lambda path: (
+                -_evidence_score(path, question),
+                path["hops"],
+                path["rule"],
+                path["summary"],
+            ),
+        ),
+        sorted(
+            paths,
+            key=lambda path: (
+                -SEVERITY_RANK.get(path["severity"], 0),
+                path["hops"],
+                path["rule"],
+                path["summary"],
+            ),
+        ),
+        sorted(
+            paths,
+            key=lambda path: (
+                path["hops"],
+                -SEVERITY_RANK.get(path["severity"], 0),
+                path["rule"],
+                path["summary"],
+            ),
+        ),
+        sorted(
+            paths,
+            key=lambda path: (
+                -_intent_score(path, question),
+                path["hops"],
+                -SEVERITY_RANK.get(path["severity"], 0),
+                path["rule"],
+                path["summary"],
+            ),
+        ),
+    ]
+
+    scores = {id(path): 0.0 for path in paths}
+    for ordered in signals:
+        for rank, path in enumerate(ordered, start=1):
+            scores[id(path)] += 1 / (PATH_RRF_K + rank)
+
+    return sorted(
+        paths,
+        key=lambda path: (
+            -scores[id(path)],
+            -_evidence_score(path, question),
+            path["hops"],
+            -SEVERITY_RANK.get(path["severity"], 0),
+            path["rule"],
+            path["summary"],
+        ),
+    )
+
+
+def impact_paths(
+    entities: list[dict], role: str, max_hops: int = 3, question: str = ""
+) -> list[dict]:
+    """对识别出的实体逐个展开，去重后按证据相关度排序。"""
     paths: list[dict] = []
     for entity in entities:
         if entity["type"] == "event":
@@ -463,23 +713,9 @@ def impact_paths(entities: list[dict], role: str, max_hops: int = 3) -> list[dic
                     )
                 )
 
-    unique: dict[tuple, dict] = {}
-    for path in paths:
-        key = (path["rule"], tuple(node["id"] for node in path["nodes"]))
-        unique.setdefault(key, path)
-
-    # 每条路径的节点都来自上面带 _visible 过滤的查询，这里只需去重与排序
-    visible_paths = list(unique.values())
-
-    visible_paths.sort(
-        key=lambda path: (
-            path["hops"],
-            -SEVERITY_RANK.get(path["severity"], 0),
-            path["rule"],
-            path["summary"],
-        )
-    )
-    return visible_paths[:MAX_PATHS]
+    # 每条路径的节点都来自上面带 _visible 过滤的查询，这里只需去重与精排
+    visible_paths = dedupe_paths(paths)
+    return rerank_paths(visible_paths, question)[:MAX_PATHS]
 
 
 def impact(
@@ -515,7 +751,7 @@ def impact(
             if len(entities) >= MAX_ENTITIES:
                 break
 
-    paths = impact_paths(entities, role, max_hops)
+    paths = impact_paths(entities, role, max_hops, question or "")
     return {
         "entities": [_public(entity) for entity in entities],
         "paths": paths,

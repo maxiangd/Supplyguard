@@ -1,6 +1,7 @@
 """图谱路由：角色子图、多跳影响分析与演示数据导入。"""
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from loguru import logger
 
 from app.api.dependencies import get_current_user, require_roles
 from app.db.graph_database import graph_is_ready
@@ -12,6 +13,7 @@ from app.models.api_models import (
     GraphSeedResponse,
 )
 from app.services import graph
+from app.services.entity_retrieval import sync_entity_index
 from app.services.graph_seed import seed_graph
 
 router = APIRouter(prefix="/graph", tags=["graph"])
@@ -60,4 +62,13 @@ def graph_seed_import(
 ) -> GraphSeedResponse:
     """管理员导入或刷新演示图谱，可重复执行。"""
     _require_neo4j()
-    return GraphSeedResponse(**seed_graph())
+    summary = seed_graph()
+
+    # 图谱是实体索引的唯一数据源；索引失败不回滚图谱，只记录降级
+    try:
+        summary["entities_indexed"] = sync_entity_index()
+    except Exception as exc:
+        logger.warning("实体向量索引同步失败，语义兜底暂不可用：{}", exc)
+        summary["entities_indexed"] = 0
+
+    return GraphSeedResponse(**summary)

@@ -2,12 +2,12 @@
 
 from app.db.graph_database import run_write
 
-# 图谱节点的可见角色与文档保持一致：某角色看不到的节点，任何路径都不会出现在结果里
+# 图谱对所有角色开放；敏感信息隔离只保留在文档检索层
 ALL_ROLES = ["admin", "procurement", "logistics", "finance", "quality"]
-SUPPLIER_ROLES = ["admin", "procurement", "finance", "quality"]
+SUPPLIER_ROLES = ALL_ROLES
 FACTORY_ROLES = ALL_ROLES
-PORT_ROLES = ["admin", "logistics"]
-ROUTE_ROLES = ["admin", "logistics"]
+PORT_ROLES = ALL_ROLES
+ROUTE_ROLES = ALL_ROLES
 REGION_ROLES = ALL_ROLES
 
 CONSTRAINTS = [

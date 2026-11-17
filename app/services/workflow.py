@@ -32,6 +32,7 @@ from typing import TypedDict
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph
 
+from app.core.configuration import settings
 from app.services.retrieval import search_chunks
 from app.services.graph import alternatives, impact, overview
 from app.services.review import review_chunks, review_entities, review_graph_paths
@@ -135,7 +136,7 @@ _decision_results: dict[str, dict] = {}
 # ---------------------------------------------------------------------------
 # 图谱证据数量上限
 # ---------------------------------------------------------------------------
-GRAPH_EVIDENCE_LIMIT = 6
+GRAPH_EVIDENCE_LIMIT = settings.graph_evidence_limit
 
 
 # ---------------------------------------------------------------------------

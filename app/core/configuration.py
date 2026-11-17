@@ -1,8 +1,28 @@
 """应用配置：环境变量与 .env 统一使用 APP_ 前缀。"""
 
+import os
 from functools import lru_cache
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+def _bypass_proxy_for_local_services() -> None:
+    """本地 Qdrant 不走系统代理，外部 embedding 仍然走代理。
+
+    Clash 之类的系统代理会把 localhost:6333 也转发出去并返回 502，
+    这里把本机地址加入 NO_PROXY，避免向量库请求被劫持。
+    """
+    for key in ("NO_PROXY", "no_proxy"):
+        values = {
+            item.strip()
+            for item in os.environ.get(key, "").split(",")
+            if item.strip()
+        }
+        values.update({"127.0.0.1", "localhost"})
+        os.environ[key] = ",".join(sorted(values))
+
+
+_bypass_proxy_for_local_services()
 
 
 class Settings(BaseSettings):
@@ -39,12 +59,22 @@ class Settings(BaseSettings):
     # 向量库
     qdrant_url: str = "http://localhost:6333"
     qdrant_collection: str = "supplyguard_chunks"
+    # 图谱实体的语义索引：与关键词召回并行，再用 RRF 融合
+    qdrant_entity_collection: str = "supplyguard_entities"
+    # 两路各取 Top N 候选，再用 RRF 融合
+    entity_keyword_limit: int = 20
+    entity_vector_limit: int = 20
+    entity_vector_threshold: float = 0.6
+    entity_vector_min_query_chars: int = 2
+    entity_rrf_k: int = 60
 
     # 图谱
     neo4j_uri: str = "bolt://localhost:7687"
     neo4j_user: str = "neo4j"
     neo4j_password: str = "change-me"
     neo4j_database: str = "neo4j"
+    # 进入提示词的图谱路径条数
+    graph_evidence_limit: int = 15
 
     # Embedding：阿里百炼（OpenAI 兼容模式）
     embedding_api_key: str = ""

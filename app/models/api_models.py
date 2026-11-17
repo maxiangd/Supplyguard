@@ -339,3 +339,4 @@ class GraphSeedResponse(BaseModel):
 
     nodes: int
     relations: int
+    entities_indexed: int = 0
