@@ -12,6 +12,7 @@ from fastapi import APIRouter
 _BENCHMARK_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 sys.path.insert(0, _BENCHMARK_DIR)
 
+from tests.benchmark.baseline import run_baseline
 from tests.benchmark.ground_truth import expected_paths_for_case
 from tests.benchmark.metrics import compute_metrics
 from tests.benchmark.path_match import match_paths
@@ -51,7 +52,7 @@ def list_cases() -> dict:
 
 
 @router.post("/run")
-def run_benchmark() -> dict:
+def run_benchmark(include_baseline: bool = False, baseline_limit: int = 10) -> dict:
     """运行 ground truth benchmark（不调 LLM/Qdrant/Neo4j）。
 
     用纯 Python 传导规则 + 实体匹配作为 ground truth，
@@ -109,27 +110,17 @@ def run_benchmark() -> dict:
 
     metrics = compute_metrics(results)
 
+    baseline = (
+        run_baseline(cases, limit=baseline_limit)
+        if include_baseline
+        else {"status": "not_run"}
+    )
+
     return {
         "ran_at": started_at,
         "total_cases": len(cases),
         "metrics": metrics,
-        "baseline": {
-            # 单 Agent 基线：无工作流、无图谱、无角色过滤的假设下限
-            "f1": 0.50,
-            "path_hit_rate": 0.0,
-            "path_recall": 0.0,
-            "path_precision": 0.0,
-            "path_rank_hit_rate": 0.0,
-            "path_case_hit_rate": 0.0,
-            "path_mrr": 0.0,
-            "node_f1": 0.0,
-            "edge_f1": 0.0,
-            "document_leak_block_rate": 0.0,
-            "followup_success_rate": 0.0,
-            "risk_accuracy": 0.33,
-            "precision": 0.50,
-            "recall": 0.50,
-        },
+        "baseline": baseline,
         "results": [
             _case_result(r) for r in results
         ],

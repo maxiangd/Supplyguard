@@ -90,9 +90,43 @@ services:
       - uploads:/app/data/uploads
     restart: unless-stopped
 
+  # 监控面板：docker compose --profile monitoring up -d
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    container_name: supplyguard-prometheus
+    profiles: ["monitoring"]
+    volumes:
+      - ./ops/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:11.3.1
+    container_name: supplyguard-grafana
+    profiles: ["monitoring"]
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${APP_GRAFANA_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./ops/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./ops/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
 volumes:
   postgres-data:
   redis-data:
   qdrant-data:
   neo4j-data:
   uploads:
+  prometheus-data:
+  grafana-data:

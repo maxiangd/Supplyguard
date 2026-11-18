@@ -11,6 +11,7 @@ import json
 from langgraph.types import Command
 
 from app.core.configuration import settings
+from app.core.metrics import LLM_CALLS, LLM_ERRORS
 from app.db.tables import User
 from app.services.approval import create_approval
 from app.services.conversation import (
@@ -31,6 +32,17 @@ from app.services.workflow import (
 
 # 拒答判定用这个字符串，只匹配整段回答以此开头的
 REFUSAL_TEXT = "知识库中暂无相关资料"
+
+
+def _create_completion(**parameters):
+    """调用模型并统计次数；失败时额外记一次错误。"""
+    model = parameters["model"]
+    LLM_CALLS.labels(model).inc()
+    try:
+        return get_chat_client(model).chat.completions.create(**parameters)
+    except Exception:
+        LLM_ERRORS.labels(model).inc()
+        raise
 
 RISK_ASSESSMENT_PROMPT = """你是供应链风险审核专家。根据以下信息，判断该 AI 回答涉及的风险等级。
 
@@ -234,7 +246,7 @@ def _assess_risk_node(state: SupplyGuardState) -> dict:
 
     try:
         model = state["model"]
-        response = get_chat_client(model).chat.completions.create(
+        response = _create_completion(
             model=model,
             messages=[{"role": "user", "content": prompt}],
             temperature=0.1,
@@ -367,7 +379,7 @@ def answer_question(
     if "reasoner" not in model:
         parameters["temperature"] = 0.2
 
-    response = get_chat_client(model).chat.completions.create(**parameters)
+    response = _create_completion(**parameters)
     message = response.choices[0].message
     answer = message.content or ""
     reasoning = getattr(message, "reasoning_content", None)
@@ -610,7 +622,7 @@ def stream_answer(
         parameters["temperature"] = 0.2
 
     answer_parts = []
-    for chunk in get_chat_client(model).chat.completions.create(**parameters):
+    for chunk in _create_completion(**parameters):
         delta = chunk.choices[0].delta
         reasoning_chunk = getattr(delta, "reasoning_content", None)
         if reasoning_chunk:

@@ -18,6 +18,7 @@ from sqlalchemy.orm import Session
 
 from app.core.configuration import settings
 from app.db.tables import LongTermMemory, User
+from app.services.sensitive import redact_sensitive
 from app.services.summarize import summarize_answer
 
 CATEGORY_PREFERENCE = "preference"
@@ -64,6 +65,8 @@ def save_memory(
     evidence: str | None = None,
 ) -> LongTermMemory:
     """创建一条长期记忆记录。"""
+    title, _ = redact_sensitive(title)
+    content, _ = redact_sensitive(content)
     memory = LongTermMemory(
         username=username,
         role=role,
@@ -120,9 +123,9 @@ def update_memory(
         return None
 
     if title is not None:
-        memory.title = title
+        memory.title, _ = redact_sensitive(title)
     if content is not None:
-        memory.content = content
+        memory.content, _ = redact_sensitive(content)
     if category is not None:
         memory.category = category
 
@@ -292,6 +295,9 @@ def save_risk_memory(
         summarize_answer(question, answer, risk_level, risk_reason)
         or question[:200]
     )
+    content, _ = redact_sensitive(content)
+    title, _ = redact_sensitive(title)
+    question, _ = redact_sensitive(question)
 
     now = datetime.now()
     wanted = set(entity_ids)
@@ -435,11 +441,13 @@ def save_chat_note(
 ) -> LongTermMemory:
     """把「记住这条」保存为简短结论，而不是整段回答。"""
     summary = summarize_answer(question, answer) or question[:200]
+    summary, _ = redact_sensitive(summary)
+    title, _ = redact_sensitive(question.strip() or "对话结论")
     memory = LongTermMemory(
         username=user.username,
         role=user.role,
         category=CATEGORY_NOTE,
-        title=(question.strip() or "对话结论")[:255],
+        title=title[:255],
         content=summary or question[:200],
         evidence=_dump_evidence(
             {"source": "chat", "session_id": session_id, "refs": refs or []}

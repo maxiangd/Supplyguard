@@ -5,6 +5,7 @@ import { fetchBenchmarkCases, runBenchmark } from '../api/benchmark'
 
 const loading = ref(true)
 const running = ref(false)
+const runBaseline = ref(false)
 const cases = ref([])
 const run = ref(null)
 const activeTab = ref('cases')
@@ -33,37 +34,61 @@ function pct(value) {
 }
 
 function delta(current, baseline, raw = false) {
+  if (baseline === null || baseline === undefined) return '—'
   const diff = (current ?? 0) - (baseline ?? 0)
   if (raw) return `${diff >= 0 ? '+' : ''}${diff.toFixed(3)}`
   const points = Math.round(diff * 100)
   return `${points >= 0 ? '+' : ''}${points} pt`
 }
 
+function mapMetrics(metrics) {
+  if (!metrics) return null
+  return {
+    f1: metrics.entity_f1,
+    path_recall: metrics.path_recall,
+    path_precision: metrics.path_precision,
+    edge_f1: metrics.edge_f1,
+    node_f1: metrics.node_f1,
+    path_mrr: metrics.path_mrr,
+    path_case_hit_rate: metrics.path_case_hit_rate,
+    path_rank_hit_rate: metrics.path_rank_hit_rate,
+    path_hit_rate: metrics.path_hit_rate,
+    role_block_rate: metrics.document_leak_block_rate,
+    followup_success_rate: metrics.followup_success_rate,
+    risk_accuracy: metrics.rule_precision,
+    precision: metrics.entity_precision,
+    recall: metrics.entity_recall,
+  }
+}
+
 const cards = computed(() => {
   if (!run.value) return []
+  const baseline = run.value.baseline
   return metricDefs
     .filter((def) => cardKeys.includes(def.key))
     .map((def) => ({
       key: def.key,
       label: def.label,
       value: pct(run.value.metrics[def.key]),
-      baseline: pct(run.value.baseline[def.key]),
+      baseline: baseline ? pct(baseline[def.key]) : '未实测',
     }))
 })
 
 const compareRows = computed(() => {
   if (!run.value) return []
+  const baseline = run.value.baseline
   return metricDefs.map((def) => ({
     key: def.key,
     label: def.label,
     current: run.value.metrics[def.key],
-    baseline: run.value.baseline[def.key],
+    baseline: baseline ? baseline[def.key] : null,
     raw: def.raw,
   }))
 })
 
 function display(value, raw) {
-  return raw ? (value ?? 0).toFixed(3) : pct(value)
+  if (value === null || value === undefined) return '—'
+  return raw ? value.toFixed(3) : pct(value)
 }
 
 const resultRows = computed(() => {
@@ -93,31 +118,22 @@ async function load() {
 async function execute() {
   running.value = true
   try {
-    const data = await runBenchmark()
+    const data = await runBenchmark(runBaseline.value)
+    const baseline =
+      data.baseline?.status === 'measured'
+        ? mapMetrics(data.baseline.metrics)
+        : null
     run.value = {
       ran_at: data.ran_at,
-      metrics: {
-        f1: data.metrics.entity_f1,
-        path_recall: data.metrics.path_recall,
-        path_precision: data.metrics.path_precision,
-        edge_f1: data.metrics.edge_f1,
-        node_f1: data.metrics.node_f1,
-        path_mrr: data.metrics.path_mrr,
-        path_case_hit_rate: data.metrics.path_case_hit_rate,
-        path_rank_hit_rate: data.metrics.path_rank_hit_rate,
-        path_hit_rate: data.metrics.path_hit_rate,
-        role_block_rate: data.metrics.document_leak_block_rate,
-        followup_success_rate: data.metrics.followup_success_rate,
-        risk_accuracy: data.metrics.rule_precision,
-        precision: data.metrics.entity_precision,
-        recall: data.metrics.entity_recall,
-      },
-      baseline: data.baseline,
+      metrics: mapMetrics(data.metrics),
+      baseline,
       documentCheckMode: data.metrics.document_leak_check_mode,
       results: data.results,
     }
     activeTab.value = 'results'
-    ElMessage.success(`评测完成：${data.total_cases} 条用例，F1=${(data.metrics.entity_f1 * 100).toFixed(0)}%`)
+    ElMessage.success(
+      `评测完成：${data.total_cases} 条用例，F1=${(data.metrics.entity_f1 * 100).toFixed(0)}%`,
+    )
   } finally {
     running.value = false
   }
@@ -137,9 +153,17 @@ onMounted(load)
             <template v-if="run"> · 文档拦截模式：{{ run.documentCheckMode }}</template>
           </div>
         </div>
-        <el-button type="primary" :loading="running" @click="execute">
-          运行评测
-        </el-button>
+        <div class="actions">
+          <el-switch
+            v-model="runBaseline"
+            active-text="单 Agent 基线"
+            inline-prompt
+          />
+          <span class="hint">开启后额外调用模型，耗时更长</span>
+          <el-button type="primary" :loading="running" @click="execute">
+            运行评测
+          </el-button>
+        </div>
       </div>
     </el-card>
 

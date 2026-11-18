@@ -253,6 +253,8 @@ def compute_metrics(results: list[dict]) -> dict[str, Any]:
         document_check_mode = "api"
     elif error_cases:
         document_check_mode = "error"
+    elif any(r.get("document_check_mode") == "baseline" for r in leak_cases):
+        document_check_mode = "baseline"
     else:
         document_check_mode = "dry_run"
     document_hit_cases = sum(

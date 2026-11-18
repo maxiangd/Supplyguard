@@ -1,16 +1,17 @@
-"""审计路由：审计日志查询与清空（仅管理员）。"""
+"""审计路由：审计日志查询、CSV 导出与清空（仅管理员）。"""
 
 import json
+from datetime import date
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, Response
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.api.dependencies import require_roles
 from app.db.database import get_database_session
-from app.db.tables import AuditLog, User
+from app.db.tables import User
 from app.models.api_models import AuditLogResponse
-from app.services.audit import list_audit_logs
+from app.services.audit import build_audit_csv, list_audit_logs
 
 router = APIRouter(prefix="/audit", tags=["audit"])
 
@@ -35,6 +36,25 @@ def list_logs(
         )
         for log in list_audit_logs(db, limit)
     ]
+
+
+@router.get("/export")
+def export_logs(
+    limit: int = 1000,
+    admin: User = Depends(require_roles("admin")),
+    db: Session = Depends(get_database_session),
+) -> Response:
+    """导出最近的审计记录为 CSV（带 BOM，已做公式注入转义）。"""
+    csv_text = build_audit_csv(list_audit_logs(db, limit))
+    return Response(
+        content=csv_text,
+        media_type="text/csv; charset=utf-8",
+        headers={
+            "Content-Disposition": (
+                f'attachment; filename="audit_logs_{date.today():%Y%m%d}.csv"'
+            )
+        },
+    )
 
 
 @router.delete("")

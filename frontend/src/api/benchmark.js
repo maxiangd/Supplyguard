@@ -7,6 +7,8 @@ export function fetchBenchmarkCases() {
   return api.get('/benchmark/cases');
 }
 
-export function runBenchmark() {
-  return api.post('/benchmark/run');
+export function runBenchmark(includeBaseline = false) {
+  return api.post('/benchmark/run', null, {
+    params: { include_baseline: includeBaseline },
+  });
 }

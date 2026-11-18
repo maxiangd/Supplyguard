@@ -2,9 +2,10 @@
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
+from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
 from app.api.routes.approvals import router as approvals_router
 from app.api.routes.audit import router as audit_router
@@ -19,6 +20,7 @@ from app.api.routes.retrieval import router as retrieval_router
 from app.api.routes.users import router as users_router
 from app.core.configuration import settings
 from app.core.logging_setup import setup_logging
+from app.core.metrics_middleware import MetricsMiddleware
 from app.core.request_id_middleware import RequestIDMiddleware
 from app.core.request_logging_middleware import RequestLoggingMiddleware
 from app.db.initialize_database import init_db
@@ -44,8 +46,9 @@ def create_app() -> FastAPI:
         description="Supply chain risk AgentHarness with SecureRAG, GraphRAG and RBAC",
     )
 
-    # 后添加的中间件在外层：CORS → RequestID → RequestLogging → 路由
+    # 后添加的中间件在外层：CORS → RequestID → Metrics → RequestLogging → 路由
     app.add_middleware(RequestLoggingMiddleware)
+    app.add_middleware(MetricsMiddleware)
     app.add_middleware(RequestIDMiddleware)
     app.add_middleware(
         CORSMiddleware,
@@ -71,6 +74,11 @@ def create_app() -> FastAPI:
     def liveness_check() -> dict:
         """存活探针，不检查外部依赖。"""
         return {"status": "ok", "environment": settings.env}
+
+    @app.get("/metrics", include_in_schema=False)
+    def metrics_endpoint() -> Response:
+        """Prometheus 抓取端点。"""
+        return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
     logger.bind(env=settings.env, version=settings.app_version).info("应用已创建")
     return app

@@ -9,6 +9,7 @@
 """
 
 from app.core.configuration import settings
+from app.core.metrics import RBAC_DROPS
 
 
 def review_chunks(hits: list[dict], role: str) -> tuple[list[dict], list[dict]]:
@@ -36,6 +37,7 @@ def review_chunks(hits: list[dict], role: str) -> tuple[list[dict], list[dict]]:
                     "allowed_roles": allowed,
                 }
             )
+    RBAC_DROPS.labels("chunks").inc(len(filtered))
     return passed, filtered
 
 
@@ -69,6 +71,7 @@ def review_graph_paths(paths: list[dict], role: str) -> tuple[list[dict], list[d
                     "role": role,
                 }
             )
+    RBAC_DROPS.labels("graph_paths").inc(len(filtered))
     return passed, filtered
 
 
@@ -95,4 +98,5 @@ def review_entities(entities: list[dict], role: str) -> tuple[list[dict], list[d
                     "role": role,
                 }
             )
+    RBAC_DROPS.labels("entities").inc(len(filtered))
     return passed, filtered

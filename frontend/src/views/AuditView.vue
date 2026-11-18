@@ -1,9 +1,10 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { clearAuditLogs, fetchAuditLogs } from '../api/audit'
+import { clearAuditLogs, exportAuditLogs, fetchAuditLogs } from '../api/audit'
 
 const loading = ref(false)
+const exporting = ref(false)
 const rows = ref([])
 const total = ref(0)
 
@@ -37,45 +38,22 @@ async function load() {
   }
 }
 
-function csvCell(value) {
-  let text = String(value ?? '')
-  // 防止 Excel 把单元格当公式执行
-  if (/^[=+\-@]/.test(text)) {
-    text = `'${text}`
+async function exportCsv() {
+  exporting.value = true
+  try {
+    const blob = await exportAuditLogs(1000)
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `audit_${Date.now()}.csv`
+    link.click()
+    URL.revokeObjectURL(url)
+    ElMessage.success('导出成功')
+  } catch (error) {
+    ElMessage.error(error.response?.data?.detail ?? '导出失败')
+  } finally {
+    exporting.value = false
   }
-  if (/[",\r\n]/.test(text)) {
-    text = `"${text.replace(/"/g, '""')}"`
-  }
-  return text
-}
-
-function exportCsv() {
-  const header = ['时间', '用户', '角色', '动作', '对象', '详情']
-  const lines = [header.join(',')]
-  for (const log of rows.value) {
-    lines.push(
-      [
-        formatTime(log.created_at),
-        log.actor,
-        roleLabels[log.actor_role] ?? log.actor_role,
-        actionLabels[log.action] ?? log.action,
-        log.target_id ?? '',
-        JSON.stringify(log.detail ?? {}),
-      ]
-        .map(csvCell)
-        .join(','),
-    )
-  }
-  const blob = new Blob([`﻿${lines.join('\r\n')}`], {
-    type: 'text/csv;charset=utf-8',
-  })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `audit_${Date.now()}.csv`
-  link.click()
-  URL.revokeObjectURL(url)
-  ElMessage.success(`已导出 ${total.value} 条记录`)
 }
 
 async function clearAll() {
@@ -104,7 +82,7 @@ onMounted(load)
   <el-card shadow="never">
     <div class="toolbar">
       <el-button type="primary" :loading="loading" @click="load">刷新</el-button>
-      <el-button @click="exportCsv">导出 CSV</el-button>
+      <el-button :loading="exporting" @click="exportCsv">导出 CSV</el-button>
       <el-button type="danger" plain @click="clearAll">清空日志</el-button>
       <span class="hint">仅记录审批全链路</span>
     </div>
