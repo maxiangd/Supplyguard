@@ -1,6 +1,6 @@
 # SupplyGuard
 
-[![CI](https://github.com/maxiangd/Supplyguard-RAG/actions/workflows/ci.yml/badge.svg)](https://github.com/maxiangd/Supplyguard-RAG/actions/workflows/ci.yml)
+[![CI](https://github.com/maxiangd/Supplyguard/actions/workflows/ci.yml/badge.svg)](https://github.com/maxiangd/Supplyguard/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 供应链风险 AgentHarness 平台。在 RBAC 权限约束下，融合 SecureRAG、GraphRAG、Memory 与 LangGraph 固定工作流，为采购、物流、质量、财务等多角色提供**可引用、可审计、可 Benchmark** 的风险洞察与决策支持。
