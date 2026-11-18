@@ -40,14 +40,14 @@
 
 | 交付物 | 内容 | 状态 |
 |---|---|---|
-| 可运行代码 | FastAPI 后端 + Vue 3 前端 + worker | ⬜ |
-| 数据库与迁移 | SQLite/PostgreSQL 表结构 + Alembic | ⬜ |
-| Docker Compose | api / worker / web / postgres / qdrant / neo4j / redis | ⬜ |
-| 文档 | README、架构、项目规划、API 说明 | 🚧 |
-| 演示数据 | 供应商、物料、工厂、风险事件、制度文档 | ⬜ |
+| 可运行代码 | FastAPI 后端 + Vue 3 前端 + worker | ✅ |
+| 数据库与迁移 | SQLite/PostgreSQL 表结构 + Alembic | 🚧（Alembic 待补） |
+| Docker Compose | api / worker / web / postgres / qdrant / neo4j / redis | ✅ |
+| 文档 | README、架构、项目规划、API 说明 | ✅ |
+| 演示数据 | 供应商、物料、工厂、风险事件、制度文档 | ✅ |
 | 演示脚本 | 5–8 分钟走完三个场景 | ⬜ |
-| Benchmark 报告 | 指标、用例、复现命令 | ⬜ |
-| 测试 | 单测 + 路由 + 端到端 | ⬜ |
+| Benchmark 报告 | 指标、用例、复现命令 | 🚧（指标与报告生成器已有，单 Agent 基线待实测） |
+| 测试 | 单测 + 路由 + 端到端 | ✅ |
 
 ---
 
@@ -72,7 +72,7 @@
 - [x] JSON 日志、请求 ID、访问日志
 - [ ] 内存日志缓冲 `log_buffer.py`
 - [ ] 安全响应头、Prometheus 指标
-- [ ] Dockerfile / docker-compose
+- [x] Dockerfile / docker-compose
 - [ ] Alembic 迁移
 
 ### B. 身份与权限
@@ -82,17 +82,17 @@
 - [x] 登录（登出与刷新待补）
 - [x] 用户管理（列表 / 创建 / 修改角色 / 启用停用 / 删除）
 - [x] 角色：`admin` / `procurement` / `logistics` / `quality` / `finance`
-- [ ] 越权测试：跨角色访问、伪造令牌
+- [x] 越权测试：跨角色访问、伪造令牌
 
 ### C. 文档与 SecureRAG
 
 - [x] 文档上传、校验、存储
 - [x] 异步摄取：解析与分块（向量化在 Qdrant 接入时补）
-- [ ] Qdrant 集合与 payload（`allowed_roles`、`sensitivity`）
-- [ ] 检索前过滤（Qdrant filter）
-- [ ] 检索后复核（Review Node）
+- [x] Qdrant 集合与 payload（`allowed_roles`、`sensitivity`）
+- [x] 检索前过滤（Qdrant filter）
+- [x] 检索后复核（Review Node）
 - [x] 文档列表按权限返回
-- [ ] 越权召回测试
+- [x] 越权召回测试
 
 ### D. 固定工作流
 
@@ -101,7 +101,7 @@
 - [x] 规则路由表：条件边按 risk_level 路由 HIGH→审批门 或 非HIGH→finalize
 - [x] 条件边与循环上限
 - [x] SSE 事件输出（流式生成注入在 assess_risk 中断期间）
-- [ ] 工作流单测（mock LLM / Qdrant / Neo4j）
+- [x] 工作流单测（mock LLM / Qdrant / Neo4j）
 
 ### E. GraphRAG
 
@@ -109,7 +109,7 @@
 - [x] 节点/关系模型：Entity 标签 + type 属性（supplier / factory / port / route / region / event）
 - [x] 导入脚本（种子数据幂等写入，MERGE 方式）
 - [x] 四类风险传导规则（DIRECT / REGION / PORT / ROUTE，标注在 AFFECTS 边上）
-- [ ] 纯函数单测 + 与图谱查询结果对照（M3 与 ground truth 一起补）
+- [x] 纯函数单测 + 与图谱查询结果对照（`tests/test_benchmark_paths.py`）
 - [x] 多跳查询模板（默认上限 3 跳）
 - [x] 路径可信度与跳数限制
 - [x] 图谱接口与前端可视化
@@ -120,8 +120,9 @@
 - [x] PostgreSQL 长期记忆表与 CRUD（`long_term_memories` 表）
 - [x] 记忆注入：`build_context_node` 读取 `session_history`，拼入提示词
 - [x] 长期记忆接口：创建/列表/查看/更新/删除，admin 全见 + 角色隔离
-- [ ] 记忆摘要生成与敏感检查
-- [ ] 多轮追问场景测试
+- [x] 记忆摘要生成
+- [ ] 记忆敏感检查
+- [x] 多轮追问场景测试
 
 ### G. 审批与审计
 
@@ -134,13 +135,13 @@
 
 ### H. Benchmark
 
-- [ ] 用例格式：问题、角色、期望供应商/物料、期望路径、禁止文档
-- [ ] 场景分层：单事件、事件对、事件三连、held-out 新事件（至少 25 条）
-- [ ] 独立 ground truth：纯 Python 重算，不 import 服务 / Neo4j / LLM
-- [ ] 单 Agent 基线：同样输入只调用一次 LLM，用于对比
-- [ ] 指标：precision / recall / F1、风险等级准确率、路径命中率、Hit@K、越权拦截率
-- [ ] 报告输出（JSON + Markdown）
-- [ ] CI 回归门禁
+- [x] 用例格式：问题、角色、期望供应商/物料、期望路径、禁止文档
+- [x] 场景分层：单事件、事件对、事件三连、held-out 新事件（30 条）
+- [x] 独立 ground truth：纯 Python 重算，不 import 服务 / Neo4j / LLM
+- [ ] 单 Agent 基线：同样输入只调用一次 LLM，用于对比（当前为占位下限）
+- [x] 指标：precision / recall / F1、风险等级准确率、路径命中率、Hit@K、越权拦截率
+- [x] 报告输出（JSON + Markdown）
+- [x] CI 回归门禁
 
 ### I. 前端（页面与交互完成，登录/管理/文档库已接真实接口）
 
@@ -155,11 +156,11 @@
 
 ### J. 交付
 
-- [ ] 演示数据与种子脚本
+- [x] 演示数据与种子脚本
 - [ ] 演示脚本（5–8 分钟）
-- [ ] Docker Compose 一键启动
-- [ ] README / 架构 / 规划文档同步
-- [ ] 提交与推送
+- [x] Docker Compose 一键启动
+- [x] README / 架构 / 规划文档同步
+- [x] 提交与推送
 
 ---
 
@@ -321,17 +322,17 @@ docs: 更新 M1 进度与接口说明
 
 | 模块 | 状态 | 备注 |
 |---|---|---|
-| Phase 0 脚手架 | ✅ | Docker/Alembic 待补 |
+| Phase 0 脚手架 | ✅ | Docker 已完成，Alembic 待补 |
 | Phase 1 基建 | ✅ | 配置、日志、会话、3 张表、bcrypt+JWT、启动初始化完成 |
-| 身份与权限 | 🚧 | 登录、JWT、用户管理接口完成；登出/刷新与越权测试待补 |
-| 文档与 SecureRAG | 🚧 | 文档表、上传、RQ 摄取（解析/分块）、按角色列表完成；Qdrant 权限检索待做 |
-| 固定工作流 | 🚧 | LangGraph 状态机已完成，Review Node 已完成，待越权测试与单测 | M1 |
-| 审批与审计 | 🚧 | 审批闭环 + 审计已完成 | M1 |
-| GraphRAG | 🚧 | 图谱、导入、多跳影响、图谱页、问答证据完成；路径命中率评测待 M3 |
-| Memory | 🚧 | Redis 短期会话 + Postgres 长期记忆 CRUD 已完成，待多轮追问场景测试 | M3 |
-| Benchmark | ⬜ | M3 |
-| 前端 | 🚧 | 登录、文档库、风险问答、供应商图谱已接真实接口；看板、复核台、审计、Benchmark 仍为 mock |
-| 部署与交付 | ⬜ | M3 |
+| 身份与权限 | 🚧 | 登录、JWT、用户管理、越权测试完成；登出/刷新未做 |
+| 文档与 SecureRAG | ✅ | 文档表、上传、RQ 摄取、Qdrant 权限检索、越权测试完成 |
+| 固定工作流 | ✅ | LangGraph 状态机、Review Node、单测完成 |
+| 审批与审计 | ✅ | 审批闭环 + 审计完成；CSV 导出待补 |
+| GraphRAG | ✅ | 图谱、导入、多跳影响、混合召回、路径命中率评测完成 |
+| Memory | ✅ | Redis 短期会话 + Postgres 长期记忆完成；敏感检查待补 |
+| Benchmark | 🚧 | 用例集、指标、报告与 CI 完成；单 Agent 基线待实测 |
+| 前端 | ✅ | 所有页面已接真实接口 |
+| 部署与交付 | 🚧 | Docker、CI、v1.0.0 Release 完成；演示脚本待补 |
 
 ---
 
@@ -339,7 +340,7 @@ docs: 更新 M1 进度与接口说明
 
 1. ✅ `core/security.py`：bcrypt + JWT
 2. ✅ `db/initialize_database.py`：`init_db` + 演示账号种子
-3. ✅ `main.py` 收尾：lifespan、CORS、安全响应头
+3. ✅ `main.py` 收尾：lifespan、CORS（安全响应头待补）
 4. ✅ `models/api_models.py` + `api/dependencies.py`：登录、当前用户、角色校验
 5. ✅ 用户管理接口
 6. ✅ 文档表、上传与摄取队列
@@ -348,7 +349,7 @@ docs: 更新 M1 进度与接口说明
 9. ✅ 四类风险传导规则（图谱侧完成，纯函数对照待 M3）+ 证据结构（source / fact / impact）
 10. ✅ LangGraph 固定工作流 + `interrupt_before` 审批恢复
 11. ✅ Neo4j 图模型、导入脚本与多跳影响分析
-12. 独立 ground truth、场景集与单 Agent 基线
+12. 🚧 独立 ground truth、场景集已完成；单 Agent 基线待实测
 13. ✅ 审批、审计与基础前端（SSE 已完成）
 
 > 每完成一项，勾选第 4 节对应任务，并更新第 11 节状态。

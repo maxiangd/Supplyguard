@@ -319,7 +319,7 @@ must:     allowed_roles match any [当前用户角色]
 - 图谱证据只来自结构化关系，不经过 LLM 生成；
 - 每条路径保留跳数、规则类型与事件严重度；
 - 文档与图谱证据都为空时才拒答；
-- M3 再补独立 ground truth 与路径命中率评测。
+- 独立 ground truth 与路径命中率评测已完成（`tests/benchmark/`）
 
 ## 7. Memory：短期与长期记忆
 
@@ -419,7 +419,7 @@ SSE 事件：`run_started`、`classify_done`、`retrieve_done`、`graph_done`、
 
 ### Phase 0 脚手架 ✅
 - 依赖、配置、`.gitignore`、本地虚拟环境
-- 待补：Docker、Alembic
+- Dockerfile 与 docker-compose 已完成；Alembic 迁移待补
 
 ### Phase 1 后端基建 ✅
 - [x] 配置
@@ -429,11 +429,11 @@ SSE 事件：`run_started`、`classify_done`、`retrieve_done`、`graph_done`、
 - [x] 安全（bcrypt + JWT）
 - [x] `init_db`、演示账号种子
 - [x] 应用初始化（lifespan、CORS）
-- [ ] 指标、安全响应头
+- [ ] Prometheus 指标、安全响应头
 
 **验收**：启动自动建表、生成演示账号；请求日志带 request_id。
 
-### M1 SecureRAG + 固定工作流
+### M1 SecureRAG + 固定工作流 ✅
 - RBAC 依赖与角色校验
 - 文档上传、分块、向量化；payload 写入 `allowed_roles`
 - Qdrant 检索过滤 + Review Node
@@ -443,7 +443,7 @@ SSE 事件：`run_started`、`classify_done`、`retrieve_done`、`graph_done`、
 
 **验收**：角色 A 无法召回角色 B 的文档；越权用例拦截率 100%；答案带可点击引用。
 
-### M2 GraphRAG
+### M2 GraphRAG ✅
 - Neo4j 图模型与导入脚本（已完成）
 - 多跳影响查询（已完成，DIRECT / REGION / PORT / ROUTE 四类规则）
 - 图谱界面与路径高亮（已完成）
@@ -451,22 +451,26 @@ SSE 事件：`run_started`、`classify_done`、`retrieve_done`、`graph_done`、
 
 **验收**：给定风险事件，返回受影响工厂与出海口路径；图谱证据随回答展示。Benchmark 路径命中率留到 M3。
 
-### M3 Memory + Benchmark + 交付
-- Redis 短期记忆、PostgreSQL 长期记忆
-- Benchmark 用例集与指标、CI 回归门禁
-- Prometheus/Grafana、Docker Compose
-- 分层测试、README 与演示脚本
+### M3 Memory + Benchmark + 交付 🚧
+- [x] Redis 短期记忆、PostgreSQL 长期记忆（含历史对话与滚动摘要）
+- [x] Benchmark 用例集与指标、路径级评测、CI 回归
+- [x] Docker Compose
+- [x] 分层测试（157 个用例）
+- [ ] Prometheus/Grafana 面板
+- [ ] Alembic 迁移
+- [ ] 审计 CSV 导出
+- [ ] 演示脚本
 
 **验收**：多轮追问能利用历史；Benchmark 可复现；`docker compose up` 一键启动。
 
 ## 13. 当前进度快照
 
 ```
-Phase 0  ✅
+Phase 0  ✅  脚手架与 Docker
 Phase 1  ✅  配置 / 日志 / 数据库 / 安全 / 应用初始化
-M1       🚧  登录、用户、文档摄取、SecureRAG 检索、风险问答（含 SSE）已完成；固定工作流、复核台、审计待补
-M2       🚧  图模型、幂等导入、多跳影响分析、图谱页面、问答图谱证据已完成；路径命中率评测待 M3
-M3       ⬜
+M1       ✅  RBAC、SecureRAG、固定工作流、审批审计、前端
+M2       ✅  图模型、幂等导入、多跳影响分析、图谱页面
+M3       🚧  Memory、Benchmark、Docker、CI 已完成；Prometheus/Grafana、Alembic、审计 CSV、演示脚本待补
 ```
 
 ## 14. 主要风险与对策

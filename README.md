@@ -6,6 +6,7 @@
 供应链风险 AgentHarness 平台。在 RBAC 权限约束下，融合 SecureRAG、GraphRAG、Memory 与 LangGraph 固定工作流，为采购、物流、质量、财务等多角色提供**可引用、可审计、可 Benchmark** 的风险洞察与决策支持。
 
 > 当前状态：核心链路已完成。登录、文档库、SecureRAG 检索、LangGraph 工作流、审批与审计、GraphRAG 图谱分析、Memory、Benchmark 与前端页面均已接通真实后端；评测集和人工复核仍在持续补充。
+> 已知待补：Prometheus 指标与 Grafana 面板、Alembic 迁移、审计 CSV 导出、5–8 分钟演示脚本、单 Agent 基线实测。
 > 详细架构与数据模型见 [docs/architecture.md](docs/architecture.md)；执行计划、任务拆分与验收标准见 [PROJECT_PLAN.md](PROJECT_PLAN.md)；依赖函数速查见 [docs/library-cheatsheet.md](docs/library-cheatsheet.md)。
 
 ## 演示场景
@@ -41,14 +42,14 @@
 
 | 能力 | 说明 | 状态 |
 |---|---|---|
-| RBAC 多角色 | 采购 / 物流 / 质量 / 财务 / 管理员，权限贯穿检索与接口 | 🚧 |
-| SecureRAG | Qdrant payload 写入权限元数据，检索前过滤、Review Node 二次校验 | 🚧 |
+| RBAC 多角色 | 采购 / 物流 / 质量 / 财务 / 管理员，权限贯穿检索与接口 | ✅ |
+| SecureRAG | Qdrant payload 写入权限元数据，检索前过滤、Review Node 二次校验 | ✅ |
 | GraphRAG | Neo4j 供应链图谱，四类传导规则的多跳影响分析 | ✅ |
-| 固定工作流 | LangGraph 多节点编排，规则路由替代自主规划 | ⬜ |
-| Memory | Redis 短期会话 + PostgreSQL 长期偏好与历史风险 | ⬜ |
-| 可引用结论 | 结论可引用文档证据 `[n]` 与图谱路径 `[G编号]` | 🚧 |
-| 审批与审计 | 高风险结论人工审批，全过程只追加审计 | 🚧 |
-| Benchmark | 场景集评测：Hit@K、越权拦截率、图谱路径命中率 | ⬜ |
+| 固定工作流 | LangGraph 多节点编排，规则路由替代自主规划 | ✅ |
+| Memory | Redis 短期会话 + PostgreSQL 长期偏好与历史风险 | ✅ |
+| 可引用结论 | 结论可引用文档证据 `[n]` 与图谱路径 `[G编号]` | ✅ |
+| 审批与审计 | 高风险结论人工审批，全过程只追加审计 | ✅ |
+| Benchmark | 场景集评测：Hit@K、越权拦截率、图谱路径命中率 | ✅ |
 
 ## 技术栈
 
