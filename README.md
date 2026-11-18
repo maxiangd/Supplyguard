@@ -1,8 +1,11 @@
 # SupplyGuard
 
+[![CI](https://github.com/maxiangd/Supplyguard-RAG/actions/workflows/ci.yml/badge.svg)](https://github.com/maxiangd/Supplyguard-RAG/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 供应链风险 AgentHarness 平台。在 RBAC 权限约束下，融合 SecureRAG、GraphRAG、Memory 与 LangGraph 固定工作流，为采购、物流、质量、财务等多角色提供**可引用、可审计、可 Benchmark** 的风险洞察与决策支持。
 
-> 当前状态：**开发中（M2）**。登录、用户、文档库、SecureRAG 检索、SSE 风险问答与 GraphRAG 图谱分析已接通真实链路；固定工作流、复核台、审计与 Benchmark 待补。
+> 当前状态：核心链路已完成。登录、文档库、SecureRAG 检索、LangGraph 工作流、审批与审计、GraphRAG 图谱分析、Memory、Benchmark 与前端页面均已接通真实后端；评测集和人工复核仍在持续补充。
 > 详细架构与数据模型见 [docs/architecture.md](docs/architecture.md)；执行计划、任务拆分与验收标准见 [PROJECT_PLAN.md](PROJECT_PLAN.md)；依赖函数速查见 [docs/library-cheatsheet.md](docs/library-cheatsheet.md)。
 
 ## 演示场景
@@ -34,7 +37,7 @@
 | 回答完就结束 | 结论附证据、可审批、写入审计 |
 | 没有评测 | 内置 Benchmark：检索命中率、越权拦截率、图谱路径命中率 |
 
-## 核心能力（规划中）
+## 核心能力
 
 | 能力 | 说明 | 状态 |
 |---|---|---|
@@ -79,9 +82,28 @@ LangGraph 固定工作流
 ### 环境要求
 
 - Python 3.11 及以上（本机开发使用 3.13）
-- 可选：Qdrant（文档检索）、Neo4j（图谱写分析）、Redis（异步任务与记忆）；Embedding 与 LLM 需要百炼 / DeepSeek 密钥
+- PostgreSQL（用户、文档元数据、审批、审计、长期记忆）
+- Qdrant（文档向量与实体索引）、Neo4j（供应链图谱）、Redis（短期记忆与异步任务）
+- Embedding 与 LLM 需要百炼 / DeepSeek 密钥
 
-### 安装与启动
+### 方式一：Docker 一键启动（推荐）
+
+```bash
+copy .env.example .env              # Windows
+# cp .env.example .env              # macOS / Linux
+# 在 .env 里填入 APP_EMBEDDING_API_KEY 与 APP_LLM_API_KEY
+
+docker compose up -d --build
+```
+
+compose 会启动 PostgreSQL（宿主机 5433）、Redis、Qdrant、Neo4j 和后端，后端等待数据库健康后启动。首次使用导入图谱与实体索引：
+
+```bash
+docker compose exec backend python -m app.services.graph_seed
+docker compose exec backend python -m app.services.entity_retrieval
+```
+
+### 方式二：本机运行后端
 
 ```bash
 python -m venv .venv
@@ -94,20 +116,24 @@ pip install -r requirements-dev.txt
 copy .env.example .env              # Windows
 # cp .env.example .env              # macOS / Linux
 
+docker compose up -d postgres redis qdrant neo4j
+# compose 的 postgres 映射到宿主机 5433：
+# APP_DATABASE_URL=postgresql+psycopg://supplyguard:123456@127.0.0.1:5433/supplyguard
+
 uvicorn app.main:app --reload --port 8000
 ```
 
-需要文档检索与图谱分析时，启动 Redis、Qdrant 与 Neo4j（摄取任务另开终端跑 worker）：
-
-```bash
-docker compose up -d redis qdrant neo4j
-python -m app.workers.ingestion_worker
-```
-
-图谱首次使用先导入演示数据（幂等，可重复执行）：
+图谱和实体索引首次使用前导入（幂等）：
 
 ```bash
 python -m app.services.graph_seed
+python -m app.services.entity_retrieval
+```
+
+文档摄取另开终端运行 worker：
+
+```bash
+python -m app.workers.ingestion_worker
 ```
 
 ### 验证
@@ -137,7 +163,7 @@ npm install
 npm run dev      # http://localhost:5173
 ```
 
-目前登录页、管理页的账号管理、文档库已接真实后端，其余页面仍使用 `src/api/mock.js` 中的占位数据；后端接口就绪后逐个替换为真实请求。
+目前所有页面均已接入真实后端接口，登录后按角色展示可访问的文档、图谱、问答、复核与评测数据。
 
 ## 项目结构
 
@@ -158,9 +184,9 @@ app/
 └── workers/            异步摄取、图谱构建、Benchmark worker
 
 docs/architecture.md    架构、数据模型、工作流、路线图
-tests/                  分层测试（待补）
+tests/                  分层测试与 Benchmark 评测集
 ops/                    Prometheus / Grafana 配置（待补）
-frontend/               Vue 3 前端（页面与交互完成，数据为 mock）
+frontend/               Vue 3 前端（已接入真实后端）
 ```
 
 ## 开发路线
@@ -169,10 +195,10 @@ frontend/               Vue 3 前端（页面与交互完成，数据为 mock）
 |---|---|---|
 | Phase 0 | 项目脚手架与依赖 | ✅ |
 | Phase 1 | 配置、日志、数据库、安全、应用初始化 | ✅ |
-| 前端骨架 | Vue 3 页面与交互（mock 数据） | ✅ |
-| M1 | RBAC + SecureRAG + 固定工作流 + Review Node + 审计 + 基础前端 | ⬜ |
-| M2 | Neo4j 图谱构建 + GraphRAG 多跳影响分析 + 图谱界面 | 🚧 |
-| M3 | Memory + Benchmark + 指标 + Docker + 分层测试 | ⬜ |
+| 前端骨架 | Vue 3 页面与交互（已接入真实接口） | ✅ |
+| M1 | RBAC + SecureRAG + 固定工作流 + Review Node + 审计 + 基础前端 | ✅ |
+| M2 | Neo4j 图谱构建 + GraphRAG 多跳影响分析 + 图谱界面 | ✅ |
+| M3 | Memory + Benchmark + 指标 + Docker + 分层测试 | ✅ |
 
 每个阶段的验收标准见 [docs/architecture.md](docs/architecture.md) 第 12 节。
 
@@ -186,3 +212,7 @@ frontend/               Vue 3 前端（页面与交互完成，数据为 mock）
 - 配置一律通过 `.env` + `APP_` 前缀，不写死在代码里
 - `.env` 不入库；新增配置项时同步更新 `.env.example`
 - 每完成一个里程碑，更新本 README 状态表与 `docs/architecture.md` 的进度
+
+## License
+
+[MIT](LICENSE)

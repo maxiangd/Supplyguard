@@ -1,4 +1,23 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: supplyguard-postgres
+    environment:
+      POSTGRES_USER: ${APP_POSTGRES_USER:-supplyguard}
+      POSTGRES_PASSWORD: ${APP_POSTGRES_PASSWORD:-123456}
+      POSTGRES_DB: ${APP_POSTGRES_DB:-supplyguard}
+    # 映射到 5433：本机已有 PostgreSQL 占用 5432
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${APP_POSTGRES_USER:-supplyguard}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
   redis:
     image: redis:7-alpine
     container_name: supplyguard-redis
@@ -36,7 +55,44 @@ services:
       - neo4j-data:/data
     restart: unless-stopped
 
+  backend:
+    build: .
+    container_name: supplyguard-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      qdrant:
+        condition: service_started
+      neo4j:
+        condition: service_started
+    environment:
+      APP_DATABASE_URL: postgresql+psycopg://${APP_POSTGRES_USER:-supplyguard}:${APP_POSTGRES_PASSWORD:-123456}@postgres:5432/${APP_POSTGRES_DB:-supplyguard}
+      APP_REDIS_URL: redis://redis:6379/0
+      APP_QDRANT_URL: http://qdrant:6333
+      APP_NEO4J_URI: bolt://neo4j:7687
+      APP_NEO4J_USER: neo4j
+      APP_NEO4J_PASSWORD: ${APP_NEO4J_PASSWORD:-change-me}
+      APP_NEO4J_DATABASE: ${APP_NEO4J_DATABASE:-neo4j}
+      APP_JWT_SECRET_KEY: ${APP_JWT_SECRET_KEY:-change-me-in-production}
+      APP_DEMO_PASSWORD: ${APP_DEMO_PASSWORD:-catl123}
+      APP_EMBEDDING_API_KEY: ${APP_EMBEDDING_API_KEY:-}
+      APP_EMBEDDING_BASE_URL: ${APP_EMBEDDING_BASE_URL:-https://dashscope.aliyuncs.com/compatible-mode/v1}
+      APP_EMBEDDING_MODEL: ${APP_EMBEDDING_MODEL:-text-embedding-v3}
+      APP_EMBEDDING_DIMENSION: ${APP_EMBEDDING_DIMENSION:-1024}
+      APP_LLM_API_KEY: ${APP_LLM_API_KEY:-}
+      APP_LLM_BASE_URL: ${APP_LLM_BASE_URL:-https://api.deepseek.com/v1}
+      APP_LLM_MODEL: ${APP_LLM_MODEL:-deepseek-chat}
+    ports:
+      - "8000:8000"
+    volumes:
+      - uploads:/app/data/uploads
+    restart: unless-stopped
+
 volumes:
+  postgres-data:
   redis-data:
   qdrant-data:
   neo4j-data:
+  uploads:

@@ -163,3 +163,7 @@ def search_entities(
         payload["score"] = point.score
         hits.append(payload)
     return hits
+
+
+if __name__ == "__main__":
+    print(f"indexed {sync_entity_index()} entities")
