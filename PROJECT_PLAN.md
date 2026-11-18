@@ -41,12 +41,12 @@
 | 交付物 | 内容 | 状态 |
 |---|---|---|
 | 可运行代码 | FastAPI 后端 + Vue 3 前端 + worker | ✅ |
-| 数据库与迁移 | SQLite/PostgreSQL 表结构 + Alembic | 🚧（Alembic 待补） |
+| 数据库与迁移 | SQLite/PostgreSQL 表结构 + Alembic | ✅ |
 | Docker Compose | api / worker / web / postgres / qdrant / neo4j / redis | ✅ |
 | 文档 | README、架构、项目规划、API 说明 | ✅ |
 | 演示数据 | 供应商、物料、工厂、风险事件、制度文档 | ✅ |
-| 演示脚本 | 5–8 分钟走完三个场景 | ⬜ |
-| Benchmark 报告 | 指标、用例、复现命令 | 🚧（指标与报告生成器已有，单 Agent 基线待实测） |
+| 演示脚本 | 5–8 分钟走完三个场景 | ✅ |
+| Benchmark 报告 | 指标、用例、复现命令 | ✅ |
 | 测试 | 单测 + 路由 + 端到端 | ✅ |
 
 ---
@@ -70,10 +70,11 @@
 - [x] Python 依赖与虚拟环境
 - [x] 配置（pydantic-settings，`APP_` 前缀）
 - [x] JSON 日志、请求 ID、访问日志
-- [ ] 内存日志缓冲 `log_buffer.py`
-- [ ] 安全响应头、Prometheus 指标
+- [ ] 内存日志缓冲 `log_buffer.py`（待监控页）
+- [x] Prometheus 指标与 Grafana 面板
+- [ ] 安全响应头
 - [x] Dockerfile / docker-compose
-- [ ] Alembic 迁移
+- [x] Alembic 迁移
 
 ### B. 身份与权限
 
@@ -121,7 +122,7 @@
 - [x] 记忆注入：`build_context_node` 读取 `session_history`，拼入提示词
 - [x] 长期记忆接口：创建/列表/查看/更新/删除，admin 全见 + 角色隔离
 - [x] 记忆摘要生成
-- [ ] 记忆敏感检查
+- [x] 记忆敏感检查
 - [x] 多轮追问场景测试
 
 ### G. 审批与审计
@@ -131,14 +132,14 @@
 - [x] 审批前不返回最终结论（SSE 高危事件序列不流式泄漏）
 - [x] 审计只追加写入 + 同事务 flush
 - [x] 审计列表查询（admin 可见）
-- [ ] 审计 CSV 导出（公式注入转义）
+- [x] 审计 CSV 导出（公式注入转义）
 
 ### H. Benchmark
 
 - [x] 用例格式：问题、角色、期望供应商/物料、期望路径、禁止文档
 - [x] 场景分层：单事件、事件对、事件三连、held-out 新事件（30 条）
 - [x] 独立 ground truth：纯 Python 重算，不 import 服务 / Neo4j / LLM
-- [ ] 单 Agent 基线：同样输入只调用一次 LLM，用于对比（当前为占位下限）
+- [x] 单 Agent 基线：同样输入只调用一次 LLM，用于对比（30 条实测）
 - [x] 指标：precision / recall / F1、风险等级准确率、路径命中率、Hit@K、越权拦截率
 - [x] 报告输出（JSON + Markdown）
 - [x] CI 回归门禁
@@ -157,7 +158,7 @@
 ### J. 交付
 
 - [x] 演示数据与种子脚本
-- [ ] 演示脚本（5–8 分钟）
+- [x] 演示脚本（5–8 分钟）
 - [x] Docker Compose 一键启动
 - [x] README / 架构 / 规划文档同步
 - [x] 提交与推送
@@ -322,17 +323,17 @@ docs: 更新 M1 进度与接口说明
 
 | 模块 | 状态 | 备注 |
 |---|---|---|
-| Phase 0 脚手架 | ✅ | Docker 已完成，Alembic 待补 |
+| Phase 0 脚手架 | ✅ | Docker 与 Alembic 已完成 |
 | Phase 1 基建 | ✅ | 配置、日志、会话、3 张表、bcrypt+JWT、启动初始化完成 |
 | 身份与权限 | 🚧 | 登录、JWT、用户管理、越权测试完成；登出/刷新未做 |
 | 文档与 SecureRAG | ✅ | 文档表、上传、RQ 摄取、Qdrant 权限检索、越权测试完成 |
 | 固定工作流 | ✅ | LangGraph 状态机、Review Node、单测完成 |
-| 审批与审计 | ✅ | 审批闭环 + 审计完成；CSV 导出待补 |
+| 审批与审计 | ✅ | 审批闭环、审计与 CSV 导出完成 |
 | GraphRAG | ✅ | 图谱、导入、多跳影响、混合召回、路径命中率评测完成 |
-| Memory | ✅ | Redis 短期会话 + Postgres 长期记忆完成；敏感检查待补 |
-| Benchmark | 🚧 | 用例集、指标、报告与 CI 完成；单 Agent 基线待实测 |
+| Memory | ✅ | Redis 短期会话 + Postgres 长期记忆 + 敏感脱敏完成 |
+| Benchmark | ✅ | 用例集、指标、报告、CI 与单 Agent 基线实测完成 |
 | 前端 | ✅ | 所有页面已接真实接口 |
-| 部署与交付 | 🚧 | Docker、CI、v1.0.0 Release 完成；演示脚本待补 |
+| 部署与交付 | ✅ | Docker、CI、v1.0.0 Release、演示脚本完成 |
 
 ---
 
@@ -349,7 +350,7 @@ docs: 更新 M1 进度与接口说明
 9. ✅ 四类风险传导规则（图谱侧完成，纯函数对照待 M3）+ 证据结构（source / fact / impact）
 10. ✅ LangGraph 固定工作流 + `interrupt_before` 审批恢复
 11. ✅ Neo4j 图模型、导入脚本与多跳影响分析
-12. 🚧 独立 ground truth、场景集已完成；单 Agent 基线待实测
+12. ✅ 独立 ground truth、场景集与单 Agent 基线
 13. ✅ 审批、审计与基础前端（SSE 已完成）
 
 > 每完成一项，勾选第 4 节对应任务，并更新第 11 节状态。

@@ -6,8 +6,8 @@
 供应链风险 AgentHarness 平台。在 RBAC 权限约束下，融合 SecureRAG、GraphRAG、Memory 与 LangGraph 固定工作流，为采购、物流、质量、财务等多角色提供**可引用、可审计、可 Benchmark** 的风险洞察与决策支持。
 
 > 当前状态：核心链路已完成。登录、文档库、SecureRAG 检索、LangGraph 工作流、审批与审计、GraphRAG 图谱分析、Memory、Benchmark 与前端页面均已接通真实后端；评测集和人工复核仍在持续补充。
-> 已知待补：Prometheus 指标与 Grafana 面板、Alembic 迁移、审计 CSV 导出、5–8 分钟演示脚本、单 Agent 基线实测。
-> 详细架构与数据模型见 [docs/architecture.md](docs/architecture.md)；执行计划、任务拆分与验收标准见 [PROJECT_PLAN.md](PROJECT_PLAN.md)；依赖函数速查见 [docs/library-cheatsheet.md](docs/library-cheatsheet.md)。
+> 已知待补：评测集人工复核、安全响应头与日志缓冲。
+> 详细架构与数据模型见 [docs/architecture.md](docs/architecture.md)；执行计划、任务拆分与验收标准见 [PROJECT_PLAN.md](PROJECT_PLAN.md)；5–8 分钟演示流程见 [docs/demo-script.md](docs/demo-script.md)；依赖函数速查见 [docs/library-cheatsheet.md](docs/library-cheatsheet.md)。
 
 ## 演示场景
 
@@ -24,6 +24,22 @@
 | `catl_logistics` | 物流 |
 | `catl_quality` | 质量 |
 | `catl_finance` | 财务 |
+
+## 界面
+
+| 风险看板 | 风险问答 |
+|---|---|
+| ![风险看板](docs/screenshots/dashboard.png) | ![风险问答](docs/screenshots/chat.png) |
+
+| 供应商图谱 | 文档库 |
+|---|---|
+| ![供应商图谱](docs/screenshots/suppliers.png) | ![文档库](docs/screenshots/documents.png) |
+
+| 复核台 | 审计与导出 |
+|---|---|
+| ![复核台](docs/screenshots/review.png) | ![审计](docs/screenshots/audit.png) |
+
+> Benchmark 页面截图展示的是 dry-run 自检（标准答案与规则实现互校）；真实 API 指标见 [docs/benchmark-report.md](docs/benchmark-report.md)。
 
 ## 不是又一个 RAG 问答 Demo
 
@@ -104,6 +120,14 @@ docker compose exec backend python -m app.services.graph_seed
 docker compose exec backend python -m app.services.entity_retrieval
 ```
 
+监控面板（可选）：
+
+```bash
+docker compose --profile monitoring up -d
+# Prometheus http://localhost:9090；Grafana http://localhost:3000
+# Grafana 管理员密码取 .env 的 APP_GRAFANA_PASSWORD
+```
+
 ### 方式二：本机运行后端
 
 ```bash
@@ -129,6 +153,15 @@ uvicorn app.main:app --reload --port 8000
 ```bash
 python -m app.services.graph_seed
 python -m app.services.entity_retrieval
+```
+
+### 数据库迁移
+
+表结构变更由 Alembic 管理：
+
+```bash
+alembic upgrade head    # 空库直接建表
+alembic stamp head      # 仅当表已由 create_all 建好，先标记基线
 ```
 
 文档摄取另开终端运行 worker：
@@ -186,9 +219,35 @@ app/
 
 docs/architecture.md    架构、数据模型、工作流、路线图
 tests/                  分层测试与 Benchmark 评测集
-ops/                    Prometheus / Grafana 配置（待补）
+ops/                    Prometheus / Grafana 配置
+alembic/                数据库迁移脚本
 frontend/               Vue 3 前端（已接入真实后端）
 ```
+
+## 评测
+
+- 用例集：`tests/benchmark/cases.json`，30 条，覆盖单事件 / 事件对 / 文档越权 / 多轮追问 / held-out。
+- 两种模式：`--dry-run` 只校验标准答案与规则实现；不加参数会调用真实接口（需要后端与依赖服务在跑）。
+- 报告：`python -m tests.benchmark.report` 从结果生成 Markdown。
+
+```bash
+python -m tests.benchmark.runner --dry-run
+python -m tests.benchmark.runner                       # 真实 API
+python -m tests.benchmark.baseline --limit 30          # 单 Agent 基线
+```
+
+真实 API 实测（2026-11-18，30 条，完整报告见 [docs/benchmark-report.md](docs/benchmark-report.md)）：
+
+| 指标 | 结果 |
+|---|---|
+| 实体 Precision / Recall / F1 | 94.74% / 100% / 97.30% |
+| 路径命中率 / 路径召回率 | 100% / 100%（95% CI 98.27%–100%） |
+| 路径精确率 / 边级 F1 | 96.89% / 99.27% |
+| Recall@15 / Hit@15 | 88.53% / 100% |
+| 文档越权拦截率（真实检索） | 100%（6/6 用例，0 泄漏） |
+| 单 Agent 基线实体 F1 | 36.42%（路径命中 0%） |
+
+注意：19 条标准路径仍是自动生成草案，路径类指标只用于回归对比，不能当作人工确认的正确性结论。
 
 ## 开发路线
 

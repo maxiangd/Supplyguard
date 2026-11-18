@@ -1,0 +1,5846 @@
+{
+  "status": "measured",
+  "model": "deepseek-chat",
+  "total_cases": 30,
+  "metrics": {
+    "total_cases": 30,
+    "entity_precision": 0.2286,
+    "entity_recall": 0.8947,
+    "entity_f1": 0.3642,
+    "path_hit_rate": 0.0,
+    "path_case_total": 19,
+    "path_golden_total": 218,
+    "path_rank_k": 15,
+    "path_exact_rate": 0.0,
+    "path_recall": 0.0,
+    "path_precision": 0.0,
+    "path_rank_hit_rate": 0.0,
+    "path_case_hit_rate": 0.0,
+    "path_mrr": 0.0,
+    "path_hit_ci": {
+      "low": 0.0,
+      "high": 0.1682
+    },
+    "path_recall_ci": {
+      "low": 0.0,
+      "high": 0.0173
+    },
+    "node_precision": 0.0,
+    "node_recall": 0.0,
+    "node_f1": 0.0,
+    "edge_precision": 0.0,
+    "edge_recall": 0.0,
+    "edge_f1": 0.0,
+    "path_missing_total": 218,
+    "path_unmatched_total": 0,
+    "path_reviewed_case_total": 0,
+    "path_provisional_case_total": 19,
+    "path_quality_scope": "provisional",
+    "rule_precision": 0.0,
+    "rule_recall": 0.0,
+    "document_leak_block_rate": 0.0,
+    "document_leak_count": 0,
+    "document_leak_case_total": 6,
+    "document_leak_case_checked": 0,
+    "document_leak_case_error": 0,
+    "document_leak_case_blocked": 0,
+    "document_leak_hit_cases": 0,
+    "document_leak_check_mode": "baseline",
+    "followup_success_rate": 0.0,
+    "followup_case_total": 4,
+    "followup_case_passed": 0,
+    "by_role": {
+      "admin": {
+        "total": 1,
+        "leaks": 0,
+        "path_total": 0,
+        "path_hit_rate": 0.0,
+        "path_golden_total": 4,
+        "path_recall": 0.0,
+        "path_precision": 0.0,
+        "path_mrr": 0.0,
+        "edge_f1": 0.0
+      },
+      "finance": {
+        "total": 2,
+        "leaks": 0,
+        "path_total": 0,
+        "path_hit_rate": 0.0,
+        "path_golden_total": 6,
+        "path_recall": 0.0,
+        "path_precision": 0.0,
+        "path_mrr": 0.0,
+        "edge_f1": 0.0
+      },
+      "logistics": {
+        "total": 9,
+        "leaks": 0,
+        "path_total": 0,
+        "path_hit_rate": 0.0,
+        "path_golden_total": 43,
+        "path_recall": 0.0,
+        "path_precision": 0.0,
+        "path_mrr": 0.0,
+        "edge_f1": 0.0
+      },
+      "procurement": {
+        "total": 13,
+        "leaks": 0,
+        "path_total": 0,
+        "path_hit_rate": 0.0,
+        "path_golden_total": 108,
+        "path_recall": 0.0,
+        "path_precision": 0.0,
+        "path_mrr": 0.0,
+        "edge_f1": 0.0
+      },
+      "quality": {
+        "total": 5,
+        "leaks": 0,
+        "path_total": 0,
+        "path_hit_rate": 0.0,
+        "path_golden_total": 57,
+        "path_recall": 0.0,
+        "path_precision": 0.0,
+        "path_mrr": 0.0,
+        "edge_f1": 0.0
+      }
+    },
+    "by_scenario": {
+      "document_leak": {
+        "total": 6,
+        "path_golden_total": 0,
+        "path_recall": 0.0,
+        "path_precision": 0.0,
+        "path_rank_hit_rate": 0.0,
+        "path_mrr": 0.0,
+        "edge_f1": 0.0
+      },
+      "edge_case": {
+        "total": 3,
+        "path_golden_total": 4,
+        "path_recall": 0.0,
+        "path_precision": 0.0,
+        "path_rank_hit_rate": 0.0,
+        "path_mrr": 0.0,
+        "edge_f1": 0.0
+      },
+      "event_pair": {
+        "total": 6,
+        "path_golden_total": 96,
+        "path_recall": 0.0,
+        "path_precision": 0.0,
+        "path_rank_hit_rate": 0.0,
+        "path_mrr": 0.0,
+        "edge_f1": 0.0
+      },
+      "held_out": {
+        "total": 3,
+        "path_golden_total": 0,
+        "path_recall": 0.0,
+        "path_precision": 0.0,
+        "path_rank_hit_rate": 0.0,
+        "path_mrr": 0.0,
+        "edge_f1": 0.0
+      },
+      "multi_turn": {
+        "total": 4,
+        "path_golden_total": 39,
+        "path_recall": 0.0,
+        "path_precision": 0.0,
+        "path_rank_hit_rate": 0.0,
+        "path_mrr": 0.0,
+        "edge_f1": 0.0
+      },
+      "single_event": {
+        "total": 8,
+        "path_golden_total": 79,
+        "path_recall": 0.0,
+        "path_precision": 0.0,
+        "path_rank_hit_rate": 0.0,
+        "path_mrr": 0.0,
+        "edge_f1": 0.0
+      }
+    }
+  },
+  "results": [
+    {
+      "id": "case_001",
+      "scenario": "single_event",
+      "question": "宜春枧下窝锂矿停产对宁德时代有什么影响？",
+      "role": "procurement",
+      "context": [],
+      "expected_entities": [
+        "event-yichun-suspend"
+      ],
+      "actual_entities": [
+        "event-yichun-suspend",
+        "factory-yichun-smelter",
+        "region-jiangxi-yichun",
+        "supplier-hunan-yuneng",
+        "supplier-fulin",
+        "supplier-rongbai",
+        "event-carbonate-price",
+        "factory-ningde-zhangwan",
+        "factory-ningde-cheliwan",
+        "factory-liyang",
+        "factory-yibin",
+        "factory-zhaoqing",
+        "factory-arnstadt",
+        "factory-debrecen",
+        "factory-karawang",
+        "factory-spain"
+      ],
+      "expected_min_paths": 0,
+      "actual_paths": 0,
+      "expected_path_rules": [
+        "REGION"
+      ],
+      "actual_path_rules": [],
+      "expected_paths": [
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-yichun-suspend",
+            "region-jiangxi-yichun",
+            "factory-yichun-smelter"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-yichun-suspend",
+            "region-jiangxi-yichun",
+            "supplier-fulin"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-yichun-suspend",
+            "region-jiangxi-yichun",
+            "supplier-hunan-yuneng"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-yichun-suspend",
+            "region-jiangxi-yichun",
+            "factory-yichun-smelter",
+            "port-xiamen"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-yichun-suspend",
+            "region-jiangxi-yichun",
+            "supplier-fulin",
+            "factory-ningde-zhangwan"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-yichun-suspend",
+            "region-jiangxi-yichun",
+            "supplier-fulin",
+            "factory-zhaoqing"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-yichun-suspend",
+            "region-jiangxi-yichun",
+            "supplier-fulin",
+            "factory-liyang"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-yichun-suspend",
+            "region-jiangxi-yichun",
+            "supplier-hunan-yuneng",
+            "factory-yibin"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-yichun-suspend",
+            "region-jiangxi-yichun",
+            "supplier-hunan-yuneng",
+            "factory-ningde-zhangwan"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-yichun-suspend",
+            "region-jiangxi-yichun",
+            "supplier-hunan-yuneng",
+            "factory-liyang"
+          ]
+        }
+      ],
+      "expected_paths_reviewed": false,
+      "actual_path_details": [],
+      "path_match": {
+        "golden_total": 10,
+        "golden_exact": 0,
+        "golden_matched": 0,
+        "actual_total": 0,
+        "actual_matched": 0,
+        "ranks": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "rank_hits": 0,
+        "top_k": 15,
+        "mrr": 0.0,
+        "node_precision": 0.0,
+        "node_recall": 0.0,
+        "node_f1": 0.0,
+        "matched_node_total": 0,
+        "golden_node_total": 10,
+        "actual_node_total": 0,
+        "edge_precision": 0.0,
+        "edge_recall": 0.0,
+        "edge_f1": 0.0,
+        "matched_edge_total": 0,
+        "golden_edge_total": 11,
+        "actual_edge_total": 0,
+        "missing_golden": [
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-yichun-suspend",
+              "region-jiangxi-yichun",
+              "factory-yichun-smelter"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-yichun-suspend",
+              "region-jiangxi-yichun",
+              "supplier-fulin"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-yichun-suspend",
+              "region-jiangxi-yichun",
+              "supplier-hunan-yuneng"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-yichun-suspend",
+              "region-jiangxi-yichun",
+              "factory-yichun-smelter",
+              "port-xiamen"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-yichun-suspend",
+              "region-jiangxi-yichun",
+              "supplier-fulin",
+              "factory-ningde-zhangwan"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-yichun-suspend",
+              "region-jiangxi-yichun",
+              "supplier-fulin",
+              "factory-zhaoqing"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-yichun-suspend",
+              "region-jiangxi-yichun",
+              "supplier-fulin",
+              "factory-liyang"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-yichun-suspend",
+              "region-jiangxi-yichun",
+              "supplier-hunan-yuneng",
+              "factory-yibin"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-yichun-suspend",
+              "region-jiangxi-yichun",
+              "supplier-hunan-yuneng",
+              "factory-ningde-zhangwan"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-yichun-suspend",
+              "region-jiangxi-yichun",
+              "supplier-hunan-yuneng",
+              "factory-liyang"
+            ]
+          }
+        ],
+        "unmatched_actual": []
+      },
+      "inherited_entity_ids": [],
+      "document_hits": 0,
+      "document_role_leak": false,
+      "leaked_document_ids": [],
+      "document_check_mode": "baseline",
+      "baseline_error": null
+    },
+    {
+      "id": "case_002",
+      "scenario": "single_event",
+      "question": "刚果金钴出口限制对华友钴业的供应有什么影响？",
+      "role": "procurement",
+      "context": [],
+      "expected_entities": [
+        "event-cobalt-drc",
+        "supplier-huayou"
+      ],
+      "actual_entities": [
+        "supplier-huayou",
+        "event-cobalt-drc",
+        "region-congo"
+      ],
+      "expected_min_paths": 0,
+      "actual_paths": 0,
+      "expected_path_rules": [
+        "DIRECT",
+        "REGION"
+      ],
+      "actual_path_rules": [],
+      "expected_paths": [
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-cobalt-drc",
+            "supplier-huayou"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-cobalt-drc",
+            "supplier-huayou",
+            "factory-debrecen"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-cobalt-drc",
+            "supplier-huayou",
+            "factory-ningde-zhangwan"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-cobalt-drc",
+            "supplier-huayou",
+            "factory-arnstadt"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-cobalt-drc",
+            "region-congo",
+            "supplier-huayou"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-cobalt-drc",
+            "supplier-huayou",
+            "factory-debrecen",
+            "port-hamburg"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-cobalt-drc",
+            "supplier-huayou",
+            "factory-ningde-zhangwan",
+            "port-sanduao"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-cobalt-drc",
+            "supplier-huayou",
+            "factory-arnstadt",
+            "port-hamburg"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-cobalt-drc",
+            "region-congo",
+            "supplier-huayou",
+            "factory-debrecen"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-cobalt-drc",
+            "region-congo",
+            "supplier-huayou",
+            "factory-ningde-zhangwan"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-cobalt-drc",
+            "region-congo",
+            "supplier-huayou",
+            "factory-arnstadt"
+          ]
+        }
+      ],
+      "expected_paths_reviewed": false,
+      "actual_path_details": [],
+      "path_match": {
+        "golden_total": 11,
+        "golden_exact": 0,
+        "golden_matched": 0,
+        "actual_total": 0,
+        "actual_matched": 0,
+        "ranks": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "rank_hits": 0,
+        "top_k": 15,
+        "mrr": 0.0,
+        "node_precision": 0.0,
+        "node_recall": 0.0,
+        "node_f1": 0.0,
+        "matched_node_total": 0,
+        "golden_node_total": 8,
+        "actual_node_total": 0,
+        "edge_precision": 0.0,
+        "edge_recall": 0.0,
+        "edge_f1": 0.0,
+        "matched_edge_total": 0,
+        "golden_edge_total": 9,
+        "actual_edge_total": 0,
+        "missing_golden": [
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-cobalt-drc",
+              "supplier-huayou"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-cobalt-drc",
+              "supplier-huayou",
+              "factory-debrecen"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-cobalt-drc",
+              "supplier-huayou",
+              "factory-ningde-zhangwan"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-cobalt-drc",
+              "supplier-huayou",
+              "factory-arnstadt"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-cobalt-drc",
+              "region-congo",
+              "supplier-huayou"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-cobalt-drc",
+              "supplier-huayou",
+              "factory-debrecen",
+              "port-hamburg"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-cobalt-drc",
+              "supplier-huayou",
+              "factory-ningde-zhangwan",
+              "port-sanduao"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-cobalt-drc",
+              "supplier-huayou",
+              "factory-arnstadt",
+              "port-hamburg"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-cobalt-drc",
+              "region-congo",
+              "supplier-huayou",
+              "factory-debrecen"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-cobalt-drc",
+              "region-congo",
+              "supplier-huayou",
+              "factory-ningde-zhangwan"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-cobalt-drc",
+              "region-congo",
+              "supplier-huayou",
+              "factory-arnstadt"
+            ]
+          }
+        ],
+        "unmatched_actual": []
+      },
+      "inherited_entity_ids": [],
+      "document_hits": 0,
+      "document_role_leak": false,
+      "leaked_document_ids": [],
+      "document_check_mode": "baseline",
+      "baseline_error": null
+    },
+    {
+      "id": "case_003",
+      "scenario": "single_event",
+      "question": "红海航线绕行对欧洲交付有什么影响？",
+      "role": "logistics",
+      "context": [],
+      "expected_entities": [
+        "event-redsea-diversion"
+      ],
+      "actual_entities": [
+        "route-redsea",
+        "event-redsea-diversion",
+        "route-arctic",
+        "factory-arnstadt",
+        "factory-debrecen",
+        "port-hamburg",
+        "port-shanghai",
+        "port-xiamen",
+        "route-ningde-xiamen"
+      ],
+      "expected_min_paths": 0,
+      "actual_paths": 0,
+      "expected_path_rules": [
+        "ROUTE"
+      ],
+      "actual_path_rules": [],
+      "expected_paths": [
+        {
+          "rule": "ROUTE",
+          "node_ids": [
+            "event-redsea-diversion",
+            "route-redsea",
+            "port-xiamen"
+          ]
+        },
+        {
+          "rule": "ROUTE",
+          "node_ids": [
+            "event-redsea-diversion",
+            "route-redsea",
+            "port-hamburg"
+          ]
+        },
+        {
+          "rule": "ROUTE",
+          "node_ids": [
+            "event-redsea-diversion",
+            "route-redsea",
+            "port-xiamen",
+            "factory-yichun-smelter"
+          ]
+        },
+        {
+          "rule": "ROUTE",
+          "node_ids": [
+            "event-redsea-diversion",
+            "route-redsea",
+            "port-xiamen",
+            "factory-zhaoqing"
+          ]
+        },
+        {
+          "rule": "ROUTE",
+          "node_ids": [
+            "event-redsea-diversion",
+            "route-redsea",
+            "port-hamburg",
+            "factory-debrecen"
+          ]
+        },
+        {
+          "rule": "ROUTE",
+          "node_ids": [
+            "event-redsea-diversion",
+            "route-redsea",
+            "port-hamburg",
+            "factory-arnstadt"
+          ]
+        },
+        {
+          "rule": "ROUTE",
+          "node_ids": [
+            "event-redsea-diversion",
+            "route-redsea",
+            "port-hamburg",
+            "factory-spain"
+          ]
+        }
+      ],
+      "expected_paths_reviewed": false,
+      "actual_path_details": [],
+      "path_match": {
+        "golden_total": 7,
+        "golden_exact": 0,
+        "golden_matched": 0,
+        "actual_total": 0,
+        "actual_matched": 0,
+        "ranks": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "rank_hits": 0,
+        "top_k": 15,
+        "mrr": 0.0,
+        "node_precision": 0.0,
+        "node_recall": 0.0,
+        "node_f1": 0.0,
+        "matched_node_total": 0,
+        "golden_node_total": 9,
+        "actual_node_total": 0,
+        "edge_precision": 0.0,
+        "edge_recall": 0.0,
+        "edge_f1": 0.0,
+        "matched_edge_total": 0,
+        "golden_edge_total": 8,
+        "actual_edge_total": 0,
+        "missing_golden": [
+          {
+            "rule": "ROUTE",
+            "node_ids": [
+              "event-redsea-diversion",
+              "route-redsea",
+              "port-xiamen"
+            ]
+          },
+          {
+            "rule": "ROUTE",
+            "node_ids": [
+              "event-redsea-diversion",
+              "route-redsea",
+              "port-hamburg"
+            ]
+          },
+          {
+            "rule": "ROUTE",
+            "node_ids": [
+              "event-redsea-diversion",
+              "route-redsea",
+              "port-xiamen",
+              "factory-yichun-smelter"
+            ]
+          },
+          {
+            "rule": "ROUTE",
+            "node_ids": [
+              "event-redsea-diversion",
+              "route-redsea",
+              "port-xiamen",
+              "factory-zhaoqing"
+            ]
+          },
+          {
+            "rule": "ROUTE",
+            "node_ids": [
+              "event-redsea-diversion",
+              "route-redsea",
+              "port-hamburg",
+              "factory-debrecen"
+            ]
+          },
+          {
+            "rule": "ROUTE",
+            "node_ids": [
+              "event-redsea-diversion",
+              "route-redsea",
+              "port-hamburg",
+              "factory-arnstadt"
+            ]
+          },
+          {
+            "rule": "ROUTE",
+            "node_ids": [
+              "event-redsea-diversion",
+              "route-redsea",
+              "port-hamburg",
+              "factory-spain"
+            ]
+          }
+        ],
+        "unmatched_actual": []
+      },
+      "inherited_entity_ids": [],
+      "document_hits": 0,
+      "document_role_leak": false,
+      "leaked_document_ids": [],
+      "document_check_mode": "baseline",
+      "baseline_error": null
+    },
+    {
+      "id": "case_004",
+      "scenario": "single_event",
+      "question": "匈牙利工厂试生产进度对欧洲产能有什么影响？",
+      "role": "procurement",
+      "context": [],
+      "expected_entities": [
+        "factory-debrecen",
+        "region-hungary"
+      ],
+      "actual_entities": [
+        "event-debrecen-ramp",
+        "factory-debrecen",
+        "region-hungary",
+        "factory-arnstadt",
+        "region-germany",
+        "factory-spain",
+        "region-spain",
+        "event-eu-battery-rule"
+      ],
+      "expected_min_paths": 0,
+      "actual_paths": 0,
+      "expected_path_rules": [
+        "DIRECT",
+        "REGION"
+      ],
+      "actual_path_rules": [],
+      "expected_paths": [
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "region-hungary",
+            "factory-debrecen"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-debrecen-ramp",
+            "factory-debrecen"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "region-hungary",
+            "factory-debrecen",
+            "port-hamburg"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-debrecen-ramp",
+            "factory-debrecen",
+            "port-hamburg"
+          ]
+        }
+      ],
+      "expected_paths_reviewed": false,
+      "actual_path_details": [],
+      "path_match": {
+        "golden_total": 4,
+        "golden_exact": 0,
+        "golden_matched": 0,
+        "actual_total": 0,
+        "actual_matched": 0,
+        "ranks": [
+          null,
+          null,
+          null,
+          null
+        ],
+        "rank_hits": 0,
+        "top_k": 15,
+        "mrr": 0.0,
+        "node_precision": 0.0,
+        "node_recall": 0.0,
+        "node_f1": 0.0,
+        "matched_node_total": 0,
+        "golden_node_total": 4,
+        "actual_node_total": 0,
+        "edge_precision": 0.0,
+        "edge_recall": 0.0,
+        "edge_f1": 0.0,
+        "matched_edge_total": 0,
+        "golden_edge_total": 3,
+        "actual_edge_total": 0,
+        "missing_golden": [
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "region-hungary",
+              "factory-debrecen"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-debrecen-ramp",
+              "factory-debrecen"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "region-hungary",
+              "factory-debrecen",
+              "port-hamburg"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-debrecen-ramp",
+              "factory-debrecen",
+              "port-hamburg"
+            ]
+          }
+        ],
+        "unmatched_actual": []
+      },
+      "inherited_entity_ids": [],
+      "document_hits": 0,
+      "document_role_leak": false,
+      "leaked_document_ids": [],
+      "document_check_mode": "baseline",
+      "baseline_error": null
+    },
+    {
+      "id": "case_005",
+      "scenario": "single_event",
+      "question": "极星4召回事件涉及宁德时代哪些供应商？",
+      "role": "quality",
+      "context": [],
+      "expected_entities": [
+        "event-polestar-recall"
+      ],
+      "actual_entities": [
+        "event-polestar-recall",
+        "supplier-kedali",
+        "supplier-enjie",
+        "supplier-tinci",
+        "supplier-capchem",
+        "supplier-rongbai",
+        "supplier-hunan-yuneng",
+        "supplier-fulin",
+        "supplier-shangtai",
+        "supplier-kaijin",
+        "supplier-jiangsu-guotai",
+        "supplier-xingyuan"
+      ],
+      "expected_min_paths": 0,
+      "actual_paths": 0,
+      "expected_path_rules": [
+        "DIRECT"
+      ],
+      "actual_path_rules": [],
+      "expected_paths": [
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-huayou"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "factory-ningde-zhangwan"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-rongbai"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-huayou",
+            "factory-debrecen"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-huayou",
+            "factory-ningde-zhangwan"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-huayou",
+            "factory-arnstadt"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "factory-ningde-zhangwan",
+            "port-sanduao"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-rongbai",
+            "factory-debrecen"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-rongbai",
+            "factory-ningde-zhangwan"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-rongbai",
+            "factory-liyang"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-huayou",
+            "factory-debrecen",
+            "port-hamburg"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-huayou",
+            "factory-ningde-zhangwan",
+            "port-sanduao"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-huayou",
+            "factory-arnstadt",
+            "port-hamburg"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-rongbai",
+            "factory-debrecen",
+            "port-hamburg"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-rongbai",
+            "factory-ningde-zhangwan",
+            "port-sanduao"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-rongbai",
+            "factory-liyang",
+            "port-shanghai"
+          ]
+        }
+      ],
+      "expected_paths_reviewed": false,
+      "actual_path_details": [],
+      "path_match": {
+        "golden_total": 16,
+        "golden_exact": 0,
+        "golden_matched": 0,
+        "actual_total": 0,
+        "actual_matched": 0,
+        "ranks": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "rank_hits": 0,
+        "top_k": 15,
+        "mrr": 0.0,
+        "node_precision": 0.0,
+        "node_recall": 0.0,
+        "node_f1": 0.0,
+        "matched_node_total": 0,
+        "golden_node_total": 10,
+        "actual_node_total": 0,
+        "edge_precision": 0.0,
+        "edge_recall": 0.0,
+        "edge_f1": 0.0,
+        "matched_edge_total": 0,
+        "golden_edge_total": 13,
+        "actual_edge_total": 0,
+        "missing_golden": [
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-huayou"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "factory-ningde-zhangwan"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-rongbai"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-huayou",
+              "factory-debrecen"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-huayou",
+              "factory-ningde-zhangwan"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-huayou",
+              "factory-arnstadt"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "factory-ningde-zhangwan",
+              "port-sanduao"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-rongbai",
+              "factory-debrecen"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-rongbai",
+              "factory-ningde-zhangwan"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-rongbai",
+              "factory-liyang"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-huayou",
+              "factory-debrecen",
+              "port-hamburg"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-huayou",
+              "factory-ningde-zhangwan",
+              "port-sanduao"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-huayou",
+              "factory-arnstadt",
+              "port-hamburg"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-rongbai",
+              "factory-debrecen",
+              "port-hamburg"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-rongbai",
+              "factory-ningde-zhangwan",
+              "port-sanduao"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-rongbai",
+              "factory-liyang",
+              "port-shanghai"
+            ]
+          }
+        ],
+        "unmatched_actual": []
+      },
+      "inherited_entity_ids": [],
+      "document_hits": 0,
+      "document_role_leak": false,
+      "leaked_document_ids": [],
+      "document_check_mode": "baseline",
+      "baseline_error": null
+    },
+    {
+      "id": "case_006",
+      "scenario": "single_event",
+      "question": "碳酸锂价格回落对采购策略有什么影响？",
+      "role": "procurement",
+      "context": [],
+      "expected_entities": [
+        "event-carbonate-price"
+      ],
+      "actual_entities": [
+        "event-carbonate-price",
+        "supplier-hunan-yuneng",
+        "supplier-fulin",
+        "supplier-rongbai",
+        "factory-yichun-smelter",
+        "event-yichun-suspend",
+        "event-yichun-eia"
+      ],
+      "expected_min_paths": 0,
+      "actual_paths": 0,
+      "expected_path_rules": [
+        "DIRECT"
+      ],
+      "actual_path_rules": [],
+      "expected_paths": [
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-rongbai"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-fulin"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-hunan-yuneng"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-rongbai",
+            "factory-debrecen"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-rongbai",
+            "factory-ningde-zhangwan"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-rongbai",
+            "factory-liyang"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-fulin",
+            "factory-ningde-zhangwan"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-fulin",
+            "factory-zhaoqing"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-fulin",
+            "factory-liyang"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-hunan-yuneng",
+            "factory-yibin"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-hunan-yuneng",
+            "factory-ningde-zhangwan"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-hunan-yuneng",
+            "factory-liyang"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-rongbai",
+            "factory-debrecen",
+            "port-hamburg"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-rongbai",
+            "factory-ningde-zhangwan",
+            "port-sanduao"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-rongbai",
+            "factory-liyang",
+            "port-shanghai"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-fulin",
+            "factory-ningde-zhangwan",
+            "port-sanduao"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-fulin",
+            "factory-zhaoqing",
+            "port-xiamen"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-fulin",
+            "factory-liyang",
+            "port-shanghai"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-hunan-yuneng",
+            "factory-yibin",
+            "port-shanghai"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-hunan-yuneng",
+            "factory-ningde-zhangwan",
+            "port-sanduao"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-hunan-yuneng",
+            "factory-liyang",
+            "port-shanghai"
+          ]
+        }
+      ],
+      "expected_paths_reviewed": false,
+      "actual_path_details": [],
+      "path_match": {
+        "golden_total": 21,
+        "golden_exact": 0,
+        "golden_matched": 0,
+        "actual_total": 0,
+        "actual_matched": 0,
+        "ranks": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "rank_hits": 0,
+        "top_k": 15,
+        "mrr": 0.0,
+        "node_precision": 0.0,
+        "node_recall": 0.0,
+        "node_f1": 0.0,
+        "matched_node_total": 0,
+        "golden_node_total": 13,
+        "actual_node_total": 0,
+        "edge_precision": 0.0,
+        "edge_recall": 0.0,
+        "edge_f1": 0.0,
+        "matched_edge_total": 0,
+        "golden_edge_total": 17,
+        "actual_edge_total": 0,
+        "missing_golden": [
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-rongbai"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-fulin"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-hunan-yuneng"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-rongbai",
+              "factory-debrecen"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-rongbai",
+              "factory-ningde-zhangwan"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-rongbai",
+              "factory-liyang"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-fulin",
+              "factory-ningde-zhangwan"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-fulin",
+              "factory-zhaoqing"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-fulin",
+              "factory-liyang"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-hunan-yuneng",
+              "factory-yibin"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-hunan-yuneng",
+              "factory-ningde-zhangwan"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-hunan-yuneng",
+              "factory-liyang"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-rongbai",
+              "factory-debrecen",
+              "port-hamburg"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-rongbai",
+              "factory-ningde-zhangwan",
+              "port-sanduao"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-rongbai",
+              "factory-liyang",
+              "port-shanghai"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-fulin",
+              "factory-ningde-zhangwan",
+              "port-sanduao"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-fulin",
+              "factory-zhaoqing",
+              "port-xiamen"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-fulin",
+              "factory-liyang",
+              "port-shanghai"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-hunan-yuneng",
+              "factory-yibin",
+              "port-shanghai"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-hunan-yuneng",
+              "factory-ningde-zhangwan",
+              "port-sanduao"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-hunan-yuneng",
+              "factory-liyang",
+              "port-shanghai"
+            ]
+          }
+        ],
+        "unmatched_actual": []
+      },
+      "inherited_entity_ids": [],
+      "document_hits": 0,
+      "document_role_leak": false,
+      "leaked_document_ids": [],
+      "document_check_mode": "baseline",
+      "baseline_error": null
+    },
+    {
+      "id": "case_007",
+      "scenario": "single_event",
+      "question": "危险品舱位紧张对宁德基地出货有什么影响？",
+      "role": "logistics",
+      "context": [],
+      "expected_entities": [
+        "event-dangerous-berth",
+        "factory-ningde-zhangwan"
+      ],
+      "actual_entities": [
+        "event-dangerous-berth",
+        "factory-ningde-zhangwan",
+        "factory-ningde-cheliwan",
+        "port-sanduao",
+        "port-xiamen",
+        "route-ningde-xiamen"
+      ],
+      "expected_min_paths": 0,
+      "actual_paths": 0,
+      "expected_path_rules": [
+        "PORT",
+        "SUPPLY"
+      ],
+      "actual_path_rules": [],
+      "expected_paths": [
+        {
+          "rule": "SUPPLY",
+          "node_ids": [
+            "factory-ningde-zhangwan",
+            "port-sanduao"
+          ]
+        },
+        {
+          "rule": "PORT",
+          "node_ids": [
+            "event-dangerous-berth",
+            "port-sanduao",
+            "factory-ningde-zhangwan"
+          ]
+        },
+        {
+          "rule": "PORT",
+          "node_ids": [
+            "event-dangerous-berth",
+            "port-sanduao",
+            "factory-ningde-cheliwan"
+          ]
+        },
+        {
+          "rule": "PORT",
+          "node_ids": [
+            "event-dangerous-berth",
+            "port-xiamen",
+            "factory-yichun-smelter"
+          ]
+        },
+        {
+          "rule": "PORT",
+          "node_ids": [
+            "event-dangerous-berth",
+            "port-xiamen",
+            "factory-zhaoqing"
+          ]
+        }
+      ],
+      "expected_paths_reviewed": false,
+      "actual_path_details": [],
+      "path_match": {
+        "golden_total": 5,
+        "golden_exact": 0,
+        "golden_matched": 0,
+        "actual_total": 0,
+        "actual_matched": 0,
+        "ranks": [
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "rank_hits": 0,
+        "top_k": 15,
+        "mrr": 0.0,
+        "node_precision": 0.0,
+        "node_recall": 0.0,
+        "node_f1": 0.0,
+        "matched_node_total": 0,
+        "golden_node_total": 7,
+        "actual_node_total": 0,
+        "edge_precision": 0.0,
+        "edge_recall": 0.0,
+        "edge_f1": 0.0,
+        "matched_edge_total": 0,
+        "golden_edge_total": 7,
+        "actual_edge_total": 0,
+        "missing_golden": [
+          {
+            "rule": "SUPPLY",
+            "node_ids": [
+              "factory-ningde-zhangwan",
+              "port-sanduao"
+            ]
+          },
+          {
+            "rule": "PORT",
+            "node_ids": [
+              "event-dangerous-berth",
+              "port-sanduao",
+              "factory-ningde-zhangwan"
+            ]
+          },
+          {
+            "rule": "PORT",
+            "node_ids": [
+              "event-dangerous-berth",
+              "port-sanduao",
+              "factory-ningde-cheliwan"
+            ]
+          },
+          {
+            "rule": "PORT",
+            "node_ids": [
+              "event-dangerous-berth",
+              "port-xiamen",
+              "factory-yichun-smelter"
+            ]
+          },
+          {
+            "rule": "PORT",
+            "node_ids": [
+              "event-dangerous-berth",
+              "port-xiamen",
+              "factory-zhaoqing"
+            ]
+          }
+        ],
+        "unmatched_actual": []
+      },
+      "inherited_entity_ids": [],
+      "document_hits": 0,
+      "document_role_leak": false,
+      "leaked_document_ids": [],
+      "document_check_mode": "baseline",
+      "baseline_error": null
+    },
+    {
+      "id": "case_008",
+      "scenario": "single_event",
+      "question": "欧盟电池法规对德国和匈牙利工厂有什么合规要求？",
+      "role": "quality",
+      "context": [],
+      "expected_entities": [
+        "event-eu-battery-rule",
+        "factory-debrecen"
+      ],
+      "actual_entities": [
+        "event-eu-battery-rule",
+        "factory-arnstadt",
+        "factory-debrecen",
+        "region-germany",
+        "region-hungary"
+      ],
+      "expected_min_paths": 0,
+      "actual_paths": 0,
+      "expected_path_rules": [
+        "REGION",
+        "SUPPLY"
+      ],
+      "actual_path_rules": [],
+      "expected_paths": [
+        {
+          "rule": "SUPPLY",
+          "node_ids": [
+            "factory-debrecen",
+            "port-hamburg"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-eu-battery-rule",
+            "region-hungary",
+            "factory-debrecen"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-eu-battery-rule",
+            "region-germany",
+            "factory-arnstadt"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-eu-battery-rule",
+            "region-hungary",
+            "factory-debrecen",
+            "port-hamburg"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-eu-battery-rule",
+            "region-germany",
+            "factory-arnstadt",
+            "port-hamburg"
+          ]
+        }
+      ],
+      "expected_paths_reviewed": false,
+      "actual_path_details": [],
+      "path_match": {
+        "golden_total": 5,
+        "golden_exact": 0,
+        "golden_matched": 0,
+        "actual_total": 0,
+        "actual_matched": 0,
+        "ranks": [
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "rank_hits": 0,
+        "top_k": 15,
+        "mrr": 0.0,
+        "node_precision": 0.0,
+        "node_recall": 0.0,
+        "node_f1": 0.0,
+        "matched_node_total": 0,
+        "golden_node_total": 6,
+        "actual_node_total": 0,
+        "edge_precision": 0.0,
+        "edge_recall": 0.0,
+        "edge_f1": 0.0,
+        "matched_edge_total": 0,
+        "golden_edge_total": 6,
+        "actual_edge_total": 0,
+        "missing_golden": [
+          {
+            "rule": "SUPPLY",
+            "node_ids": [
+              "factory-debrecen",
+              "port-hamburg"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-eu-battery-rule",
+              "region-hungary",
+              "factory-debrecen"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-eu-battery-rule",
+              "region-germany",
+              "factory-arnstadt"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-eu-battery-rule",
+              "region-hungary",
+              "factory-debrecen",
+              "port-hamburg"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-eu-battery-rule",
+              "region-germany",
+              "factory-arnstadt",
+              "port-hamburg"
+            ]
+          }
+        ],
+        "unmatched_actual": []
+      },
+      "inherited_entity_ids": [],
+      "document_hits": 0,
+      "document_role_leak": false,
+      "leaked_document_ids": [],
+      "document_check_mode": "baseline",
+      "baseline_error": null
+    },
+    {
+      "id": "case_009",
+      "scenario": "event_pair",
+      "question": "宜春锂矿停产加上津巴布韦锂出口收紧，对上游原料保障有什么影响？",
+      "role": "procurement",
+      "context": [],
+      "expected_entities": [
+        "event-zimbabwe-lithium",
+        "event-yichun-suspend"
+      ],
+      "actual_entities": [
+        "event-yichun-suspend",
+        "event-zimbabwe-lithium",
+        "region-jiangxi-yichun",
+        "region-zimbabwe",
+        "factory-yichun-smelter",
+        "supplier-hunan-yuneng",
+        "supplier-fulin",
+        "supplier-rongbai",
+        "event-carbonate-price"
+      ],
+      "expected_min_paths": 0,
+      "actual_paths": 0,
+      "expected_path_rules": [
+        "REGION"
+      ],
+      "actual_path_rules": [],
+      "expected_paths": [
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-yichun-suspend",
+            "region-jiangxi-yichun",
+            "factory-yichun-smelter"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-yichun-suspend",
+            "region-jiangxi-yichun",
+            "supplier-fulin"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-yichun-suspend",
+            "region-jiangxi-yichun",
+            "supplier-hunan-yuneng"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-yichun-suspend",
+            "region-jiangxi-yichun",
+            "factory-yichun-smelter",
+            "port-xiamen"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-yichun-suspend",
+            "region-jiangxi-yichun",
+            "supplier-fulin",
+            "factory-ningde-zhangwan"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-yichun-suspend",
+            "region-jiangxi-yichun",
+            "supplier-fulin",
+            "factory-zhaoqing"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-yichun-suspend",
+            "region-jiangxi-yichun",
+            "supplier-fulin",
+            "factory-liyang"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-yichun-suspend",
+            "region-jiangxi-yichun",
+            "supplier-hunan-yuneng",
+            "factory-yibin"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-yichun-suspend",
+            "region-jiangxi-yichun",
+            "supplier-hunan-yuneng",
+            "factory-ningde-zhangwan"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-yichun-suspend",
+            "region-jiangxi-yichun",
+            "supplier-hunan-yuneng",
+            "factory-liyang"
+          ]
+        }
+      ],
+      "expected_paths_reviewed": false,
+      "actual_path_details": [],
+      "path_match": {
+        "golden_total": 10,
+        "golden_exact": 0,
+        "golden_matched": 0,
+        "actual_total": 0,
+        "actual_matched": 0,
+        "ranks": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "rank_hits": 0,
+        "top_k": 15,
+        "mrr": 0.0,
+        "node_precision": 0.0,
+        "node_recall": 0.0,
+        "node_f1": 0.0,
+        "matched_node_total": 0,
+        "golden_node_total": 10,
+        "actual_node_total": 0,
+        "edge_precision": 0.0,
+        "edge_recall": 0.0,
+        "edge_f1": 0.0,
+        "matched_edge_total": 0,
+        "golden_edge_total": 11,
+        "actual_edge_total": 0,
+        "missing_golden": [
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-yichun-suspend",
+              "region-jiangxi-yichun",
+              "factory-yichun-smelter"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-yichun-suspend",
+              "region-jiangxi-yichun",
+              "supplier-fulin"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-yichun-suspend",
+              "region-jiangxi-yichun",
+              "supplier-hunan-yuneng"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-yichun-suspend",
+              "region-jiangxi-yichun",
+              "factory-yichun-smelter",
+              "port-xiamen"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-yichun-suspend",
+              "region-jiangxi-yichun",
+              "supplier-fulin",
+              "factory-ningde-zhangwan"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-yichun-suspend",
+              "region-jiangxi-yichun",
+              "supplier-fulin",
+              "factory-zhaoqing"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-yichun-suspend",
+              "region-jiangxi-yichun",
+              "supplier-fulin",
+              "factory-liyang"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-yichun-suspend",
+              "region-jiangxi-yichun",
+              "supplier-hunan-yuneng",
+              "factory-yibin"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-yichun-suspend",
+              "region-jiangxi-yichun",
+              "supplier-hunan-yuneng",
+              "factory-ningde-zhangwan"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-yichun-suspend",
+              "region-jiangxi-yichun",
+              "supplier-hunan-yuneng",
+              "factory-liyang"
+            ]
+          }
+        ],
+        "unmatched_actual": []
+      },
+      "inherited_entity_ids": [],
+      "document_hits": 0,
+      "document_role_leak": false,
+      "leaked_document_ids": [],
+      "document_check_mode": "baseline",
+      "baseline_error": null
+    },
+    {
+      "id": "case_010",
+      "scenario": "event_pair",
+      "question": "红海绕行加上危险品舱位紧张对Q4欧洲出货有什么影响？",
+      "role": "logistics",
+      "context": [],
+      "expected_entities": [
+        "event-dangerous-berth",
+        "event-redsea-diversion"
+      ],
+      "actual_entities": [
+        "route-redsea",
+        "event-redsea-diversion",
+        "event-dangerous-berth",
+        "route-arctic",
+        "port-hamburg",
+        "port-shanghai",
+        "port-xiamen",
+        "factory-arnstadt",
+        "factory-debrecen",
+        "region-germany",
+        "region-hungary"
+      ],
+      "expected_min_paths": 0,
+      "actual_paths": 0,
+      "expected_path_rules": [
+        "PORT",
+        "ROUTE"
+      ],
+      "actual_path_rules": [],
+      "expected_paths": [
+        {
+          "rule": "ROUTE",
+          "node_ids": [
+            "event-redsea-diversion",
+            "route-redsea",
+            "port-xiamen"
+          ]
+        },
+        {
+          "rule": "ROUTE",
+          "node_ids": [
+            "event-redsea-diversion",
+            "route-redsea",
+            "port-hamburg"
+          ]
+        },
+        {
+          "rule": "PORT",
+          "node_ids": [
+            "event-dangerous-berth",
+            "port-sanduao",
+            "factory-ningde-zhangwan"
+          ]
+        },
+        {
+          "rule": "PORT",
+          "node_ids": [
+            "event-dangerous-berth",
+            "port-sanduao",
+            "factory-ningde-cheliwan"
+          ]
+        },
+        {
+          "rule": "PORT",
+          "node_ids": [
+            "event-dangerous-berth",
+            "port-xiamen",
+            "factory-yichun-smelter"
+          ]
+        },
+        {
+          "rule": "PORT",
+          "node_ids": [
+            "event-dangerous-berth",
+            "port-xiamen",
+            "factory-zhaoqing"
+          ]
+        },
+        {
+          "rule": "ROUTE",
+          "node_ids": [
+            "event-redsea-diversion",
+            "route-redsea",
+            "port-xiamen",
+            "factory-yichun-smelter"
+          ]
+        },
+        {
+          "rule": "ROUTE",
+          "node_ids": [
+            "event-redsea-diversion",
+            "route-redsea",
+            "port-xiamen",
+            "factory-zhaoqing"
+          ]
+        },
+        {
+          "rule": "ROUTE",
+          "node_ids": [
+            "event-redsea-diversion",
+            "route-redsea",
+            "port-hamburg",
+            "factory-debrecen"
+          ]
+        },
+        {
+          "rule": "ROUTE",
+          "node_ids": [
+            "event-redsea-diversion",
+            "route-redsea",
+            "port-hamburg",
+            "factory-arnstadt"
+          ]
+        },
+        {
+          "rule": "ROUTE",
+          "node_ids": [
+            "event-redsea-diversion",
+            "route-redsea",
+            "port-hamburg",
+            "factory-spain"
+          ]
+        }
+      ],
+      "expected_paths_reviewed": false,
+      "actual_path_details": [],
+      "path_match": {
+        "golden_total": 11,
+        "golden_exact": 0,
+        "golden_matched": 0,
+        "actual_total": 0,
+        "actual_matched": 0,
+        "ranks": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "rank_hits": 0,
+        "top_k": 15,
+        "mrr": 0.0,
+        "node_precision": 0.0,
+        "node_recall": 0.0,
+        "node_f1": 0.0,
+        "matched_node_total": 0,
+        "golden_node_total": 13,
+        "actual_node_total": 0,
+        "edge_precision": 0.0,
+        "edge_recall": 0.0,
+        "edge_f1": 0.0,
+        "matched_edge_total": 0,
+        "golden_edge_total": 12,
+        "actual_edge_total": 0,
+        "missing_golden": [
+          {
+            "rule": "ROUTE",
+            "node_ids": [
+              "event-redsea-diversion",
+              "route-redsea",
+              "port-xiamen"
+            ]
+          },
+          {
+            "rule": "ROUTE",
+            "node_ids": [
+              "event-redsea-diversion",
+              "route-redsea",
+              "port-hamburg"
+            ]
+          },
+          {
+            "rule": "PORT",
+            "node_ids": [
+              "event-dangerous-berth",
+              "port-sanduao",
+              "factory-ningde-zhangwan"
+            ]
+          },
+          {
+            "rule": "PORT",
+            "node_ids": [
+              "event-dangerous-berth",
+              "port-sanduao",
+              "factory-ningde-cheliwan"
+            ]
+          },
+          {
+            "rule": "PORT",
+            "node_ids": [
+              "event-dangerous-berth",
+              "port-xiamen",
+              "factory-yichun-smelter"
+            ]
+          },
+          {
+            "rule": "PORT",
+            "node_ids": [
+              "event-dangerous-berth",
+              "port-xiamen",
+              "factory-zhaoqing"
+            ]
+          },
+          {
+            "rule": "ROUTE",
+            "node_ids": [
+              "event-redsea-diversion",
+              "route-redsea",
+              "port-xiamen",
+              "factory-yichun-smelter"
+            ]
+          },
+          {
+            "rule": "ROUTE",
+            "node_ids": [
+              "event-redsea-diversion",
+              "route-redsea",
+              "port-xiamen",
+              "factory-zhaoqing"
+            ]
+          },
+          {
+            "rule": "ROUTE",
+            "node_ids": [
+              "event-redsea-diversion",
+              "route-redsea",
+              "port-hamburg",
+              "factory-debrecen"
+            ]
+          },
+          {
+            "rule": "ROUTE",
+            "node_ids": [
+              "event-redsea-diversion",
+              "route-redsea",
+              "port-hamburg",
+              "factory-arnstadt"
+            ]
+          },
+          {
+            "rule": "ROUTE",
+            "node_ids": [
+              "event-redsea-diversion",
+              "route-redsea",
+              "port-hamburg",
+              "factory-spain"
+            ]
+          }
+        ],
+        "unmatched_actual": []
+      },
+      "inherited_entity_ids": [],
+      "document_hits": 0,
+      "document_role_leak": false,
+      "leaked_document_ids": [],
+      "document_check_mode": "baseline",
+      "baseline_error": null
+    },
+    {
+      "id": "case_011",
+      "scenario": "event_pair",
+      "question": "极星4召回和理想MEGA召回对宁德基地质量管控有什么启示？",
+      "role": "quality",
+      "context": [],
+      "expected_entities": [
+        "event-li-mega-recall",
+        "factory-ningde-zhangwan",
+        "event-polestar-recall"
+      ],
+      "actual_entities": [
+        "event-polestar-recall",
+        "event-li-mega-recall",
+        "factory-ningde-zhangwan",
+        "factory-ningde-cheliwan"
+      ],
+      "expected_min_paths": 0,
+      "actual_paths": 0,
+      "expected_path_rules": [
+        "DIRECT"
+      ],
+      "actual_path_rules": [],
+      "expected_paths": [
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-huayou"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "factory-ningde-zhangwan"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-rongbai"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-li-mega-recall",
+            "factory-ningde-zhangwan"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-zeekr-dispute",
+            "factory-ningde-zhangwan"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-huayou",
+            "factory-debrecen"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-huayou",
+            "factory-ningde-zhangwan"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-huayou",
+            "factory-arnstadt"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "factory-ningde-zhangwan",
+            "port-sanduao"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-rongbai",
+            "factory-debrecen"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-rongbai",
+            "factory-ningde-zhangwan"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-rongbai",
+            "factory-liyang"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-li-mega-recall",
+            "factory-ningde-zhangwan",
+            "port-sanduao"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-zeekr-dispute",
+            "factory-ningde-zhangwan",
+            "port-sanduao"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-huayou",
+            "factory-debrecen",
+            "port-hamburg"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-huayou",
+            "factory-ningde-zhangwan",
+            "port-sanduao"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-huayou",
+            "factory-arnstadt",
+            "port-hamburg"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-rongbai",
+            "factory-debrecen",
+            "port-hamburg"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-rongbai",
+            "factory-ningde-zhangwan",
+            "port-sanduao"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-rongbai",
+            "factory-liyang",
+            "port-shanghai"
+          ]
+        }
+      ],
+      "expected_paths_reviewed": false,
+      "actual_path_details": [],
+      "path_match": {
+        "golden_total": 20,
+        "golden_exact": 0,
+        "golden_matched": 0,
+        "actual_total": 0,
+        "actual_matched": 0,
+        "ranks": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "rank_hits": 0,
+        "top_k": 15,
+        "mrr": 0.0,
+        "node_precision": 0.0,
+        "node_recall": 0.0,
+        "node_f1": 0.0,
+        "matched_node_total": 0,
+        "golden_node_total": 12,
+        "actual_node_total": 0,
+        "edge_precision": 0.0,
+        "edge_recall": 0.0,
+        "edge_f1": 0.0,
+        "matched_edge_total": 0,
+        "golden_edge_total": 15,
+        "actual_edge_total": 0,
+        "missing_golden": [
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-huayou"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "factory-ningde-zhangwan"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-rongbai"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-li-mega-recall",
+              "factory-ningde-zhangwan"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-zeekr-dispute",
+              "factory-ningde-zhangwan"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-huayou",
+              "factory-debrecen"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-huayou",
+              "factory-ningde-zhangwan"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-huayou",
+              "factory-arnstadt"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "factory-ningde-zhangwan",
+              "port-sanduao"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-rongbai",
+              "factory-debrecen"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-rongbai",
+              "factory-ningde-zhangwan"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-rongbai",
+              "factory-liyang"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-li-mega-recall",
+              "factory-ningde-zhangwan",
+              "port-sanduao"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-zeekr-dispute",
+              "factory-ningde-zhangwan",
+              "port-sanduao"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-huayou",
+              "factory-debrecen",
+              "port-hamburg"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-huayou",
+              "factory-ningde-zhangwan",
+              "port-sanduao"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-huayou",
+              "factory-arnstadt",
+              "port-hamburg"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-rongbai",
+              "factory-debrecen",
+              "port-hamburg"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-rongbai",
+              "factory-ningde-zhangwan",
+              "port-sanduao"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-rongbai",
+              "factory-liyang",
+              "port-shanghai"
+            ]
+          }
+        ],
+        "unmatched_actual": []
+      },
+      "inherited_entity_ids": [],
+      "document_hits": 0,
+      "document_role_leak": false,
+      "leaked_document_ids": [],
+      "document_check_mode": "baseline",
+      "baseline_error": null
+    },
+    {
+      "id": "case_012",
+      "scenario": "event_pair",
+      "question": "刚果金钴出口限制加上印尼镍政策调整对三元正极供应链有什么影响？",
+      "role": "procurement",
+      "context": [],
+      "expected_entities": [
+        "event-cobalt-drc",
+        "event-indonesia-nickel"
+      ],
+      "actual_entities": [
+        "event-cobalt-drc",
+        "event-indonesia-nickel",
+        "supplier-rongbai",
+        "supplier-huayou",
+        "supplier-hunan-yuneng",
+        "supplier-fulin",
+        "factory-yichun-smelter",
+        "region-congo",
+        "region-indonesia"
+      ],
+      "expected_min_paths": 0,
+      "actual_paths": 0,
+      "expected_path_rules": [
+        "DIRECT",
+        "REGION"
+      ],
+      "actual_path_rules": [],
+      "expected_paths": [
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-cobalt-drc",
+            "supplier-huayou"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-indonesia-nickel",
+            "factory-karawang"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-cobalt-drc",
+            "supplier-huayou",
+            "factory-debrecen"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-cobalt-drc",
+            "supplier-huayou",
+            "factory-ningde-zhangwan"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-cobalt-drc",
+            "supplier-huayou",
+            "factory-arnstadt"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-cobalt-drc",
+            "region-congo",
+            "supplier-huayou"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-indonesia-nickel",
+            "region-indonesia",
+            "supplier-huayou"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-indonesia-nickel",
+            "region-indonesia",
+            "factory-karawang"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-indonesia-nickel",
+            "region-indonesia",
+            "supplier-rongbai"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-cobalt-drc",
+            "supplier-huayou",
+            "factory-debrecen",
+            "port-hamburg"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-cobalt-drc",
+            "supplier-huayou",
+            "factory-ningde-zhangwan",
+            "port-sanduao"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-cobalt-drc",
+            "supplier-huayou",
+            "factory-arnstadt",
+            "port-hamburg"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-cobalt-drc",
+            "region-congo",
+            "supplier-huayou",
+            "factory-debrecen"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-cobalt-drc",
+            "region-congo",
+            "supplier-huayou",
+            "factory-ningde-zhangwan"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-cobalt-drc",
+            "region-congo",
+            "supplier-huayou",
+            "factory-arnstadt"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-indonesia-nickel",
+            "region-indonesia",
+            "supplier-huayou",
+            "factory-debrecen"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-indonesia-nickel",
+            "region-indonesia",
+            "supplier-huayou",
+            "factory-ningde-zhangwan"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-indonesia-nickel",
+            "region-indonesia",
+            "supplier-huayou",
+            "factory-arnstadt"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-indonesia-nickel",
+            "region-indonesia",
+            "supplier-rongbai",
+            "factory-debrecen"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-indonesia-nickel",
+            "region-indonesia",
+            "supplier-rongbai",
+            "factory-ningde-zhangwan"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-indonesia-nickel",
+            "region-indonesia",
+            "supplier-rongbai",
+            "factory-liyang"
+          ]
+        }
+      ],
+      "expected_paths_reviewed": false,
+      "actual_path_details": [],
+      "path_match": {
+        "golden_total": 21,
+        "golden_exact": 0,
+        "golden_matched": 0,
+        "actual_total": 0,
+        "actual_matched": 0,
+        "ranks": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "rank_hits": 0,
+        "top_k": 15,
+        "mrr": 0.0,
+        "node_precision": 0.0,
+        "node_recall": 0.0,
+        "node_f1": 0.0,
+        "matched_node_total": 0,
+        "golden_node_total": 13,
+        "actual_node_total": 0,
+        "edge_precision": 0.0,
+        "edge_recall": 0.0,
+        "edge_f1": 0.0,
+        "matched_edge_total": 0,
+        "golden_edge_total": 17,
+        "actual_edge_total": 0,
+        "missing_golden": [
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-cobalt-drc",
+              "supplier-huayou"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-indonesia-nickel",
+              "factory-karawang"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-cobalt-drc",
+              "supplier-huayou",
+              "factory-debrecen"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-cobalt-drc",
+              "supplier-huayou",
+              "factory-ningde-zhangwan"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-cobalt-drc",
+              "supplier-huayou",
+              "factory-arnstadt"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-cobalt-drc",
+              "region-congo",
+              "supplier-huayou"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-indonesia-nickel",
+              "region-indonesia",
+              "supplier-huayou"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-indonesia-nickel",
+              "region-indonesia",
+              "factory-karawang"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-indonesia-nickel",
+              "region-indonesia",
+              "supplier-rongbai"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-cobalt-drc",
+              "supplier-huayou",
+              "factory-debrecen",
+              "port-hamburg"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-cobalt-drc",
+              "supplier-huayou",
+              "factory-ningde-zhangwan",
+              "port-sanduao"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-cobalt-drc",
+              "supplier-huayou",
+              "factory-arnstadt",
+              "port-hamburg"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-cobalt-drc",
+              "region-congo",
+              "supplier-huayou",
+              "factory-debrecen"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-cobalt-drc",
+              "region-congo",
+              "supplier-huayou",
+              "factory-ningde-zhangwan"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-cobalt-drc",
+              "region-congo",
+              "supplier-huayou",
+              "factory-arnstadt"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-indonesia-nickel",
+              "region-indonesia",
+              "supplier-huayou",
+              "factory-debrecen"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-indonesia-nickel",
+              "region-indonesia",
+              "supplier-huayou",
+              "factory-ningde-zhangwan"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-indonesia-nickel",
+              "region-indonesia",
+              "supplier-huayou",
+              "factory-arnstadt"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-indonesia-nickel",
+              "region-indonesia",
+              "supplier-rongbai",
+              "factory-debrecen"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-indonesia-nickel",
+              "region-indonesia",
+              "supplier-rongbai",
+              "factory-ningde-zhangwan"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-indonesia-nickel",
+              "region-indonesia",
+              "supplier-rongbai",
+              "factory-liyang"
+            ]
+          }
+        ],
+        "unmatched_actual": []
+      },
+      "inherited_entity_ids": [],
+      "document_hits": 0,
+      "document_role_leak": false,
+      "leaked_document_ids": [],
+      "document_check_mode": "baseline",
+      "baseline_error": null
+    },
+    {
+      "id": "case_013",
+      "scenario": "event_pair",
+      "question": "宜春停产和碳酸锂价格回落对正极材料采购有什么交互影响？",
+      "role": "procurement",
+      "context": [],
+      "expected_entities": [
+        "event-carbonate-price"
+      ],
+      "actual_entities": [
+        "event-yichun-suspend",
+        "event-carbonate-price",
+        "supplier-hunan-yuneng",
+        "supplier-fulin",
+        "supplier-rongbai",
+        "factory-yichun-smelter",
+        "region-jiangxi-yichun"
+      ],
+      "expected_min_paths": 0,
+      "actual_paths": 0,
+      "expected_path_rules": [
+        "DIRECT"
+      ],
+      "actual_path_rules": [],
+      "expected_paths": [
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-rongbai"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-fulin"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-hunan-yuneng"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-rongbai",
+            "factory-debrecen"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-rongbai",
+            "factory-ningde-zhangwan"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-rongbai",
+            "factory-liyang"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-fulin",
+            "factory-ningde-zhangwan"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-fulin",
+            "factory-zhaoqing"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-fulin",
+            "factory-liyang"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-hunan-yuneng",
+            "factory-yibin"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-hunan-yuneng",
+            "factory-ningde-zhangwan"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-hunan-yuneng",
+            "factory-liyang"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-rongbai",
+            "factory-debrecen",
+            "port-hamburg"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-rongbai",
+            "factory-ningde-zhangwan",
+            "port-sanduao"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-rongbai",
+            "factory-liyang",
+            "port-shanghai"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-fulin",
+            "factory-ningde-zhangwan",
+            "port-sanduao"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-fulin",
+            "factory-zhaoqing",
+            "port-xiamen"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-fulin",
+            "factory-liyang",
+            "port-shanghai"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-hunan-yuneng",
+            "factory-yibin",
+            "port-shanghai"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-hunan-yuneng",
+            "factory-ningde-zhangwan",
+            "port-sanduao"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-carbonate-price",
+            "supplier-hunan-yuneng",
+            "factory-liyang",
+            "port-shanghai"
+          ]
+        }
+      ],
+      "expected_paths_reviewed": false,
+      "actual_path_details": [],
+      "path_match": {
+        "golden_total": 21,
+        "golden_exact": 0,
+        "golden_matched": 0,
+        "actual_total": 0,
+        "actual_matched": 0,
+        "ranks": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "rank_hits": 0,
+        "top_k": 15,
+        "mrr": 0.0,
+        "node_precision": 0.0,
+        "node_recall": 0.0,
+        "node_f1": 0.0,
+        "matched_node_total": 0,
+        "golden_node_total": 13,
+        "actual_node_total": 0,
+        "edge_precision": 0.0,
+        "edge_recall": 0.0,
+        "edge_f1": 0.0,
+        "matched_edge_total": 0,
+        "golden_edge_total": 17,
+        "actual_edge_total": 0,
+        "missing_golden": [
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-rongbai"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-fulin"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-hunan-yuneng"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-rongbai",
+              "factory-debrecen"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-rongbai",
+              "factory-ningde-zhangwan"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-rongbai",
+              "factory-liyang"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-fulin",
+              "factory-ningde-zhangwan"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-fulin",
+              "factory-zhaoqing"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-fulin",
+              "factory-liyang"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-hunan-yuneng",
+              "factory-yibin"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-hunan-yuneng",
+              "factory-ningde-zhangwan"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-hunan-yuneng",
+              "factory-liyang"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-rongbai",
+              "factory-debrecen",
+              "port-hamburg"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-rongbai",
+              "factory-ningde-zhangwan",
+              "port-sanduao"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-rongbai",
+              "factory-liyang",
+              "port-shanghai"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-fulin",
+              "factory-ningde-zhangwan",
+              "port-sanduao"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-fulin",
+              "factory-zhaoqing",
+              "port-xiamen"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-fulin",
+              "factory-liyang",
+              "port-shanghai"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-hunan-yuneng",
+              "factory-yibin",
+              "port-shanghai"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-hunan-yuneng",
+              "factory-ningde-zhangwan",
+              "port-sanduao"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-carbonate-price",
+              "supplier-hunan-yuneng",
+              "factory-liyang",
+              "port-shanghai"
+            ]
+          }
+        ],
+        "unmatched_actual": []
+      },
+      "inherited_entity_ids": [],
+      "document_hits": 0,
+      "document_role_leak": false,
+      "leaked_document_ids": [],
+      "document_check_mode": "baseline",
+      "baseline_error": null
+    },
+    {
+      "id": "case_014",
+      "scenario": "event_pair",
+      "question": "欧盟电池法规加上红海绕行对匈牙利工厂投产节奏有什么影响？",
+      "role": "logistics",
+      "context": [],
+      "expected_entities": [
+        "event-eu-battery-rule",
+        "factory-debrecen",
+        "event-redsea-diversion"
+      ],
+      "actual_entities": [
+        "event-eu-battery-rule",
+        "event-redsea-diversion",
+        "factory-debrecen",
+        "event-debrecen-ramp",
+        "route-redsea",
+        "region-hungary"
+      ],
+      "expected_min_paths": 0,
+      "actual_paths": 0,
+      "expected_path_rules": [
+        "DIRECT",
+        "REGION",
+        "ROUTE"
+      ],
+      "actual_path_rules": [],
+      "expected_paths": [
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-debrecen-ramp",
+            "factory-debrecen"
+          ]
+        },
+        {
+          "rule": "ROUTE",
+          "node_ids": [
+            "event-redsea-diversion",
+            "route-redsea",
+            "port-xiamen"
+          ]
+        },
+        {
+          "rule": "ROUTE",
+          "node_ids": [
+            "event-redsea-diversion",
+            "route-redsea",
+            "port-hamburg"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-debrecen-ramp",
+            "factory-debrecen",
+            "port-hamburg"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-eu-battery-rule",
+            "region-hungary",
+            "factory-debrecen"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-eu-battery-rule",
+            "region-germany",
+            "factory-arnstadt"
+          ]
+        },
+        {
+          "rule": "ROUTE",
+          "node_ids": [
+            "event-redsea-diversion",
+            "route-redsea",
+            "port-xiamen",
+            "factory-yichun-smelter"
+          ]
+        },
+        {
+          "rule": "ROUTE",
+          "node_ids": [
+            "event-redsea-diversion",
+            "route-redsea",
+            "port-xiamen",
+            "factory-zhaoqing"
+          ]
+        },
+        {
+          "rule": "ROUTE",
+          "node_ids": [
+            "event-redsea-diversion",
+            "route-redsea",
+            "port-hamburg",
+            "factory-debrecen"
+          ]
+        },
+        {
+          "rule": "ROUTE",
+          "node_ids": [
+            "event-redsea-diversion",
+            "route-redsea",
+            "port-hamburg",
+            "factory-arnstadt"
+          ]
+        },
+        {
+          "rule": "ROUTE",
+          "node_ids": [
+            "event-redsea-diversion",
+            "route-redsea",
+            "port-hamburg",
+            "factory-spain"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-eu-battery-rule",
+            "region-hungary",
+            "factory-debrecen",
+            "port-hamburg"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-eu-battery-rule",
+            "region-germany",
+            "factory-arnstadt",
+            "port-hamburg"
+          ]
+        }
+      ],
+      "expected_paths_reviewed": false,
+      "actual_path_details": [],
+      "path_match": {
+        "golden_total": 13,
+        "golden_exact": 0,
+        "golden_matched": 0,
+        "actual_total": 0,
+        "actual_matched": 0,
+        "ranks": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "rank_hits": 0,
+        "top_k": 15,
+        "mrr": 0.0,
+        "node_precision": 0.0,
+        "node_recall": 0.0,
+        "node_f1": 0.0,
+        "matched_node_total": 0,
+        "golden_node_total": 13,
+        "actual_node_total": 0,
+        "edge_precision": 0.0,
+        "edge_recall": 0.0,
+        "edge_f1": 0.0,
+        "matched_edge_total": 0,
+        "golden_edge_total": 15,
+        "actual_edge_total": 0,
+        "missing_golden": [
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-debrecen-ramp",
+              "factory-debrecen"
+            ]
+          },
+          {
+            "rule": "ROUTE",
+            "node_ids": [
+              "event-redsea-diversion",
+              "route-redsea",
+              "port-xiamen"
+            ]
+          },
+          {
+            "rule": "ROUTE",
+            "node_ids": [
+              "event-redsea-diversion",
+              "route-redsea",
+              "port-hamburg"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-debrecen-ramp",
+              "factory-debrecen",
+              "port-hamburg"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-eu-battery-rule",
+              "region-hungary",
+              "factory-debrecen"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-eu-battery-rule",
+              "region-germany",
+              "factory-arnstadt"
+            ]
+          },
+          {
+            "rule": "ROUTE",
+            "node_ids": [
+              "event-redsea-diversion",
+              "route-redsea",
+              "port-xiamen",
+              "factory-yichun-smelter"
+            ]
+          },
+          {
+            "rule": "ROUTE",
+            "node_ids": [
+              "event-redsea-diversion",
+              "route-redsea",
+              "port-xiamen",
+              "factory-zhaoqing"
+            ]
+          },
+          {
+            "rule": "ROUTE",
+            "node_ids": [
+              "event-redsea-diversion",
+              "route-redsea",
+              "port-hamburg",
+              "factory-debrecen"
+            ]
+          },
+          {
+            "rule": "ROUTE",
+            "node_ids": [
+              "event-redsea-diversion",
+              "route-redsea",
+              "port-hamburg",
+              "factory-arnstadt"
+            ]
+          },
+          {
+            "rule": "ROUTE",
+            "node_ids": [
+              "event-redsea-diversion",
+              "route-redsea",
+              "port-hamburg",
+              "factory-spain"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-eu-battery-rule",
+              "region-hungary",
+              "factory-debrecen",
+              "port-hamburg"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-eu-battery-rule",
+              "region-germany",
+              "factory-arnstadt",
+              "port-hamburg"
+            ]
+          }
+        ],
+        "unmatched_actual": []
+      },
+      "inherited_entity_ids": [],
+      "document_hits": 0,
+      "document_role_leak": false,
+      "leaked_document_ids": [],
+      "document_check_mode": "baseline",
+      "baseline_error": null
+    },
+    {
+      "id": "case_015",
+      "scenario": "document_leak",
+      "question": "极星4召回和理想MEGA召回事件对电池供应商有什么风险？",
+      "role": "procurement",
+      "context": [],
+      "expected_entities": [
+        "event-li-mega-recall",
+        "event-polestar-recall"
+      ],
+      "actual_entities": [],
+      "expected_min_paths": 0,
+      "actual_paths": 0,
+      "expected_path_rules": [],
+      "actual_path_rules": [],
+      "expected_paths": [],
+      "expected_paths_reviewed": false,
+      "actual_path_details": [],
+      "path_match": {
+        "golden_total": 0,
+        "golden_exact": 0,
+        "golden_matched": 0,
+        "actual_total": 0,
+        "actual_matched": 0,
+        "ranks": [],
+        "rank_hits": 0,
+        "top_k": 15,
+        "mrr": 0.0,
+        "node_precision": 0.0,
+        "node_recall": 0.0,
+        "node_f1": 0.0,
+        "matched_node_total": 0,
+        "golden_node_total": 0,
+        "actual_node_total": 0,
+        "edge_precision": 0.0,
+        "edge_recall": 0.0,
+        "edge_f1": 0.0,
+        "matched_edge_total": 0,
+        "golden_edge_total": 0,
+        "actual_edge_total": 0,
+        "missing_golden": [],
+        "unmatched_actual": []
+      },
+      "inherited_entity_ids": [],
+      "document_hits": 0,
+      "document_role_leak": false,
+      "leaked_document_ids": [],
+      "document_check_mode": "baseline",
+      "baseline_error": null
+    },
+    {
+      "id": "case_016",
+      "scenario": "document_leak",
+      "question": "极氪001电池纠纷和解的详细情况是什么？",
+      "role": "logistics",
+      "context": [],
+      "expected_entities": [
+        "event-zeekr-dispute"
+      ],
+      "actual_entities": [],
+      "expected_min_paths": 0,
+      "actual_paths": 0,
+      "expected_path_rules": [],
+      "actual_path_rules": [],
+      "expected_paths": [],
+      "expected_paths_reviewed": false,
+      "actual_path_details": [],
+      "path_match": {
+        "golden_total": 0,
+        "golden_exact": 0,
+        "golden_matched": 0,
+        "actual_total": 0,
+        "actual_matched": 0,
+        "ranks": [],
+        "rank_hits": 0,
+        "top_k": 15,
+        "mrr": 0.0,
+        "node_precision": 0.0,
+        "node_recall": 0.0,
+        "node_f1": 0.0,
+        "matched_node_total": 0,
+        "golden_node_total": 0,
+        "actual_node_total": 0,
+        "edge_precision": 0.0,
+        "edge_recall": 0.0,
+        "edge_f1": 0.0,
+        "matched_edge_total": 0,
+        "golden_edge_total": 0,
+        "actual_edge_total": 0,
+        "missing_golden": [],
+        "unmatched_actual": []
+      },
+      "inherited_entity_ids": [],
+      "document_hits": 0,
+      "document_role_leak": false,
+      "leaked_document_ids": [],
+      "document_check_mode": "baseline",
+      "baseline_error": null
+    },
+    {
+      "id": "case_017",
+      "scenario": "document_leak",
+      "question": "红海航线绕行会影响哪些供应商的原材料运输？",
+      "role": "procurement",
+      "context": [],
+      "expected_entities": [
+        "event-redsea-diversion"
+      ],
+      "actual_entities": [],
+      "expected_min_paths": 0,
+      "actual_paths": 0,
+      "expected_path_rules": [],
+      "actual_path_rules": [],
+      "expected_paths": [],
+      "expected_paths_reviewed": false,
+      "actual_path_details": [],
+      "path_match": {
+        "golden_total": 0,
+        "golden_exact": 0,
+        "golden_matched": 0,
+        "actual_total": 0,
+        "actual_matched": 0,
+        "ranks": [],
+        "rank_hits": 0,
+        "top_k": 15,
+        "mrr": 0.0,
+        "node_precision": 0.0,
+        "node_recall": 0.0,
+        "node_f1": 0.0,
+        "matched_node_total": 0,
+        "golden_node_total": 0,
+        "actual_node_total": 0,
+        "edge_precision": 0.0,
+        "edge_recall": 0.0,
+        "edge_f1": 0.0,
+        "matched_edge_total": 0,
+        "golden_edge_total": 0,
+        "actual_edge_total": 0,
+        "missing_golden": [],
+        "unmatched_actual": []
+      },
+      "inherited_entity_ids": [],
+      "document_hits": 0,
+      "document_role_leak": false,
+      "leaked_document_ids": [],
+      "document_check_mode": "baseline",
+      "baseline_error": null
+    },
+    {
+      "id": "case_018",
+      "scenario": "document_leak",
+      "question": "哪些供应商的原材料依赖印尼的镍资源？",
+      "role": "logistics",
+      "context": [],
+      "expected_entities": [
+        "region-indonesia"
+      ],
+      "actual_entities": [],
+      "expected_min_paths": 0,
+      "actual_paths": 0,
+      "expected_path_rules": [
+        "REGION"
+      ],
+      "actual_path_rules": [],
+      "expected_paths": [],
+      "expected_paths_reviewed": false,
+      "actual_path_details": [],
+      "path_match": {
+        "golden_total": 0,
+        "golden_exact": 0,
+        "golden_matched": 0,
+        "actual_total": 0,
+        "actual_matched": 0,
+        "ranks": [],
+        "rank_hits": 0,
+        "top_k": 15,
+        "mrr": 0.0,
+        "node_precision": 0.0,
+        "node_recall": 0.0,
+        "node_f1": 0.0,
+        "matched_node_total": 0,
+        "golden_node_total": 0,
+        "actual_node_total": 0,
+        "edge_precision": 0.0,
+        "edge_recall": 0.0,
+        "edge_f1": 0.0,
+        "matched_edge_total": 0,
+        "golden_edge_total": 0,
+        "actual_edge_total": 0,
+        "missing_golden": [],
+        "unmatched_actual": []
+      },
+      "inherited_entity_ids": [],
+      "document_hits": 0,
+      "document_role_leak": false,
+      "leaked_document_ids": [],
+      "document_check_mode": "baseline",
+      "baseline_error": null
+    },
+    {
+      "id": "case_019",
+      "scenario": "document_leak",
+      "question": "宁德漳湾基地出口走哪个港口最合适？",
+      "role": "finance",
+      "context": [],
+      "expected_entities": [
+        "factory-ningde-zhangwan",
+        "region-fujian-ningde"
+      ],
+      "actual_entities": [],
+      "expected_min_paths": 0,
+      "actual_paths": 0,
+      "expected_path_rules": [
+        "REGION"
+      ],
+      "actual_path_rules": [],
+      "expected_paths": [],
+      "expected_paths_reviewed": false,
+      "actual_path_details": [],
+      "path_match": {
+        "golden_total": 0,
+        "golden_exact": 0,
+        "golden_matched": 0,
+        "actual_total": 0,
+        "actual_matched": 0,
+        "ranks": [],
+        "rank_hits": 0,
+        "top_k": 15,
+        "mrr": 0.0,
+        "node_precision": 0.0,
+        "node_recall": 0.0,
+        "node_f1": 0.0,
+        "matched_node_total": 0,
+        "golden_node_total": 0,
+        "actual_node_total": 0,
+        "edge_precision": 0.0,
+        "edge_recall": 0.0,
+        "edge_f1": 0.0,
+        "matched_edge_total": 0,
+        "golden_edge_total": 0,
+        "actual_edge_total": 0,
+        "missing_golden": [],
+        "unmatched_actual": []
+      },
+      "inherited_entity_ids": [],
+      "document_hits": 0,
+      "document_role_leak": false,
+      "leaked_document_ids": [],
+      "document_check_mode": "baseline",
+      "baseline_error": null
+    },
+    {
+      "id": "case_020",
+      "scenario": "document_leak",
+      "question": "恩捷股份的隔膜供应给了哪些工厂？",
+      "role": "logistics",
+      "context": [],
+      "expected_entities": [
+        "supplier-enjie"
+      ],
+      "actual_entities": [],
+      "expected_min_paths": 0,
+      "actual_paths": 0,
+      "expected_path_rules": [],
+      "actual_path_rules": [],
+      "expected_paths": [],
+      "expected_paths_reviewed": false,
+      "actual_path_details": [],
+      "path_match": {
+        "golden_total": 0,
+        "golden_exact": 0,
+        "golden_matched": 0,
+        "actual_total": 0,
+        "actual_matched": 0,
+        "ranks": [],
+        "rank_hits": 0,
+        "top_k": 15,
+        "mrr": 0.0,
+        "node_precision": 0.0,
+        "node_recall": 0.0,
+        "node_f1": 0.0,
+        "matched_node_total": 0,
+        "golden_node_total": 0,
+        "actual_node_total": 0,
+        "edge_precision": 0.0,
+        "edge_recall": 0.0,
+        "edge_f1": 0.0,
+        "matched_edge_total": 0,
+        "golden_edge_total": 0,
+        "actual_edge_total": 0,
+        "missing_golden": [],
+        "unmatched_actual": []
+      },
+      "inherited_entity_ids": [],
+      "document_hits": 0,
+      "document_role_leak": false,
+      "leaked_document_ids": [],
+      "document_check_mode": "baseline",
+      "baseline_error": null
+    },
+    {
+      "id": "case_021",
+      "scenario": "held_out",
+      "question": "特斯拉的4680电池产能如何？",
+      "role": "procurement",
+      "context": [],
+      "expected_entities": [],
+      "actual_entities": [],
+      "expected_min_paths": 0,
+      "actual_paths": 0,
+      "expected_path_rules": [],
+      "actual_path_rules": [],
+      "expected_paths": [],
+      "expected_paths_reviewed": false,
+      "actual_path_details": [],
+      "path_match": {
+        "golden_total": 0,
+        "golden_exact": 0,
+        "golden_matched": 0,
+        "actual_total": 0,
+        "actual_matched": 0,
+        "ranks": [],
+        "rank_hits": 0,
+        "top_k": 15,
+        "mrr": 0.0,
+        "node_precision": 0.0,
+        "node_recall": 0.0,
+        "node_f1": 0.0,
+        "matched_node_total": 0,
+        "golden_node_total": 0,
+        "actual_node_total": 0,
+        "edge_precision": 0.0,
+        "edge_recall": 0.0,
+        "edge_f1": 0.0,
+        "matched_edge_total": 0,
+        "golden_edge_total": 0,
+        "actual_edge_total": 0,
+        "missing_golden": [],
+        "unmatched_actual": []
+      },
+      "inherited_entity_ids": [],
+      "document_hits": 0,
+      "document_role_leak": false,
+      "leaked_document_ids": [],
+      "document_check_mode": "baseline",
+      "baseline_error": null
+    },
+    {
+      "id": "case_022",
+      "scenario": "held_out",
+      "question": "比亚迪的刀片电池有什么优势？",
+      "role": "quality",
+      "context": [],
+      "expected_entities": [],
+      "actual_entities": [],
+      "expected_min_paths": 0,
+      "actual_paths": 0,
+      "expected_path_rules": [],
+      "actual_path_rules": [],
+      "expected_paths": [],
+      "expected_paths_reviewed": false,
+      "actual_path_details": [],
+      "path_match": {
+        "golden_total": 0,
+        "golden_exact": 0,
+        "golden_matched": 0,
+        "actual_total": 0,
+        "actual_matched": 0,
+        "ranks": [],
+        "rank_hits": 0,
+        "top_k": 15,
+        "mrr": 0.0,
+        "node_precision": 0.0,
+        "node_recall": 0.0,
+        "node_f1": 0.0,
+        "matched_node_total": 0,
+        "golden_node_total": 0,
+        "actual_node_total": 0,
+        "edge_precision": 0.0,
+        "edge_recall": 0.0,
+        "edge_f1": 0.0,
+        "matched_edge_total": 0,
+        "golden_edge_total": 0,
+        "actual_edge_total": 0,
+        "missing_golden": [],
+        "unmatched_actual": []
+      },
+      "inherited_entity_ids": [],
+      "document_hits": 0,
+      "document_role_leak": false,
+      "leaked_document_ids": [],
+      "document_check_mode": "baseline",
+      "baseline_error": null
+    },
+    {
+      "id": "case_023",
+      "scenario": "held_out",
+      "question": "光伏行业对储能市场有什么影响？",
+      "role": "procurement",
+      "context": [],
+      "expected_entities": [],
+      "actual_entities": [],
+      "expected_min_paths": 0,
+      "actual_paths": 0,
+      "expected_path_rules": [],
+      "actual_path_rules": [],
+      "expected_paths": [],
+      "expected_paths_reviewed": false,
+      "actual_path_details": [],
+      "path_match": {
+        "golden_total": 0,
+        "golden_exact": 0,
+        "golden_matched": 0,
+        "actual_total": 0,
+        "actual_matched": 0,
+        "ranks": [],
+        "rank_hits": 0,
+        "top_k": 15,
+        "mrr": 0.0,
+        "node_precision": 0.0,
+        "node_recall": 0.0,
+        "node_f1": 0.0,
+        "matched_node_total": 0,
+        "golden_node_total": 0,
+        "actual_node_total": 0,
+        "edge_precision": 0.0,
+        "edge_recall": 0.0,
+        "edge_f1": 0.0,
+        "matched_edge_total": 0,
+        "golden_edge_total": 0,
+        "actual_edge_total": 0,
+        "missing_golden": [],
+        "unmatched_actual": []
+      },
+      "inherited_entity_ids": [],
+      "document_hits": 0,
+      "document_role_leak": false,
+      "leaked_document_ids": [],
+      "document_check_mode": "baseline",
+      "baseline_error": null
+    },
+    {
+      "id": "case_024",
+      "scenario": "edge_case",
+      "question": "锂",
+      "role": "procurement",
+      "context": [],
+      "expected_entities": [],
+      "actual_entities": [
+        "event-yichun-eia",
+        "event-yichun-suspend",
+        "event-carbonate-price",
+        "event-zimbabwe-lithium",
+        "factory-yichun-smelter",
+        "supplier-hunan-yuneng",
+        "supplier-fulin",
+        "supplier-rongbai"
+      ],
+      "expected_min_paths": 0,
+      "actual_paths": 0,
+      "expected_path_rules": [],
+      "actual_path_rules": [],
+      "expected_paths": [],
+      "expected_paths_reviewed": false,
+      "actual_path_details": [],
+      "path_match": {
+        "golden_total": 0,
+        "golden_exact": 0,
+        "golden_matched": 0,
+        "actual_total": 0,
+        "actual_matched": 0,
+        "ranks": [],
+        "rank_hits": 0,
+        "top_k": 15,
+        "mrr": 0.0,
+        "node_precision": 0.0,
+        "node_recall": 0.0,
+        "node_f1": 0.0,
+        "matched_node_total": 0,
+        "golden_node_total": 0,
+        "actual_node_total": 0,
+        "edge_precision": 0.0,
+        "edge_recall": 0.0,
+        "edge_f1": 0.0,
+        "matched_edge_total": 0,
+        "golden_edge_total": 0,
+        "actual_edge_total": 0,
+        "missing_golden": [],
+        "unmatched_actual": []
+      },
+      "inherited_entity_ids": [],
+      "document_hits": 0,
+      "document_role_leak": false,
+      "leaked_document_ids": [],
+      "document_check_mode": "baseline",
+      "baseline_error": null
+    },
+    {
+      "id": "case_025",
+      "scenario": "edge_case",
+      "question": "宁德",
+      "role": "admin",
+      "context": [],
+      "expected_entities": [
+        "region-fujian-ningde"
+      ],
+      "actual_entities": [
+        "region-fujian-ningde",
+        "factory-ningde-zhangwan",
+        "factory-ningde-cheliwan",
+        "port-sanduao",
+        "route-ningde-xiamen"
+      ],
+      "expected_min_paths": 0,
+      "actual_paths": 0,
+      "expected_path_rules": [
+        "REGION"
+      ],
+      "actual_path_rules": [],
+      "expected_paths": [
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "region-fujian-ningde",
+            "factory-ningde-zhangwan"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "region-fujian-ningde",
+            "factory-ningde-cheliwan"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "region-fujian-ningde",
+            "factory-ningde-zhangwan",
+            "port-sanduao"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "region-fujian-ningde",
+            "factory-ningde-cheliwan",
+            "port-sanduao"
+          ]
+        }
+      ],
+      "expected_paths_reviewed": false,
+      "actual_path_details": [],
+      "path_match": {
+        "golden_total": 4,
+        "golden_exact": 0,
+        "golden_matched": 0,
+        "actual_total": 0,
+        "actual_matched": 0,
+        "ranks": [
+          null,
+          null,
+          null,
+          null
+        ],
+        "rank_hits": 0,
+        "top_k": 15,
+        "mrr": 0.0,
+        "node_precision": 0.0,
+        "node_recall": 0.0,
+        "node_f1": 0.0,
+        "matched_node_total": 0,
+        "golden_node_total": 4,
+        "actual_node_total": 0,
+        "edge_precision": 0.0,
+        "edge_recall": 0.0,
+        "edge_f1": 0.0,
+        "matched_edge_total": 0,
+        "golden_edge_total": 4,
+        "actual_edge_total": 0,
+        "missing_golden": [
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "region-fujian-ningde",
+              "factory-ningde-zhangwan"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "region-fujian-ningde",
+              "factory-ningde-cheliwan"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "region-fujian-ningde",
+              "factory-ningde-zhangwan",
+              "port-sanduao"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "region-fujian-ningde",
+              "factory-ningde-cheliwan",
+              "port-sanduao"
+            ]
+          }
+        ],
+        "unmatched_actual": []
+      },
+      "inherited_entity_ids": [],
+      "document_hits": 0,
+      "document_role_leak": false,
+      "leaked_document_ids": [],
+      "document_check_mode": "baseline",
+      "baseline_error": null
+    },
+    {
+      "id": "case_026",
+      "scenario": "edge_case",
+      "question": "欧洲 工厂 产能",
+      "role": "logistics",
+      "context": [],
+      "expected_entities": [],
+      "actual_entities": [
+        "factory-arnstadt",
+        "factory-debrecen",
+        "factory-spain",
+        "region-germany",
+        "region-hungary",
+        "region-spain",
+        "event-debrecen-ramp",
+        "event-eu-battery-rule"
+      ],
+      "expected_min_paths": 0,
+      "actual_paths": 0,
+      "expected_path_rules": [],
+      "actual_path_rules": [],
+      "expected_paths": [],
+      "expected_paths_reviewed": false,
+      "actual_path_details": [],
+      "path_match": {
+        "golden_total": 0,
+        "golden_exact": 0,
+        "golden_matched": 0,
+        "actual_total": 0,
+        "actual_matched": 0,
+        "ranks": [],
+        "rank_hits": 0,
+        "top_k": 15,
+        "mrr": 0.0,
+        "node_precision": 0.0,
+        "node_recall": 0.0,
+        "node_f1": 0.0,
+        "matched_node_total": 0,
+        "golden_node_total": 0,
+        "actual_node_total": 0,
+        "edge_precision": 0.0,
+        "edge_recall": 0.0,
+        "edge_f1": 0.0,
+        "matched_edge_total": 0,
+        "golden_edge_total": 0,
+        "actual_edge_total": 0,
+        "missing_golden": [],
+        "unmatched_actual": []
+      },
+      "inherited_entity_ids": [],
+      "document_hits": 0,
+      "document_role_leak": false,
+      "leaked_document_ids": [],
+      "document_check_mode": "baseline",
+      "baseline_error": null
+    },
+    {
+      "id": "case_027",
+      "scenario": "multi_turn",
+      "question": "那替代港口呢？",
+      "role": "logistics",
+      "context": [
+        {
+          "question": "红海航线绕行对欧洲交付有什么影响？",
+          "entity_ids": [
+            "event-redsea-diversion"
+          ],
+          "entity_names": [
+            "红海航线绕行"
+          ]
+        }
+      ],
+      "expected_entities": [
+        "event-redsea-diversion"
+      ],
+      "actual_entities": [
+        "port-xiamen",
+        "port-shanghai",
+        "port-hamburg",
+        "route-ningde-xiamen"
+      ],
+      "expected_min_paths": 0,
+      "actual_paths": 0,
+      "expected_path_rules": [
+        "ROUTE"
+      ],
+      "actual_path_rules": [],
+      "expected_paths": [
+        {
+          "rule": "ROUTE",
+          "node_ids": [
+            "event-redsea-diversion",
+            "route-redsea",
+            "port-xiamen"
+          ]
+        },
+        {
+          "rule": "ROUTE",
+          "node_ids": [
+            "event-redsea-diversion",
+            "route-redsea",
+            "port-hamburg"
+          ]
+        },
+        {
+          "rule": "ROUTE",
+          "node_ids": [
+            "event-redsea-diversion",
+            "route-redsea",
+            "port-xiamen",
+            "factory-yichun-smelter"
+          ]
+        },
+        {
+          "rule": "ROUTE",
+          "node_ids": [
+            "event-redsea-diversion",
+            "route-redsea",
+            "port-xiamen",
+            "factory-zhaoqing"
+          ]
+        },
+        {
+          "rule": "ROUTE",
+          "node_ids": [
+            "event-redsea-diversion",
+            "route-redsea",
+            "port-hamburg",
+            "factory-debrecen"
+          ]
+        },
+        {
+          "rule": "ROUTE",
+          "node_ids": [
+            "event-redsea-diversion",
+            "route-redsea",
+            "port-hamburg",
+            "factory-arnstadt"
+          ]
+        },
+        {
+          "rule": "ROUTE",
+          "node_ids": [
+            "event-redsea-diversion",
+            "route-redsea",
+            "port-hamburg",
+            "factory-spain"
+          ]
+        }
+      ],
+      "expected_paths_reviewed": false,
+      "actual_path_details": [],
+      "path_match": {
+        "golden_total": 7,
+        "golden_exact": 0,
+        "golden_matched": 0,
+        "actual_total": 0,
+        "actual_matched": 0,
+        "ranks": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "rank_hits": 0,
+        "top_k": 15,
+        "mrr": 0.0,
+        "node_precision": 0.0,
+        "node_recall": 0.0,
+        "node_f1": 0.0,
+        "matched_node_total": 0,
+        "golden_node_total": 9,
+        "actual_node_total": 0,
+        "edge_precision": 0.0,
+        "edge_recall": 0.0,
+        "edge_f1": 0.0,
+        "matched_edge_total": 0,
+        "golden_edge_total": 8,
+        "actual_edge_total": 0,
+        "missing_golden": [
+          {
+            "rule": "ROUTE",
+            "node_ids": [
+              "event-redsea-diversion",
+              "route-redsea",
+              "port-xiamen"
+            ]
+          },
+          {
+            "rule": "ROUTE",
+            "node_ids": [
+              "event-redsea-diversion",
+              "route-redsea",
+              "port-hamburg"
+            ]
+          },
+          {
+            "rule": "ROUTE",
+            "node_ids": [
+              "event-redsea-diversion",
+              "route-redsea",
+              "port-xiamen",
+              "factory-yichun-smelter"
+            ]
+          },
+          {
+            "rule": "ROUTE",
+            "node_ids": [
+              "event-redsea-diversion",
+              "route-redsea",
+              "port-xiamen",
+              "factory-zhaoqing"
+            ]
+          },
+          {
+            "rule": "ROUTE",
+            "node_ids": [
+              "event-redsea-diversion",
+              "route-redsea",
+              "port-hamburg",
+              "factory-debrecen"
+            ]
+          },
+          {
+            "rule": "ROUTE",
+            "node_ids": [
+              "event-redsea-diversion",
+              "route-redsea",
+              "port-hamburg",
+              "factory-arnstadt"
+            ]
+          },
+          {
+            "rule": "ROUTE",
+            "node_ids": [
+              "event-redsea-diversion",
+              "route-redsea",
+              "port-hamburg",
+              "factory-spain"
+            ]
+          }
+        ],
+        "unmatched_actual": []
+      },
+      "inherited_entity_ids": [],
+      "document_hits": 0,
+      "document_role_leak": false,
+      "leaked_document_ids": [],
+      "document_check_mode": "baseline",
+      "baseline_error": null
+    },
+    {
+      "id": "case_028",
+      "scenario": "multi_turn",
+      "question": "那上游原料呢？",
+      "role": "procurement",
+      "context": [
+        {
+          "question": "宜春枧下窝锂矿停产对电池供应有什么影响？",
+          "entity_ids": [
+            "event-yichun-suspend"
+          ],
+          "entity_names": [
+            "宜春枧下窝锂矿停产"
+          ]
+        }
+      ],
+      "expected_entities": [
+        "event-yichun-suspend"
+      ],
+      "actual_entities": [
+        "event-yichun-suspend",
+        "event-carbonate-price",
+        "event-cobalt-drc",
+        "event-zimbabwe-lithium",
+        "event-indonesia-nickel",
+        "supplier-hunan-yuneng",
+        "supplier-fulin",
+        "supplier-rongbai",
+        "supplier-huayou",
+        "supplier-shangtai",
+        "supplier-kaijin",
+        "supplier-enjie",
+        "supplier-xingyuan",
+        "supplier-jiangsu-guotai",
+        "supplier-tinci",
+        "supplier-capchem",
+        "supplier-kedali",
+        "region-congo",
+        "region-zimbabwe",
+        "region-indonesia",
+        "region-jiangxi-yichun"
+      ],
+      "expected_min_paths": 0,
+      "actual_paths": 0,
+      "expected_path_rules": [
+        "REGION"
+      ],
+      "actual_path_rules": [],
+      "expected_paths": [
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-yichun-suspend",
+            "region-jiangxi-yichun",
+            "factory-yichun-smelter"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-yichun-suspend",
+            "region-jiangxi-yichun",
+            "supplier-fulin"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-yichun-suspend",
+            "region-jiangxi-yichun",
+            "supplier-hunan-yuneng"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-yichun-suspend",
+            "region-jiangxi-yichun",
+            "factory-yichun-smelter",
+            "port-xiamen"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-yichun-suspend",
+            "region-jiangxi-yichun",
+            "supplier-fulin",
+            "factory-ningde-zhangwan"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-yichun-suspend",
+            "region-jiangxi-yichun",
+            "supplier-fulin",
+            "factory-zhaoqing"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-yichun-suspend",
+            "region-jiangxi-yichun",
+            "supplier-fulin",
+            "factory-liyang"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-yichun-suspend",
+            "region-jiangxi-yichun",
+            "supplier-hunan-yuneng",
+            "factory-yibin"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-yichun-suspend",
+            "region-jiangxi-yichun",
+            "supplier-hunan-yuneng",
+            "factory-ningde-zhangwan"
+          ]
+        },
+        {
+          "rule": "REGION",
+          "node_ids": [
+            "event-yichun-suspend",
+            "region-jiangxi-yichun",
+            "supplier-hunan-yuneng",
+            "factory-liyang"
+          ]
+        }
+      ],
+      "expected_paths_reviewed": false,
+      "actual_path_details": [],
+      "path_match": {
+        "golden_total": 10,
+        "golden_exact": 0,
+        "golden_matched": 0,
+        "actual_total": 0,
+        "actual_matched": 0,
+        "ranks": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "rank_hits": 0,
+        "top_k": 15,
+        "mrr": 0.0,
+        "node_precision": 0.0,
+        "node_recall": 0.0,
+        "node_f1": 0.0,
+        "matched_node_total": 0,
+        "golden_node_total": 10,
+        "actual_node_total": 0,
+        "edge_precision": 0.0,
+        "edge_recall": 0.0,
+        "edge_f1": 0.0,
+        "matched_edge_total": 0,
+        "golden_edge_total": 11,
+        "actual_edge_total": 0,
+        "missing_golden": [
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-yichun-suspend",
+              "region-jiangxi-yichun",
+              "factory-yichun-smelter"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-yichun-suspend",
+              "region-jiangxi-yichun",
+              "supplier-fulin"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-yichun-suspend",
+              "region-jiangxi-yichun",
+              "supplier-hunan-yuneng"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-yichun-suspend",
+              "region-jiangxi-yichun",
+              "factory-yichun-smelter",
+              "port-xiamen"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-yichun-suspend",
+              "region-jiangxi-yichun",
+              "supplier-fulin",
+              "factory-ningde-zhangwan"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-yichun-suspend",
+              "region-jiangxi-yichun",
+              "supplier-fulin",
+              "factory-zhaoqing"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-yichun-suspend",
+              "region-jiangxi-yichun",
+              "supplier-fulin",
+              "factory-liyang"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-yichun-suspend",
+              "region-jiangxi-yichun",
+              "supplier-hunan-yuneng",
+              "factory-yibin"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-yichun-suspend",
+              "region-jiangxi-yichun",
+              "supplier-hunan-yuneng",
+              "factory-ningde-zhangwan"
+            ]
+          },
+          {
+            "rule": "REGION",
+            "node_ids": [
+              "event-yichun-suspend",
+              "region-jiangxi-yichun",
+              "supplier-hunan-yuneng",
+              "factory-liyang"
+            ]
+          }
+        ],
+        "unmatched_actual": []
+      },
+      "inherited_entity_ids": [],
+      "document_hits": 0,
+      "document_role_leak": false,
+      "leaked_document_ids": [],
+      "document_check_mode": "baseline",
+      "baseline_error": null
+    },
+    {
+      "id": "case_029",
+      "scenario": "multi_turn",
+      "question": "它的质量管控要求呢？",
+      "role": "quality",
+      "context": [
+        {
+          "question": "极星4召回事件涉及哪些供应商？",
+          "entity_ids": [
+            "event-polestar-recall"
+          ],
+          "entity_names": [
+            "极星 4 召回"
+          ]
+        }
+      ],
+      "expected_entities": [
+        "event-polestar-recall"
+      ],
+      "actual_entities": [],
+      "expected_min_paths": 0,
+      "actual_paths": 0,
+      "expected_path_rules": [
+        "DIRECT"
+      ],
+      "actual_path_rules": [],
+      "expected_paths": [
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-huayou"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "factory-ningde-zhangwan"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-rongbai"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-huayou",
+            "factory-debrecen"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-huayou",
+            "factory-ningde-zhangwan"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-huayou",
+            "factory-arnstadt"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "factory-ningde-zhangwan",
+            "port-sanduao"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-rongbai",
+            "factory-debrecen"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-rongbai",
+            "factory-ningde-zhangwan"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-rongbai",
+            "factory-liyang"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-huayou",
+            "factory-debrecen",
+            "port-hamburg"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-huayou",
+            "factory-ningde-zhangwan",
+            "port-sanduao"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-huayou",
+            "factory-arnstadt",
+            "port-hamburg"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-rongbai",
+            "factory-debrecen",
+            "port-hamburg"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-rongbai",
+            "factory-ningde-zhangwan",
+            "port-sanduao"
+          ]
+        },
+        {
+          "rule": "DIRECT",
+          "node_ids": [
+            "event-polestar-recall",
+            "supplier-rongbai",
+            "factory-liyang",
+            "port-shanghai"
+          ]
+        }
+      ],
+      "expected_paths_reviewed": false,
+      "actual_path_details": [],
+      "path_match": {
+        "golden_total": 16,
+        "golden_exact": 0,
+        "golden_matched": 0,
+        "actual_total": 0,
+        "actual_matched": 0,
+        "ranks": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "rank_hits": 0,
+        "top_k": 15,
+        "mrr": 0.0,
+        "node_precision": 0.0,
+        "node_recall": 0.0,
+        "node_f1": 0.0,
+        "matched_node_total": 0,
+        "golden_node_total": 10,
+        "actual_node_total": 0,
+        "edge_precision": 0.0,
+        "edge_recall": 0.0,
+        "edge_f1": 0.0,
+        "matched_edge_total": 0,
+        "golden_edge_total": 13,
+        "actual_edge_total": 0,
+        "missing_golden": [
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-huayou"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "factory-ningde-zhangwan"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-rongbai"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-huayou",
+              "factory-debrecen"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-huayou",
+              "factory-ningde-zhangwan"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-huayou",
+              "factory-arnstadt"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "factory-ningde-zhangwan",
+              "port-sanduao"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-rongbai",
+              "factory-debrecen"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-rongbai",
+              "factory-ningde-zhangwan"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-rongbai",
+              "factory-liyang"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-huayou",
+              "factory-debrecen",
+              "port-hamburg"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-huayou",
+              "factory-ningde-zhangwan",
+              "port-sanduao"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-huayou",
+              "factory-arnstadt",
+              "port-hamburg"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-rongbai",
+              "factory-debrecen",
+              "port-hamburg"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-rongbai",
+              "factory-ningde-zhangwan",
+              "port-sanduao"
+            ]
+          },
+          {
+            "rule": "DIRECT",
+            "node_ids": [
+              "event-polestar-recall",
+              "supplier-rongbai",
+              "factory-liyang",
+              "port-shanghai"
+            ]
+          }
+        ],
+        "unmatched_actual": []
+      },
+      "inherited_entity_ids": [],
+      "document_hits": 0,
+      "document_role_leak": false,
+      "leaked_document_ids": [],
+      "document_check_mode": "baseline",
+      "baseline_error": null
+    },
+    {
+      "id": "case_030",
+      "scenario": "multi_turn",
+      "question": "成本影响呢？",
+      "role": "finance",
+      "context": [
+        {
+          "question": "恩捷股份的隔膜供应有什么风险？",
+          "entity_ids": [
+            "supplier-enjie"
+          ],
+          "entity_names": [
+            "恩捷股份"
+          ]
+        }
+      ],
+      "expected_entities": [
+        "supplier-enjie"
+      ],
+      "actual_entities": [
+        "event-carbonate-price",
+        "event-cobalt-drc",
+        "event-zimbabwe-lithium",
+        "event-indonesia-nickel",
+        "event-redsea-diversion",
+        "event-dangerous-berth",
+        "event-eu-battery-rule",
+        "supplier-hunan-yuneng",
+        "supplier-fulin",
+        "supplier-rongbai",
+        "supplier-huayou",
+        "supplier-shangtai",
+        "supplier-kaijin",
+        "supplier-enjie",
+        "supplier-xingyuan",
+        "supplier-jiangsu-guotai",
+        "supplier-tinci",
+        "supplier-capchem",
+        "supplier-kedali",
+        "factory-yichun-smelter",
+        "factory-ningde-zhangwan",
+        "factory-ningde-cheliwan",
+        "factory-liyang",
+        "factory-yibin",
+        "factory-zhaoqing",
+        "factory-arnstadt",
+        "factory-debrecen",
+        "factory-karawang",
+        "factory-spain",
+        "route-arctic",
+        "route-redsea",
+        "route-ningde-xiamen",
+        "port-sanduao",
+        "port-xiamen",
+        "port-shanghai",
+        "port-hamburg"
+      ],
+      "expected_min_paths": 0,
+      "actual_paths": 0,
+      "expected_path_rules": [
+        "SUPPLY"
+      ],
+      "actual_path_rules": [],
+      "expected_paths": [
+        {
+          "rule": "SUPPLY",
+          "node_ids": [
+            "supplier-enjie",
+            "factory-debrecen"
+          ]
+        },
+        {
+          "rule": "SUPPLY",
+          "node_ids": [
+            "supplier-enjie",
+            "factory-ningde-zhangwan"
+          ]
+        },
+        {
+          "rule": "SUPPLY",
+          "node_ids": [
+            "supplier-enjie",
+            "factory-liyang"
+          ]
+        },
+        {
+          "rule": "SUPPLY",
+          "node_ids": [
+            "supplier-enjie",
+            "factory-debrecen",
+            "port-hamburg"
+          ]
+        },
+        {
+          "rule": "SUPPLY",
+          "node_ids": [
+            "supplier-enjie",
+            "factory-ningde-zhangwan",
+            "port-sanduao"
+          ]
+        },
+        {
+          "rule": "SUPPLY",
+          "node_ids": [
+            "supplier-enjie",
+            "factory-liyang",
+            "port-shanghai"
+          ]
+        }
+      ],
+      "expected_paths_reviewed": false,
+      "actual_path_details": [],
+      "path_match": {
+        "golden_total": 6,
+        "golden_exact": 0,
+        "golden_matched": 0,
+        "actual_total": 0,
+        "actual_matched": 0,
+        "ranks": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "rank_hits": 0,
+        "top_k": 15,
+        "mrr": 0.0,
+        "node_precision": 0.0,
+        "node_recall": 0.0,
+        "node_f1": 0.0,
+        "matched_node_total": 0,
+        "golden_node_total": 7,
+        "actual_node_total": 0,
+        "edge_precision": 0.0,
+        "edge_recall": 0.0,
+        "edge_f1": 0.0,
+        "matched_edge_total": 0,
+        "golden_edge_total": 6,
+        "actual_edge_total": 0,
+        "missing_golden": [
+          {
+            "rule": "SUPPLY",
+            "node_ids": [
+              "supplier-enjie",
+              "factory-debrecen"
+            ]
+          },
+          {
+            "rule": "SUPPLY",
+            "node_ids": [
+              "supplier-enjie",
+              "factory-ningde-zhangwan"
+            ]
+          },
+          {
+            "rule": "SUPPLY",
+            "node_ids": [
+              "supplier-enjie",
+              "factory-liyang"
+            ]
+          },
+          {
+            "rule": "SUPPLY",
+            "node_ids": [
+              "supplier-enjie",
+              "factory-debrecen",
+              "port-hamburg"
+            ]
+          },
+          {
+            "rule": "SUPPLY",
+            "node_ids": [
+              "supplier-enjie",
+              "factory-ningde-zhangwan",
+              "port-sanduao"
+            ]
+          },
+          {
+            "rule": "SUPPLY",
+            "node_ids": [
+              "supplier-enjie",
+              "factory-liyang",
+              "port-shanghai"
+            ]
+          }
+        ],
+        "unmatched_actual": []
+      },
+      "inherited_entity_ids": [],
+      "document_hits": 0,
+      "document_role_leak": false,
+      "leaked_document_ids": [],
+      "document_check_mode": "baseline",
+      "baseline_error": null
+    }
+  ]
+}

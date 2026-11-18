@@ -332,6 +332,7 @@ must:     allowed_roles match any [当前用户角色]
 
 - 记忆按 `user_id` 隔离；
 - 不把高敏感文档原文写入记忆，只存摘要与引用；
+- 长期记忆写入前做敏感信息检查，命中密钥、手机号、身份证、银行卡与密码字段时替换为 `[敏感信息]`；
 - 长期记忆写入前做一次敏感信息检查；
 - 用户可查看与删除自己的长期记忆。
 
@@ -411,7 +412,7 @@ SSE 事件：`run_started`、`classify_done`、`retrieve_done`、`graph_done`、
 ## 11. 可观测与安全
 
 - 日志：JSON + `request_id`，工作流追加 `run_id`，不记录文档原文与完整证据；
-- 指标：查询量、各节点耗时、LLM 调用、越权拦截数、审批积压、Benchmark 指标；
+- 指标：暴露 `/metrics`，包含 `supplyguard_http_requests_total`、`supplyguard_http_request_duration_seconds`、`supplyguard_llm_calls_total`、`supplyguard_llm_errors_total`、`supplyguard_rbac_drops_total`；`ops/` 提供 Prometheus 抓取配置与 Grafana 面板。
 - 安全：上传白名单与大小限制、路径清洗、角色过滤、Prompt 注入防护、审计导出公式转义；
 - 权限：接口级 RBAC + 数据级过滤，越权统一返回 403，不泄露资源是否存在。
 
@@ -419,7 +420,7 @@ SSE 事件：`run_started`、`classify_done`、`retrieve_done`、`graph_done`、
 
 ### Phase 0 脚手架 ✅
 - 依赖、配置、`.gitignore`、本地虚拟环境
-- Dockerfile 与 docker-compose 已完成；Alembic 迁移待补
+- Dockerfile 与 docker-compose 已完成；Alembic 初始迁移已接入
 
 ### Phase 1 后端基建 ✅
 - [x] 配置
@@ -429,7 +430,8 @@ SSE 事件：`run_started`、`classify_done`、`retrieve_done`、`graph_done`、
 - [x] 安全（bcrypt + JWT）
 - [x] `init_db`、演示账号种子
 - [x] 应用初始化（lifespan、CORS）
-- [ ] Prometheus 指标、安全响应头
+- [x] Prometheus 指标
+- [ ] 安全响应头
 
 **验收**：启动自动建表、生成演示账号；请求日志带 request_id。
 
@@ -451,15 +453,16 @@ SSE 事件：`run_started`、`classify_done`、`retrieve_done`、`graph_done`、
 
 **验收**：给定风险事件，返回受影响工厂与出海口路径；图谱证据随回答展示。Benchmark 路径命中率留到 M3。
 
-### M3 Memory + Benchmark + 交付 🚧
+### M3 Memory + Benchmark + 交付 ✅
 - [x] Redis 短期记忆、PostgreSQL 长期记忆（含历史对话与滚动摘要）
+- [x] 长期记忆敏感信息脱敏
 - [x] Benchmark 用例集与指标、路径级评测、CI 回归
-- [x] Docker Compose
-- [x] 分层测试（157 个用例）
-- [ ] Prometheus/Grafana 面板
-- [ ] Alembic 迁移
-- [ ] 审计 CSV 导出
-- [ ] 演示脚本
+- [x] 单 Agent 基线实测（30 条用例）
+- [x] Prometheus/Grafana 面板
+- [x] Alembic 迁移
+- [x] 审计 CSV 导出
+- [x] 演示脚本
+- [x] 分层测试（168 个用例）
 
 **验收**：多轮追问能利用历史；Benchmark 可复现；`docker compose up` 一键启动。
 
@@ -470,7 +473,7 @@ Phase 0  ✅  脚手架与 Docker
 Phase 1  ✅  配置 / 日志 / 数据库 / 安全 / 应用初始化
 M1       ✅  RBAC、SecureRAG、固定工作流、审批审计、前端
 M2       ✅  图模型、幂等导入、多跳影响分析、图谱页面
-M3       🚧  Memory、Benchmark、Docker、CI 已完成；Prometheus/Grafana、Alembic、审计 CSV、演示脚本待补
+M3       ✅  Memory、Benchmark、Docker、CI、监控、迁移、演示脚本；安全响应头与日志缓冲待补
 ```
 
 ## 14. 主要风险与对策
